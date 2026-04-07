@@ -1,11 +1,21 @@
 import jwt
 from datetime import datetime, timedelta, timezone
-from fastapi import HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from passlib.context import CryptContext
 
+from app.core.execptions import TokenExpiredError, InvalidTokenError
 from app.core.config import get_settings
 
 settings = get_settings()
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+def verify_password(plain_password: str, hashed_password: str) -> bool:
+    return pwd_context.verify(plain_password, hashed_password)
+
+def get_password_hash(password: str) -> str:
+    return pwd_context.hash(password)
+
 
 class TokenProvider:
 
@@ -34,12 +44,6 @@ class TokenProvider:
             )
             return payload
         except jwt.ExpiredSignatureError:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token expired",
-            )
+            raise TokenExpiredError
         except jwt.InvalidTokenError:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid token",
-            )
+            raise InvalidTokenError
