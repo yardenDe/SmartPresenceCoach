@@ -15,6 +15,10 @@ class AuthError(AppError):
     status_code = status.HTTP_401_UNAUTHORIZED
     code = "AUTH_ERROR"
     message = "Authentication failed"
+    
+class InvalidUserNameError(AuthError):
+    code = "INVALID_CREDENTIALS"
+    message = "Invalid user name, try another one"
 
 class InvalidCredentialsError(AuthError):
     code = "INVALID_CREDENTIALS"
