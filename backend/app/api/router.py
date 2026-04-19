@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.routes import auth, live, reports, sessions
+from api.routes import auth, live, reports, sessions
 
 
 api_router = APIRouter()
