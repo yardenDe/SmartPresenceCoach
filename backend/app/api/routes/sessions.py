@@ -1,20 +1,36 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
+
+from core.dependencies import get_db, get_current_user_id
+from services.session_service import SessionService
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
 
 
 @router.post("/create")
-async def create_session():
-    return {"message": "Session created"}
+def create_session(
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    service = SessionService(db)
+    return service.create(user_id)
 
 
-@router.post("/{session_id}/start")
-async def start_session(session_id: str):
-    return {"message": f"Session {session_id} started"}
+@router.post("/start/{session_id}")
+def start_session(
+    session_id: int,
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    service = SessionService(db)
+    return service.start(session_id, user_id)
 
 
-@router.post("/{session_id}/end")
-async def end_session(session_id: str):
-    return {"message": f"Session {session_id} ended"}
-
-
+@router.post("/end/{session_id}")
+def end_session(
+    session_id: int,
+    user_id: int = Depends(get_current_user_id),
+    db: Session = Depends(get_db),
+):
+    service = SessionService(db)
+    return service.end(session_id, user_id)
