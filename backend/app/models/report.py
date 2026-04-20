@@ -1,6 +1,6 @@
 from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, Text
 from sqlalchemy.sql import func
-from app.db.db_manager import Base
+from db.db_manager import Base
 
 
 class Report(Base):

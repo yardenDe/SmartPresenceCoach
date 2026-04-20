@@ -1,9 +1,9 @@
-from app.db.db_manager import engine, Base
+from db.db_manager import engine, Base
 
-from app.models.user import User
-from app.models.session import Session
-from app.models.report import Report
-
+from models.user import User
+from models.session import Session
+from models.report import Report
+from models.snapshot import Snapshot
 
 def init_models():
     Base.metadata.create_all(engine)

@@ -11,7 +11,7 @@ class UserRepo:
         result = self.db.execute(query)
         return result.scalar_one_or_none()
 
-    def create_user(self, username, password) -> int:
+    def create_user(self, username, password) -> User:
         user = User(username=username, password=password)
         self.db.add(user)
         self.db.commit() 

@@ -4,7 +4,10 @@ from typing import Optional
 class BodyMetrics(BaseModel):
     posture_stability: float
     shoulder_alignment: float
+
+class HandMetrics(BaseModel):
     hand_gestures: float
+    hands_location: float
 
 class FaceMetrics(BaseModel):
     eye_contact: float
@@ -25,5 +28,5 @@ class LiveResponse(BaseModel):
     overall_score: float
     body: Optional[BodyMetrics] = None
     face: Optional[FaceMetrics] = None
+    hands: Optional[HandMetrics] = None 
     verbal: Optional[VerbalMetrics] = None
-    

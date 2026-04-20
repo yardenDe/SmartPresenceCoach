@@ -1,10 +1,10 @@
 from fastapi import FastAPI
 import uvicorn
 
-from app.api.router import api_router
-from app.core.execptions import AppError, app_exceptions_handler
-from app.db.init_db import init_models
-from app.core.config import get_settings
+from api.router import api_router
+from core.excptions import AppError, app_exceptions_handler
+from db.init_db import init_models
+from core.config import get_settings
 
 
 app = FastAPI()
