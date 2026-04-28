@@ -1,4 +1,4 @@
-from fastapi import status
+from fastapi import status, Request
 from fastapi.responses import JSONResponse
 
 class AppError(Exception):
@@ -65,7 +65,7 @@ class MissingFieldsError(ValidationError):
 
 
 
-async def app_exceptions_handler(exc: AppError):
+async def app_exceptions_handler(request: Request, exc: AppError):
     return JSONResponse(
         status_code=exc.status_code,
         content={

@@ -1,4 +1,5 @@
 import os
+from typing import Dict, Any
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python.vision import (
@@ -10,6 +11,7 @@ from mediapipe.tasks.python.vision import (
     PoseLandmarkerOptions
 )
 
+from schemas.live import FrameMetrics
 from core.config import get_settings
 
 class MediaPipeDetector:
@@ -53,17 +55,17 @@ class MediaPipeDetector:
     def _detect_hands(self, mp_image):
         return self.hand_detector.detect(mp_image)
 
-    def detect(self, mp_image, face_mode=False, hand_mode=False, pose_mode=False) -> dict:
+    def detect(self, mp_image, face_mode=False, hand_mode=False, pose_mode=False) -> Dict[str, Any]:
         result = {}
 
         if face_mode:
-            result['face'] = self._detect_face(mp_image)
+            result['face_landmarks'] = self._detect_face(mp_image)
 
         if pose_mode:
-            result['pose'] = self._detect_pose(mp_image)
+            result['pose_landmarks'] = self._detect_pose(mp_image)
 
         if hand_mode:
-            result['hands'] = self._detect_hands(mp_image)
+            result['hands_landmarks'] = self._detect_hands(mp_image)
 
         return result
 

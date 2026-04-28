@@ -1,20 +1,26 @@
 import jwt
 from datetime import datetime, timedelta, timezone
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from passlib.context import CryptContext
+import bcrypt
 
-from core.excptions import TokenExpiredError, InvalidTokenError
+from core.exceptions import TokenExpiredError, InvalidTokenError
 from core.config import get_settings
+from core.logger import get_logger
 
 settings = get_settings()
+logger = get_logger("app/core/security")
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+def verify_password(password: str, hashed_password: str) -> bool:
+    bytes = password.encode("utf-8")
+    return bcrypt.checkpw(bytes, hashed_password)
 
 def get_hashed_password(password: str) -> str:
-    return pwd_context.hash(password)
+    logger.info(f"Password type: {type(password)}")
+    logger.info(f"Password length: {len(str(password))}")
+    logger.info(f"Password full: {password}")
+
+    bytes = password.encode("utf-8")
+    return bcrypt.hashpw(bytes, bcrypt.gensalt())
 
 
 class TokenService:
@@ -25,7 +31,7 @@ class TokenService:
         self.expire_minutes = settings.EXPIRE_MINUTES
         self.security = HTTPBearer()
 
-    def     create_token(self, username: int) -> str:
+    def create_token(self, username: int) -> str:
         payload = {
             "sub": username,
             "iat": datetime.now(timezone.utc),

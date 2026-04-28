@@ -7,3 +7,4 @@ backend/tests
 backend/app/models/mediapipe/*
 __pycache__/
 *.pyc
+*.db

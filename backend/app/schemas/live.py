@@ -21,7 +21,13 @@ class VerbalMetrics(BaseModel):
 class FrameRequest(BaseModel):
     session_id: int
     timestamp: float
-    frame_data: str 
+    frame_data: str
+
+class FrameMetrics(BaseModel):
+    body: Optional[BodyMetrics] = None
+    face: Optional[FaceMetrics] = None
+    hands: Optional[HandMetrics] = None 
+
 
 class LiveResponse(BaseModel):
     session_id: int
@@ -30,3 +36,21 @@ class LiveResponse(BaseModel):
     face: Optional[FaceMetrics] = None
     hands: Optional[HandMetrics] = None 
     verbal: Optional[VerbalMetrics] = None
+
+
+class SkillMetric(BaseModel):
+    score: float
+    quality: str  
+    is_active: bool
+
+class ComprehensiveLiveResponse(BaseModel):
+    session_id: int
+    overall_score: float
+    
+    focus: SkillMetric      # Looking at target
+    vitality: SkillMetric   # Energy and expression
+    posture: SkillMetric    # Body alignment
+    presence: SkillMetric   # Spatial confidence
+    composure: SkillMetric  # Calmness and stability
+    
+    delivery: Optional[VerbalMetrics] = None

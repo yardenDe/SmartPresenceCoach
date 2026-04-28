@@ -1,7 +1,7 @@
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from core.excptions import InvalidCredentialsError
+from core.exceptions import InvalidCredentialsError
 from core.security import TokenService
 from db.db_manager import SessionLocal
 
@@ -13,6 +13,7 @@ def get_db():
     try:
         yield db
     finally:
+        
         db.close()
 
 def get_current_user_id(
