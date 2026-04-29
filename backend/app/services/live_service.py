@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from vision.landmark_extractor import extract_relevant_landmarks
 from analytics.manager import AnalyticsManager
-from vision.detectors import MediaPipeDetector
+from backend.app.vision.mp_detector import MediaPipeDetector
 
 
 class LiveService:

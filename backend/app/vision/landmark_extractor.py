@@ -1,55 +1,72 @@
-import time
-from vision.config import POSE_LANDMARKS_MAP, FACE_LANDMARKS_MAP, DEFAULT_POSE_POINTS
+from vision.config import (
+    MEDIAPIPE_POSE_MAP, 
+    MEDIAPIPE_FACE_MAP, 
+    MEDIAPIPE_HAND_MAP
+)
 
-def extract_relevant_landmarks(raw_results, extra_points=None):
-    relevant_landmarks = {
-        "timestamp": time.time(),
-        "pose": None,
-        "face": None,
-        "hands": [],
-    }
+class LandmarkManager:
 
-    pose_landmarks = raw_results.get("pose_landmarks")
-    if pose_landmarks and getattr(pose_landmarks, "pose_landmarks", None):
-        pose_points = pose_landmarks.pose_landmarks[0]
-        relevant_landmarks["pose"] = {}
+    def filter_landmarks(self, landmarks_results: dict) -> dict:
+        return {
+            "pose": self._extract_pose(landmarks_results.get("pose_landmarks")),
+            "face": self._extract_face(landmarks_results.get("face_landmarks")),
+            "hands": self._extract_hands(landmarks_results.get("hands_landmarks")),
+        }
+
+    def _extract_pose(self, pose_data):
+        if not pose_data or not getattr(pose_data, "pose_landmarks", None):
+            return None
         
-        points_to_extract = DEFAULT_POSE_POINTS + (extra_points or [])
+        pose_points = pose_data.pose_landmarks[0]
+        extracted = {}
         
-        for point in points_to_extract:
-            if point in POSE_LANDMARKS_MAP and point < len(pose_points):
-                name = POSE_LANDMARKS_MAP[point]
-                relevant_landmarks["pose"][name] = {
-                    "x": pose_points[point].x,
-                    "y": pose_points[point].y
+        for idx, name in MEDIAPIPE_POSE_MAP.items():
+            if idx < len(pose_points):
+                extracted[name] = {
+                    "x": pose_points[idx].x,
+                    "y": pose_points[idx].y
                 }
+        return extracted
 
-    face_landmarks = raw_results.get("face_landmarks")
-    if face_landmarks and getattr(face_landmarks, "face_landmarks", None):
-        face_points = face_landmarks.face_landmarks[0]
-        relevant_landmarks["face"] = {}
+    def _extract_face(self, face_data):
+        if not face_data or not getattr(face_data, "face_landmarks", None):
+            return None
         
-        for point, name in FACE_LANDMARKS_MAP.items():
-            if point < len(face_points):
-                relevant_landmarks["face"][name] = {
-                    "x": face_points[point].x,
-                    "y": face_points[point].y
+        face_points = face_data.face_landmarks[0]
+        extracted = {}
+        
+        for idx, name in MEDIAPIPE_FACE_MAP.items():
+            if idx < len(face_points):
+                extracted[name] = {
+                    "x": face_points[idx].x,
+                    "y": face_points[idx].y
                 }
+        return extracted
 
-    hands_landmarks = raw_results.get("hands_landmarks")
-    if hands_landmarks and getattr(hands_landmarks, "hand_landmarks", None):
-        handedness_list = getattr(hands_landmarks, "handedness", [])
+    def _extract_hands(self, hands_data):
+        if not hands_data or not getattr(hands_data, "hand_landmarks", None):
+            return []
+        
+        extracted_hands = []
+        handedness_list = getattr(hands_data, "handedness", [])
 
-        for hand_index, hand_points in enumerate(hands_landmarks.hand_landmarks):
+        for hand_index, hand_points in enumerate(hands_data.hand_landmarks):
             if hand_index >= len(handedness_list) or len(hand_points) <= 8:
                 continue
 
             hand_label = handedness_list[hand_index][0].category_name
+            extracted_hand_points = {}
 
-            relevant_landmarks["hands"].append({
+            for idx, name in MEDIAPIPE_HAND_MAP.items():
+                if idx < len(hand_points):
+                    extracted_hand_points[name] = {
+                        "x": hand_points[idx].x,
+                        "y": hand_points[idx].y
+                    }
+
+            extracted_hands.append({
                 "label": hand_label,
-                "wrist": {"x": hand_points[0].x, "y": hand_points[0].y},
-                "index_tip": {"x": hand_points[8].x, "y": hand_points[8].y},
+                "points": extracted_hand_points
             })
-
-    return relevant_landmarks
+            
+        return extracted_hands

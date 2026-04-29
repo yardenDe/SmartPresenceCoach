@@ -1,8 +1,8 @@
-from analytics.composure_analyzer import ComposureAnalyzer
-from analytics.focus_analyzer import FocusAnalyzer
-from analytics.posture_analyzer import PostureAnalyzer
-from analytics.presence_analyzer import PresenceAnalyzer
-from analytics.vitality_analyzer import VitalityAnalyzer
+from analytics.metrics.composure_analyzer import ComposureAnalyzer
+from analytics.metrics.focus_analyzer import FocusAnalyzer
+from analytics.metrics.posture_analyzer import PostureAnalyzer
+from analytics.metrics.presence_analyzer import PresenceAnalyzer
+from analytics.metrics.vitality_analyzer import VitalityAnalyzer
 
 
 class AnalyticsManager:

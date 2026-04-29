@@ -11,7 +11,6 @@ from mediapipe.tasks.python.vision import (
     PoseLandmarkerOptions
 )
 
-from schemas.live import FrameMetrics
 from core.config import get_settings
 
 class MediaPipeDetector:

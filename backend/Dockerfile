@@ -9,6 +9,12 @@ RUN apt-get update && apt-get install -y \
     libgl1 \
     libglib2.0-0 \
     libxcb1 \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
+    libgomp1 \
+    libgles2 \
+    libegl1 \
     && rm -rf /var/lib/apt/lists/*
     
 COPY requirements.txt .
