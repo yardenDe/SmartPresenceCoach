@@ -1,3 +1,5 @@
+from typing import Any
+
 from analytics.metrics.base_analyzer import BaseAnalyzer
 from analytics.math_utils import (
     average,
@@ -19,7 +21,7 @@ class FocusAnalyzer(BaseAnalyzer):
     EYE_WEIGHT = 0.7
     DEFAULT_SCORE = 100.0
 
-    def _compute_head_score(self, pose_data):
+    def _compute_head_score(self, pose_data: dict[str, Any] | None) -> float:
         if not point_exists(pose_data, "nose"):
             return self.DEFAULT_SCORE
 
@@ -41,7 +43,7 @@ class FocusAnalyzer(BaseAnalyzer):
 
         return clamp_score(self.DEFAULT_SCORE - (head_deviation * self.HEAD_DEVIATION_SCALE))
 
-    def _compute_eye_score(self, face_data):
+    def _compute_eye_score(self, face_data: dict[str, Any] | None) -> float | None:
         if not points_exist(face_data, "iris_center", "eye_left_corner", "eye_right_corner"):
             return None
 
@@ -54,7 +56,7 @@ class FocusAnalyzer(BaseAnalyzer):
 
         return clamp_score(self.DEFAULT_SCORE - (eye_deviation * self.EYE_DEVIATION_SCALE))
 
-    def _compute_frame_score(self, frame_data):
+    def _compute_frame_score(self, frame_data: dict[str, Any]) -> float:
         head_score = self._compute_head_score(frame_data.get("pose"))
         eye_score = self._compute_eye_score(frame_data.get("face"))
 
@@ -68,11 +70,11 @@ class FocusAnalyzer(BaseAnalyzer):
             ])
         )
 
-    def compute(self, window_data):
+    def compute(self, window_data: list[dict[str, Any]]) -> float:
         frame_scores = [self._compute_frame_score(frame_data) for frame_data in window_data]
         return clamp_score(average(frame_scores))
 
-    def analyze(self, data):
+    def analyze(self, data: dict[str, Any] | list[dict[str, Any]]) -> float:
         if isinstance(data, list):
             return self.compute(data)
         return self.compute([data])

@@ -3,7 +3,7 @@ from models.session import Session
 from datetime import datetime
 
 class SessionRepo:
-    def __init__(self, db: DBSession):
+    def __init__(self, db: DBSession) -> None:
         self.db = db
 
     def create_session(self, user_id: int) -> Session:

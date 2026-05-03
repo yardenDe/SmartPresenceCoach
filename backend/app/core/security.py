@@ -1,4 +1,5 @@
 import jwt
+from typing import Any
 from datetime import datetime, timedelta, timezone
 from fastapi.security import HTTPBearer
 import bcrypt
@@ -27,7 +28,7 @@ def get_hashed_password(password: str) -> str:
 
 class TokenService:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.secret_key = settings.SECRET_KEY
         self.algorithm = settings.ALGORITHM
         self.expire_minutes = settings.EXPIRE_MINUTES
@@ -44,7 +45,7 @@ class TokenService:
 
     def decode_token(
         self, token: str
-    ) -> dict:
+    ) -> dict[str, Any]:
         try:
             payload = jwt.decode(
                 token, self.secret_key, algorithms=[self.algorithm]

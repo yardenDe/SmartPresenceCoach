@@ -13,7 +13,7 @@ logger = get_logger("app.routes.sessions")
 def create_session(
     user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db),
-):
+) -> int:
     logger.info("Received create session request for user id=%s", user_id)
     service = SessionService(db)
     return service.create(user_id)
@@ -24,7 +24,7 @@ def start_session(
     session_id: int,
     user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db),
-):
+) -> int:
     logger.info("Received start session request for session id=%s, user id=%s", session_id, user_id)
     service = SessionService(db)
     return service.start(user_id, session_id)
@@ -35,7 +35,7 @@ def end_session(
     session_id: int,
     user_id: int = Depends(get_current_user_id),
     db: Session = Depends(get_db),
-):
+) -> int:
     logger.info("Received end session request for session id=%s, user id=%s", session_id, user_id)
     service = SessionService(db)
     return service.end(user_id, session_id)

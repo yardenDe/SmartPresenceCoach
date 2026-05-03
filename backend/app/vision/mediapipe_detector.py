@@ -1,5 +1,6 @@
 import os
 from typing import Dict, Any
+import cv2
 import mediapipe as mp
 from mediapipe.tasks import python
 from mediapipe.tasks.python.vision import (
@@ -45,17 +46,26 @@ class MediaPipeDetector:
         self.hand_detector = HandLandmarker.create_from_options(self.hand_options)
 
 
-    def _detect_face(self, mp_image):
+    def _detect_face(self, mp_image: Any) -> Any:
         return self.face_detector.detect(mp_image)
 
-    def _detect_pose(self, mp_image):
+    def _detect_pose(self, mp_image: Any) -> Any:
         return self.pose_detector.detect(mp_image)
 
-    def _detect_hands(self, mp_image):
+    def _detect_hands(self, mp_image: Any) -> Any:
         return self.hand_detector.detect(mp_image)
 
-    def detect(self, mp_image, face_mode=False, hand_mode=False, pose_mode=False) -> Dict[str, Any]:
+    def detect(
+        self,
+        image: Any,
+        face_mode: bool = False,
+        hand_mode: bool = False,
+        pose_mode: bool = False,
+    ) -> Dict[str, Any]:
         result = {}
+
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=image)
 
         if face_mode:
             result['face_landmarks'] = self._detect_face(mp_image)
@@ -68,7 +78,7 @@ class MediaPipeDetector:
 
         return result
 
-    def close(self):
+    def close(self) -> None:
         self.face_detector.close()
         self.pose_detector.close()
         self.hand_detector.close()

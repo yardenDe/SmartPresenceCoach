@@ -1,3 +1,5 @@
+from typing import Any
+
 from analytics.metrics.base_analyzer import BaseAnalyzer
 from analytics.math_utils import average, clamp_score, point_distance, point_exists, variance
 
@@ -8,7 +10,7 @@ class ComposureAnalyzer(BaseAnalyzer):
     HAND_NEAR_FACE_PENALTY = 20.0
     HEAD_MOVEMENT_VARIANCE_SCALE = 500.0
 
-    def _compute_hand_penalty(self, frame_data):
+    def _compute_hand_penalty(self, frame_data: dict[str, Any]) -> float:
         face_data = frame_data.get("face")
         hands = frame_data.get("hands", [])
 
@@ -29,7 +31,7 @@ class ComposureAnalyzer(BaseAnalyzer):
 
         return penalty
 
-    def _compute_head_stability_penalty(self, window_data):
+    def _compute_head_stability_penalty(self, window_data: list[dict[str, Any]]) -> float:
         nose_positions_x = []
         nose_positions_y = []
 
@@ -47,7 +49,7 @@ class ComposureAnalyzer(BaseAnalyzer):
         movement_variance = variance(nose_positions_x) + variance(nose_positions_y)
         return movement_variance * self.HEAD_MOVEMENT_VARIANCE_SCALE
 
-    def compute(self, window_data):
+    def compute(self, window_data: list[dict[str, Any]]) -> float:
         hand_penalties = [
             self._compute_hand_penalty(frame_data)
             for frame_data in window_data
@@ -59,7 +61,7 @@ class ComposureAnalyzer(BaseAnalyzer):
         final_score = self.DEFAULT_SCORE - average_hand_penalty - stability_penalty
         return clamp_score(final_score)
 
-    def analyze(self, data):
+    def analyze(self, data: dict[str, Any] | list[dict[str, Any]]) -> float:
         if isinstance(data, list):
             return self.compute(data)
         return self.compute([data])

@@ -1,5 +1,8 @@
+from typing import Generator
+
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.orm import Session
 
 from core.exceptions import InvalidCredentialsError
 from core.security import TokenService
@@ -8,7 +11,7 @@ from db.db_manager import SessionLocal
 security = HTTPBearer()
 
 
-def get_db():
+def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
     try:
         yield db
@@ -31,5 +34,5 @@ def get_current_user_id(
     return int(user_id)
 
 
-def get_session():
+def get_session() -> None:
     pass

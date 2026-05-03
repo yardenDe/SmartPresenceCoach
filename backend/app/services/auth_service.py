@@ -10,15 +10,15 @@ from core.security import (
     verify_password,
 )
 from core.logger import get_logger
-from repositories.user_repo import UserRepo
+from repositories.UserRepository import UserRepo
 
 class AuthService:
-    def __init__(self, db: Session):
+    def __init__(self, db: Session) -> None:
         self.token_service = TokenService()
         self.user_repo = UserRepo(db)
         self.logger = get_logger("app.auth")
 
-    def register_user(self, username: str, password: str) -> tuple[int, str]:
+    def register_user(self, username: str, password: str) -> str:
         self.logger.info("Trying to register user '%s'", username)
 
         if self.user_repo.get_user_by_username(username):
@@ -32,7 +32,7 @@ class AuthService:
         return self.token_service.create_token(user.id)
 
 
-    def login_user(self, username: str, password: str) -> tuple[int, str]:
+    def login_user(self, username: str, password: str) -> str:
         self.logger.info("Login attempt for user '%s'", username)
 
         user = self.user_repo.get_user_by_username(username)

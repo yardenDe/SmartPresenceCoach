@@ -1,19 +1,21 @@
+from typing import Any
+
 from vision.config import (
     MEDIAPIPE_POSE_MAP, 
     MEDIAPIPE_FACE_MAP, 
     MEDIAPIPE_HAND_MAP
 )
 
-class LandmarkManager:
+class LandmarkExtractor:
 
-    def filter_landmarks(self, landmarks_results: dict) -> dict:
+    def filter_landmarks(self, landmarks_results: dict[str, Any]) -> dict[str, Any]:
         return {
             "pose": self._extract_pose(landmarks_results.get("pose_landmarks")),
             "face": self._extract_face(landmarks_results.get("face_landmarks")),
             "hands": self._extract_hands(landmarks_results.get("hands_landmarks")),
         }
 
-    def _extract_pose(self, pose_data):
+    def _extract_pose(self, pose_data: Any) -> dict[str, dict[str, float]] | None:
         if not pose_data or not getattr(pose_data, "pose_landmarks", None):
             return None
         
@@ -28,7 +30,7 @@ class LandmarkManager:
                 }
         return extracted
 
-    def _extract_face(self, face_data):
+    def _extract_face(self, face_data: Any) -> dict[str, dict[str, float]] | None:
         if not face_data or not getattr(face_data, "face_landmarks", None):
             return None
         
@@ -43,7 +45,7 @@ class LandmarkManager:
                 }
         return extracted
 
-    def _extract_hands(self, hands_data):
+    def _extract_hands(self, hands_data: Any) -> list[dict[str, Any]]:
         if not hands_data or not getattr(hands_data, "hand_landmarks", None):
             return []
         

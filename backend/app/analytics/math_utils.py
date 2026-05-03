@@ -1,4 +1,5 @@
 from statistics import mean
+from typing import Any
 
 
 def clamp(value: float, min_value: float = 0.0, max_value: float = 100.0) -> float:
@@ -35,27 +36,27 @@ def difference(value_a: float, value_b: float) -> float:
     return abs(value_a - value_b)
 
 
-def point_exists(data, point_name: str) -> bool:
+def point_exists(data: dict[str, Any] | None, point_name: str) -> bool:
     return bool(data and data.get(point_name) is not None)
 
 
-def points_exist(data, *point_names: str) -> bool:
+def points_exist(data: dict[str, Any] | None, *point_names: str) -> bool:
     return all(point_exists(data, point_name) for point_name in point_names)
 
 
-def point_distance(point_a: dict, point_b: dict) -> float:
+def point_distance(point_a: dict[str, float], point_b: dict[str, float]) -> float:
     return abs(point_a["x"] - point_b["x"]) + abs(point_a["y"] - point_b["y"])
 
 
-def axis_distance(point_a: dict, point_b: dict, axis: str) -> float:
+def axis_distance(point_a: dict[str, float], point_b: dict[str, float], axis: str) -> float:
     return abs(point_a[axis] - point_b[axis])
 
 
-def absolute_axis_distance(point_a: dict, point_b: dict, axis: str) -> float:
+def absolute_axis_distance(point_a: dict[str, float], point_b: dict[str, float], axis: str) -> float:
     return axis_distance(point_a, point_b, axis)
 
 
-def midpoint(point_a: dict, point_b: dict) -> dict:
+def midpoint(point_a: dict[str, float], point_b: dict[str, float]) -> dict[str, float]:
     return {
         "x": (point_a["x"] + point_b["x"]) / 2,
         "y": (point_a["y"] + point_b["y"]) / 2,

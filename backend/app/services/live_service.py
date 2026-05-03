@@ -1,29 +1,82 @@
 from typing import Any
 
-from sqlalchemy.orm import Session
+from fastapi import UploadFile
 
-from vision.landmark_extractor import extract_relevant_landmarks
 from analytics.manager import AnalyticsManager
-from backend.app.vision.mp_detector import MediaPipeDetector
+from vision.pipline import VisionPipeline
+from vision.video_storage import VideoStorage
+from core.logger import get_logger
 
 
 class LiveService:
-    def __init__(self, db: Session):
-        self.db = db
-        self.detector = MediaPipeDetector()
-        self.analytics_manager = AnalyticsManager()
 
-    def process_frame(self, frame: Any, session_id: int):
-        raw_results = self.detector.detect(frame, face_mode=True, hand_mode=True, pose_mode=True)
+    def __init__(self, video: UploadFile):
+        self.logger = get_logger("app.live_service")
+        self.logger.info("Initializing LiveService")
 
-        if not raw_results:
-            return None
+        self.video_input = video
+        self.video_path = None
 
-        relevant_data = extract_relevant_landmarks(raw_results)
-        analysis_scores = self.analytics_manager.run_full_analysis(relevant_data)
+        self.vision_pipline = None
+        self.analytics = AnalyticsManager()
+        self.video_storage = VideoStorage()
 
-        return {
-            "session_id": session_id,
-            "landmarks": relevant_data,
-            "scores": analysis_scores,
-        }
+
+    async def process(self) -> dict[str, Any]:
+
+        self.logger.info("Saving temp video")
+        self.video_path = await self.video_storage.save_temp(self.video_input)
+        self.logger.info(f"Video saved to temp path: {self.video_path}")
+        self.logger.info("Initializing VisionPipeline with video path")
+
+        self.vision_pipline = VisionPipeline()
+
+        chunk_index = 0
+        chunk_results = []
+
+        try:
+            for landmarks_list in self.vision_pipline.pipline(video_path=self.video_path):
+
+                chunk_index += 1
+
+                self.logger.info(
+                    f"Processing chunk {chunk_index} | frames={len(landmarks_list)}"
+                )
+
+                analysis = {
+                    metric_name: float(score)
+                    for metric_name, score in self.analytics.run_full_analysis(landmarks_list).items()
+                }
+
+                result = {
+                    "chunk_id": chunk_index,
+                    "scores": analysis,
+                }
+
+            
+                for metric, score in analysis.items():
+                    self.logger.info(
+                      f"[CHUNK {chunk_index}] metric={metric} score={score:.2f}"
+                )
+                
+
+                chunk_results.append(result)
+
+            self.logger.info("Live processing completed")
+            return chunk_results
+
+        finally:
+            self.close()
+
+    
+    def close(self) -> None:
+
+        self.logger.info("Cleaning up LiveService")
+
+        if self.vision_pipline:
+            self.vision_pipline.close()
+
+        if self.video_path:
+            self.video_storage.delete(self.video_path)
+
+        self.logger.info("Cleanup finished")

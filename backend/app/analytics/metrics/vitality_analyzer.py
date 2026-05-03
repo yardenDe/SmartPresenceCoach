@@ -1,3 +1,5 @@
+from typing import Any
+
 from analytics.metrics.base_analyzer import BaseAnalyzer
 from analytics.math_utils import average, axis_distance, clamp_score, difference, points_exist
 
@@ -9,7 +11,7 @@ class VitalityAnalyzer(BaseAnalyzer):
     MOUTH_GAP_SCALE = 500.0
     MOTION_VARIATION_SCALE = 120.0
 
-    def _compute_frame_score(self, frame_data):
+    def _compute_frame_score(self, frame_data: dict[str, Any]) -> float:
         score = self.BASE_SCORE
         hands = frame_data.get("hands", [])
         face_data = frame_data.get("face")
@@ -27,7 +29,7 @@ class VitalityAnalyzer(BaseAnalyzer):
 
         return clamp_score(score)
 
-    def _compute_motion_bonus(self, window_data):
+    def _compute_motion_bonus(self, window_data: list[dict[str, Any]]) -> float:
         mouth_gaps = []
 
         for frame_data in window_data:
@@ -49,14 +51,14 @@ class VitalityAnalyzer(BaseAnalyzer):
 
         return average(motion_amounts) * self.MOTION_VARIATION_SCALE
 
-    def compute(self, window_data):
+    def compute(self, window_data: list[dict[str, Any]]) -> float:
         frame_scores = [self._compute_frame_score(frame_data) for frame_data in window_data]
         base_score = average(frame_scores)
         motion_bonus = self._compute_motion_bonus(window_data)
 
         return clamp_score(base_score + motion_bonus)
 
-    def analyze(self, data):
+    def analyze(self, data: dict[str, Any] | list[dict[str, Any]]) -> float:
         if isinstance(data, list):
             return self.compute(data)
         return self.compute([data])

@@ -5,34 +5,34 @@ class AnalysisLevel(Enum):
     LEVEL2 = 2
 
 class PointNames:
-    NOSE = "nose"
-    LEFT_EYE_BASIC = "left_eye_basic"
-    RIGHT_EYE_BASIC = "right_eye_basic"
-    LEFT_SHOULDER = "left_shoulder"
-    RIGHT_SHOULDER = "right_shoulder"
-    LEFT_ELBOW = "left_elbow"
-    RIGHT_ELBOW = "right_elbow"
-    LEFT_WRIST_BASIC = "left_wrist_basic"
-    RIGHT_WRIST_BASIC = "right_wrist_basic"
-    LEFT_HIP = "left_hip"
-    RIGHT_HIP = "right_hip"
-    LEFT_KNEE = "left_knee"
-    RIGHT_KNEE = "right_knee"
-    LEFT_ANKLE = "left_ankle"
-    RIGHT_ANKLE = "right_ankle"
+    NOSE: str = "nose"
+    LEFT_EYE_BASIC: str = "left_eye_basic"
+    RIGHT_EYE_BASIC: str = "right_eye_basic"
+    LEFT_SHOULDER: str = "left_shoulder"
+    RIGHT_SHOULDER: str = "right_shoulder"
+    LEFT_ELBOW: str = "left_elbow"
+    RIGHT_ELBOW: str = "right_elbow"
+    LEFT_WRIST_BASIC: str = "left_wrist_basic"
+    RIGHT_WRIST_BASIC: str = "right_wrist_basic"
+    LEFT_HIP: str = "left_hip"
+    RIGHT_HIP: str = "right_hip"
+    LEFT_KNEE: str = "left_knee"
+    RIGHT_KNEE: str = "right_knee"
+    LEFT_ANKLE: str = "left_ankle"
+    RIGHT_ANKLE: str = "right_ankle"
 
-    IRIS_CENTER = "iris_center"
-    MOUTH_TOP = "mouth_top"
-    MOUTH_BOTTOM = "mouth_bottom"
-    LEFT_EYEBROW = "left_eyebrow"
-    RIGHT_EYEBROW = "right_eyebrow"
-    CHIN = "chin"
+    IRIS_CENTER: str = "iris_center"
+    MOUTH_TOP: str = "mouth_top"
+    MOUTH_BOTTOM: str = "mouth_bottom"
+    LEFT_EYEBROW: str = "left_eyebrow"
+    RIGHT_EYEBROW: str = "right_eyebrow"
+    CHIN: str = "chin"
 
-    HAND_WRIST = "hand_wrist"
-    HAND_INDEX_TIP = "hand_index_tip"
-    HAND_THUMB_TIP = "hand_thumb_tip"
+    HAND_WRIST: str = "hand_wrist"
+    HAND_INDEX_TIP: str = "hand_index_tip"
+    HAND_THUMB_TIP: str = "hand_thumb_tip"
 
-MEDIAPIPE_POSE_MAP = {
+MEDIAPIPE_POSE_MAP: dict[int, str] = {
     0: PointNames.NOSE,
     1: PointNames.LEFT_EYE_BASIC,
     4: PointNames.RIGHT_EYE_BASIC,
@@ -50,7 +50,7 @@ MEDIAPIPE_POSE_MAP = {
     28: PointNames.RIGHT_ANKLE
 }
 
-MEDIAPIPE_FACE_MAP = {
+MEDIAPIPE_FACE_MAP: dict[int, str] = {
     468: PointNames.IRIS_CENTER,
     13: PointNames.MOUTH_TOP,
     14: PointNames.MOUTH_BOTTOM,
@@ -59,7 +59,7 @@ MEDIAPIPE_FACE_MAP = {
     152: PointNames.CHIN
 }
 
-MEDIAPIPE_HAND_MAP = {
+MEDIAPIPE_HAND_MAP: dict[int, str] = {
     0: PointNames.HAND_WRIST,
     4: PointNames.HAND_THUMB_TIP,
     8: PointNames.HAND_INDEX_TIP

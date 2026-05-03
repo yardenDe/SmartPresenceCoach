@@ -1,29 +1,82 @@
+from typing import Any
+
+from fastapi import UploadFile
+
 from analytics.manager import AnalyticsManager
-from services.vision_service import VisionService
+from vision.pipline import VisionPipeline
+from vision.video_storage import VideoStorage
+from core.logger import get_logger
 
 
 class OfflineService:
-    def __init__(self, video_path, chunk_sec=180):
-        self.video_path = video_path
-        self.chunk_sec = chunk_sec
-        self.vision_service = VisionService(video_path=self.video_path, level="offline")
+
+    def __init__(self, video: UploadFile):
+        self.logger = get_logger("app.offline_service")
+        self.logger.info("Initializing OfflineService")
+
+        self.video_input = video
+        self.video_path = None
+
+        self.vision_pipline = None
         self.analytics = AnalyticsManager()
+        self.video_storage = VideoStorage()
 
-    def iter_chunk_results(self):
-        for chunk_index, chunk_frames in enumerate(
-            self.vision_service.extract_video_chunks(chunk_sec=self.chunk_sec)
-        ):
-            landmarks = self.vision_service.process_video_chunk(chunk_frames)
-            analysis = self.analytics.run_full_analysis(landmarks)
 
-            yield {
-                "chunk_index": chunk_index,
-                "landmarks": landmarks,
-                "analysis": analysis,
-            }
+    async def process(self) -> dict[str, Any]:
 
-    def service(self):
-        return self.iter_chunk_results()
+        self.logger.info("Saving temp video")
+        self.video_path = await self.video_storage.save_temp(self.video_input)
+        self.logger.info(f"Video saved to temp path: {self.video_path}")
+        self.logger.info("Initializing VisionPipeline with video path")
 
-    def close(self):
-        self.vision_service.close()
+        self.vision_pipline = VisionPipeline()
+
+        chunk_index = 0
+        chunk_results = []
+
+        try:
+            for landmarks_list in self.vision_pipline.pipline(video_path=self.video_path):
+
+                chunk_index += 1
+
+                self.logger.info(
+                    f"Processing chunk {chunk_index} | frames={len(landmarks_list)}"
+                )
+
+                analysis = {
+                    metric_name: float(score)
+                    for metric_name, score in self.analytics.run_full_analysis(landmarks_list).items()
+                }
+
+                result = {
+                    "chunk_id": chunk_index,
+                    "scores": analysis,
+                }
+
+            
+                for metric, score in analysis.items():
+                    self.logger.info(
+                      f"[CHUNK {chunk_index}] metric={metric} score={score:.2f}"
+                )
+                
+
+                chunk_results.append(result)
+
+            self.logger.info("Offline processing completed")
+            return chunk_results
+
+        finally:
+            self.close()
+
+    
+    def close(self) -> None:
+
+        self.logger.info("Cleaning up OfflineService")
+
+        if self.vision_pipline:
+            self.vision_pipline.close()
+
+        if self.video_path:
+            self.video_storage.delete(self.video_path)
+
+        self.logger.info("Cleanup finished")
