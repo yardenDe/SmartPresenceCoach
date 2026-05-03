@@ -9,7 +9,7 @@ from analytics.math_utils import average
 
 
 class AnalyticsManager:
-    def __init__(self) -> None:
+    def __init__(self):
         self.analyzers = {
             "focus": FocusAnalyzer(),
             "posture": PostureAnalyzer(),

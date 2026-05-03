@@ -11,24 +11,11 @@ from core.logger import get_logger
 settings = get_settings()
 logger = get_logger("app/core/security")
 
-def verify_password(password: str, hashed_password: str) -> bool:
-    return bcrypt.checkpw(
-    password.encode("utf-8"),
-    hashed_password.encode("utf-8")
-)
-
-def get_hashed_password(password: str) -> str:
-    logger.info(f"Password type: {type(password)}")
-    logger.info(f"Password length: {len(str(password))}")
-    logger.info(f"Password full: {password}")
-
-    bytes = password.encode("utf-8")
-    return bcrypt.hashpw(bytes, bcrypt.gensalt()).decode("utf-8")
 
 
-class TokenService:
+class SecurityService:
 
-    def __init__(self) -> None:
+    def __init__(self):
         self.secret_key = settings.SECRET_KEY
         self.algorithm = settings.ALGORITHM
         self.expire_minutes = settings.EXPIRE_MINUTES
@@ -55,6 +42,19 @@ class TokenService:
             raise TokenExpiredError
         except jwt.InvalidTokenError:
             raise InvalidTokenError
-        
-   
-    
+
+    @staticmethod
+    def verify_password(password: str, hashed_password: str) -> bool:
+        return bcrypt.checkpw(
+        password.encode("utf-8"),
+        hashed_password.encode("utf-8")
+    )
+
+    @staticmethod
+    def get_hashed_password(password: str) -> str:
+        logger.info(f"Password type: {type(password)}")
+        logger.info(f"Password length: {len(str(password))}")
+        logger.info(f"Password full: {password}")
+
+        bytes = password.encode("utf-8")
+        return bcrypt.hashpw(bytes, bcrypt.gensalt()).decode("utf-8")

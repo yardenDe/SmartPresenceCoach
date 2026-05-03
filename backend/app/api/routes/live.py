@@ -1,9 +1,8 @@
 from typing import Any
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
 
-from core.dependencies import get_db, get_current_user_id
+from core.dependencies import get_current_user_id, get_live_service
 from core.logger import get_logger
 from schemas.live import LiveRequest
 from services.live_service import LiveService
@@ -14,9 +13,9 @@ logger = get_logger("app.routes.live")
 
 @router.post("/frame")
 async def analyze_frame(
-    request: LiveRequest = Depends(LiveRequest.as_form),
+    request: LiveRequest = Depends(LiveRequest),
     user_id: int = Depends(get_current_user_id),
-    db: Session = Depends(get_db)
+    live_service: LiveService = Depends(get_live_service)
 ) -> Any:
     logger.info(
         "Received live frame for session id=%s from user id=%s at timestamp=%s",
@@ -25,5 +24,4 @@ async def analyze_frame(
         request.timestamp,
     )
 
-    live_service = LiveService(video=request.video)
     return live_service.process_frame(request.frame_data, request.session_id)
