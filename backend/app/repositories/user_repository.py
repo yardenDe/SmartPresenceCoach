@@ -2,8 +2,8 @@ from sqlalchemy.orm import Session
 from sqlalchemy import select
 from models.user import User
 
-class UserRepo:
-    def __init__(self, db: Session) -> None:
+class UserRepository:
+    def __init__(self, db: Session):
         self.db = db
 
     def get_user_by_username(self, username: str) -> User | None:

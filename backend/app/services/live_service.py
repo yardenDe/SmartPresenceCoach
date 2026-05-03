@@ -5,12 +5,19 @@ from fastapi import UploadFile
 from analytics.manager import AnalyticsManager
 from vision.pipline import VisionPipeline
 from vision.video_storage import VideoStorage
+from vision.mediapipe_detector import MediaPipeDetector
 from core.logger import get_logger
 
 
 class LiveService:
 
-    def __init__(self, video: UploadFile):
+    def __init__(
+        self,
+        video: UploadFile,
+        analytics: AnalyticsManager,
+        video_storage: VideoStorage,
+        detector: MediaPipeDetector,
+    ):
         self.logger = get_logger("app.live_service")
         self.logger.info("Initializing LiveService")
 
@@ -18,8 +25,9 @@ class LiveService:
         self.video_path = None
 
         self.vision_pipline = None
-        self.analytics = AnalyticsManager()
-        self.video_storage = VideoStorage()
+        self.analytics = analytics
+        self.video_storage = video_storage
+        self.detector = detector
 
 
     async def process(self) -> dict[str, Any]:
@@ -29,7 +37,7 @@ class LiveService:
         self.logger.info(f"Video saved to temp path: {self.video_path}")
         self.logger.info("Initializing VisionPipeline with video path")
 
-        self.vision_pipline = VisionPipeline()
+        self.vision_pipline = VisionPipeline(self.detector)
 
         chunk_index = 0
         chunk_results = []

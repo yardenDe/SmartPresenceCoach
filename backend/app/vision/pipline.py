@@ -7,13 +7,13 @@ from vision.landmark_extractor import LandmarkExtractor
 
 class VisionPipeline:
 
-    def __init__(self, level: int = 1):
+    def __init__(self, detector: MediaPipeDetector, level: int = 1):
         self.mode = level
 
         self.logger = get_logger("app.vision.pipeline")
         
         self.video_extractor = None
-        self.detector = MediaPipeDetector()
+        self.detector = detector
         self.landmark_extractor = LandmarkExtractor()
 
 

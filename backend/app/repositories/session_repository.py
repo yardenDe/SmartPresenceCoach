@@ -2,8 +2,8 @@ from sqlalchemy.orm import Session as DBSession
 from models.session import Session 
 from datetime import datetime
 
-class SessionRepo:
-    def __init__(self, db: DBSession) -> None:
+class SessionRepository:
+    def __init__(self, db: DBSession):
         self.db = db
 
     def create_session(self, user_id: int) -> Session:
