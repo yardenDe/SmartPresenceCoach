@@ -1,3 +1,10 @@
 .env
+.venv/
 frontend/node_modules
 frontend/dist
+backend/requirements.txt
+backend/tests
+backend/app/models/mediapipe/*
+__pycache__/
+*.pyc
+*.db

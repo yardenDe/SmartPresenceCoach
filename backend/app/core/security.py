@@ -1,43 +1,51 @@
 import jwt
+from typing import Any
 from datetime import datetime, timedelta, timezone
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from passlib.context import CryptContext
+from fastapi.security import HTTPBearer
+import bcrypt
 
-from app.core.execptions import TokenExpiredError, InvalidTokenError
-from app.core.config import get_settings
+from core.exceptions import TokenExpiredError, InvalidTokenError
+from core.config import get_settings
+from core.logger import get_logger
 
 settings = get_settings()
+logger = get_logger("app/core/security")
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+def verify_password(password: str, hashed_password: str) -> bool:
+    return bcrypt.checkpw(
+    password.encode("utf-8"),
+    hashed_password.encode("utf-8")
+)
 
-def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+def get_hashed_password(password: str) -> str:
+    logger.info(f"Password type: {type(password)}")
+    logger.info(f"Password length: {len(str(password))}")
+    logger.info(f"Password full: {password}")
 
-def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    bytes = password.encode("utf-8")
+    return bcrypt.hashpw(bytes, bcrypt.gensalt()).decode("utf-8")
 
 
-class TokenProvider:
+class TokenService:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.secret_key = settings.SECRET_KEY
         self.algorithm = settings.ALGORITHM
         self.expire_minutes = settings.EXPIRE_MINUTES
         self.security = HTTPBearer()
 
-    def generate_token(self, user_id: int) -> str:
+    def create_token(self, user_id: int) -> str:
         payload = {
-            "sub": user_id,
+            "sub": str(user_id),
             "iat": datetime.now(timezone.utc),
             "exp": datetime.now(timezone.utc)
             + timedelta(minutes=self.expire_minutes),
         }
         return jwt.encode(payload, self.secret_key, algorithm=self.algorithm)
 
-    def validate_token(
-        self, credentials: HTTPAuthorizationCredentials
-    ) -> dict:
-        token = credentials.credentials
+    def decode_token(
+        self, token: str
+    ) -> dict[str, Any]:
         try:
             payload = jwt.decode(
                 token, self.secret_key, algorithms=[self.algorithm]
@@ -47,3 +55,6 @@ class TokenProvider:
             raise TokenExpiredError
         except jwt.InvalidTokenError:
             raise InvalidTokenError
+        
+   
+    

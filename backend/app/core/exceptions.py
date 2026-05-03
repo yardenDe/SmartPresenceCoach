@@ -1,4 +1,4 @@
-from fastapi import status
+from fastapi import status, Request
 from fastapi.responses import JSONResponse
 
 class AppError(Exception):
@@ -6,7 +6,7 @@ class AppError(Exception):
     code = "INTERNAL_SERVER_ERROR"
     message = "An unexpected error occurred"
 
-    def __init__(self, message: str | None = None, details: dict | None = None):
+    def __init__(self, message: str | None = None, details: dict | None = None) -> None:
         if message:
             self.message = message
         self.details = details or {}
@@ -65,7 +65,7 @@ class MissingFieldsError(ValidationError):
 
 
 
-async def app_exceptions_handler(exc: AppError):
+async def app_exceptions_handler(request: Request, exc: AppError) -> JSONResponse:
     return JSONResponse(
         status_code=exc.status_code,
         content={

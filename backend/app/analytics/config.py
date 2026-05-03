@@ -1,0 +1,21 @@
+class AnalyticsConfig:
+    HEAD_DEVIATION_SCALE: float = 150.0
+    EYE_DEVIATION_SCALE: float = 500.0
+    FOCUS_EYE_WEIGHT: float = 0.7
+    FOCUS_HEAD_WEIGHT: float = 0.3
+
+    POSTURE_ALIGNMENT_SCALE: float = 400.0
+
+    VITALITY_BASE_SCORE: float = 50.0
+    VITALITY_HAND_BONUS: float = 10.0
+    VITALITY_MOUTH_GAP_SCALE: float = 500.0
+    VITALITY_MAX_HANDS_COUNTED: int = 2
+
+    PRESENCE_ELBOW_DISTANCE_SCALE: float = 200.0
+
+    COMPOSURE_FACE_HAND_DISTANCE_LIMIT: float = 0.15
+    COMPOSURE_HAND_NEAR_FACE_PENALTY: float = 20.0
+
+    DEFAULT_SCORE: float = 100.0
+    MIN_SCORE: float = 0.0
+    MAX_SCORE: float = 100.0

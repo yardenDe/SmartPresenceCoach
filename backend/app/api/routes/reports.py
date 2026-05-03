@@ -5,11 +5,10 @@ router = APIRouter(prefix="/reports", tags=["reports"])
 
 
 @router.get("")
-async def list_reports():
+async def list_reports() -> dict[str, str]:
     return {"message": "Reports list endpoint"}
 
 
 @router.get("/{session_id}")
-async def get_report_by_session(session_id: str):
+async def get_report_by_session(session_id: str) -> dict[str, str]:
     return {"message": f"Report by session endpoint for {session_id}"}
-
