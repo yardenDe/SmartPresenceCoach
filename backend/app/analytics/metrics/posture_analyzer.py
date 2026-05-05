@@ -8,11 +8,11 @@ class PostureAnalyzer(BaseAnalyzer):
     SHOULDER_ALIGNMENT_SCALE = 400.0
     DEFAULT_SCORE = 100.0
 
-    def _compute_frame_score(self, frame_data: dict[str, Any]) -> float:
+    def _compute_frame_score(self, frame_data: dict[str, Any]) -> float | None:
         pose_data = frame_data.get("pose")
 
         if not points_exist(pose_data, "left_shoulder", "right_shoulder"):
-            return 0.0
+            return None
 
         shoulder_gap = axis_distance(
             pose_data["left_shoulder"],
@@ -23,7 +23,11 @@ class PostureAnalyzer(BaseAnalyzer):
         return clamp_score(self.DEFAULT_SCORE - (shoulder_gap * self.SHOULDER_ALIGNMENT_SCALE))
 
     def compute(self, window_data: list[dict[str, Any]]) -> float:
-        frame_scores = [self._compute_frame_score(frame_data) for frame_data in window_data]
+        frame_scores = [
+            score
+            for frame_data in window_data
+            if (score := self._compute_frame_score(frame_data)) is not None
+        ]
         return clamp_score(average(frame_scores))
 
     def analyze(self, data: dict[str, Any] | list[dict[str, Any]]) -> float:

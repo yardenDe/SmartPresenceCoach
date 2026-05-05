@@ -63,6 +63,22 @@ def get_mp_detector() -> MediaPipeDetector:
     return _detector_instance
 
 
+def close_mp_detector() -> None:
+    global _detector_instance
+
+    if _detector_instance is None:
+        return
+
+    logger.info("event=mediapipe.close.start")
+    try:
+        _detector_instance.close()
+    except Exception:
+        logger.exception("event=mediapipe.close.failed")
+    finally:
+        _detector_instance = None
+        logger.info("event=mediapipe.close.done")
+
+
 def get_current_user_id(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     security_service: SecurityService = Depends(get_security_service),
@@ -76,10 +92,6 @@ def get_current_user_id(
         raise InvalidCredentialsError()
 
     return int(user_id)
-
-
-def get_session() -> None:
-    pass
 
 
 def get_auth_service(

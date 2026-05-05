@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from core.dependencies import get_auth_service
+from core.dependencies import get_auth_service, get_current_user_id
 from services.auth_service import AuthService
 from schemas.auth import ( 
     UserCreate,
@@ -24,5 +24,5 @@ async def login(request: UserLogin, auth_service: AuthService = Depends(get_auth
 
 
 @router.get("/me")
-async def get_me() -> None:
-    pass
+async def get_me(user_id: int = Depends(get_current_user_id)) -> dict[str, int]:
+    return {"user_id": user_id}

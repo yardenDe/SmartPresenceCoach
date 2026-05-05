@@ -3,10 +3,11 @@ from typing import Any
 from fastapi import UploadFile
 
 from analytics.manager import AnalyticsManager
+from core.exceptions import AppError, NoLandmarksError, VisionProcessingError
+from core.logger import get_logger
 from vision.pipline import VisionPipeline
 from vision.video_storage import VideoStorage
 from vision.mediapipe_detector import MediaPipeDetector
-from core.logger import get_logger
 
 
 class OfflineService:
@@ -41,6 +42,9 @@ class OfflineService:
 
         try:
             for landmarks_list in self.vision_pipline.pipline(video_path=self.video_path):
+                if not landmarks_list:
+                    self.logger.debug("event=offline.chunk.empty")
+                    continue
 
                 chunk_index += 1
 
@@ -63,9 +67,18 @@ class OfflineService:
 
                 chunk_results.append(result)
 
+            if not chunk_results:
+                self.logger.warning("event=offline.process.empty")
+                raise NoLandmarksError()
+
             self.logger.info("event=offline.process.done chunks=%s", len(chunk_results))
             return chunk_results
 
+        except AppError:
+            raise
+        except Exception:
+            self.logger.exception("event=offline.process.failed")
+            raise VisionProcessingError()
         finally:
             self.close()
 

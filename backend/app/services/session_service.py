@@ -36,11 +36,19 @@ class SessionService:
     def start(self, user_id: int, session_id: int) -> int:
         self._get_session(user_id, session_id)
         session = self.session_repository.start_session(session_id=session_id)
+        if not session:
+            self.logger.warning("event=session.start.missing session_id=%s user_id=%s", session_id, user_id)
+            raise SessionNotFoundError()
+
         self.logger.info("event=session.start.done session_id=%s user_id=%s", session.id, user_id)
         return session.id
 
     def end(self, user_id: int, session_id: int) -> int:
         self._get_session(user_id, session_id)
         session = self.session_repository.end_session(session_id=session_id)
+        if not session:
+            self.logger.warning("event=session.end.missing session_id=%s user_id=%s", session_id, user_id)
+            raise SessionNotFoundError()
+
         self.logger.info("event=session.end.done session_id=%s user_id=%s", session.id, user_id)
         return session.id

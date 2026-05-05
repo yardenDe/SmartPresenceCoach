@@ -21,7 +21,7 @@ class ComposureAnalyzer(BaseAnalyzer):
         penalty = 0.0
 
         for hand in hands:
-            wrist = hand.get("wrist")
+            wrist = hand.get("points", {}).get("hand_wrist")
             if not wrist:
                 continue
 

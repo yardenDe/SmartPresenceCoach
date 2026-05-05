@@ -1,14 +1,16 @@
 from fastapi import APIRouter
 
+from core.exceptions import FeatureNotImplementedError
+
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
 
 @router.get("")
 async def list_reports() -> dict[str, str]:
-    return {"message": "Reports list endpoint"}
+    raise FeatureNotImplementedError()
 
 
 @router.get("/{session_id}")
 async def get_report_by_session(session_id: str) -> dict[str, str]:
-    return {"message": f"Report by session endpoint for {session_id}"}
+    raise FeatureNotImplementedError()

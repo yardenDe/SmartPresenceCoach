@@ -69,6 +69,49 @@ class MissingFieldsError(ValidationError):
     message = "Mandatory fields are missing from the request"
 
 
+class VideoProcessingError(AppError):
+    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    code = "VIDEO_PROCESSING_ERROR"
+    message = "Video could not be processed"
+
+
+class VideoSaveError(VideoProcessingError):
+    code = "VIDEO_SAVE_ERROR"
+    message = "Video could not be saved"
+
+
+class InvalidVideoError(VideoProcessingError):
+    code = "INVALID_VIDEO"
+    message = "Video is empty or not readable"
+
+
+class VisionProcessingError(VideoProcessingError):
+    code = "VISION_PROCESSING_ERROR"
+    message = "Video analysis failed"
+
+
+class NoLandmarksError(VideoProcessingError):
+    code = "NO_LANDMARKS"
+    message = "No body landmarks were detected"
+
+
+class AnalyticsProcessingError(AppError):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    code = "ANALYTICS_PROCESSING_ERROR"
+    message = "Analysis failed"
+
+
+class DatabaseError(AppError):
+    status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+    code = "DATABASE_ERROR"
+    message = "Database operation failed"
+
+
+class FeatureNotImplementedError(AppError):
+    status_code = status.HTTP_501_NOT_IMPLEMENTED
+    code = "FEATURE_NOT_IMPLEMENTED"
+    message = "Feature is not implemented"
+
 
 async def app_exceptions_handler(request: Request, exc: AppError) -> JSONResponse:
     logger.warning(
@@ -87,4 +130,20 @@ async def app_exceptions_handler(request: Request, exc: AppError) -> JSONRespons
                 "details": exc.details
             }
         }
+    )
+
+
+async def unhandled_exceptions_handler(request: Request, exc: Exception) -> JSONResponse:
+    logger.exception("event=app.unhandled_error path=%s", request.url.path)
+
+    error = AppError()
+    return JSONResponse(
+        status_code=error.status_code,
+        content={
+            "error": {
+                "code": error.code,
+                "message": error.message,
+                "details": error.details,
+            }
+        },
     )

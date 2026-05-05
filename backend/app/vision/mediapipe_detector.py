@@ -13,12 +13,16 @@ from mediapipe.tasks.python.vision import (
 )
 
 from core.config import get_settings
+from core.logger import get_logger
+
+logger = get_logger("app.vision.mediapipe")
 
 class MediaPipeDetector:
     def __init__(self):
         settings = get_settings()
         self.base_path = settings.MEDIAPIPE_MODEL_PATH
         self.running_mode = settings.MEDIAPIPE_RUNNING_MODE
+        logger.info("event=mediapipe.detector.init.start")
 
         self.face_options = FaceLandmarkerOptions(
             base_options=python.BaseOptions(
@@ -41,9 +45,15 @@ class MediaPipeDetector:
             running_mode=self.running_mode,
         )
 
-        self.face_detector = FaceLandmarker.create_from_options(self.face_options)
-        self.pose_detector = PoseLandmarker.create_from_options(self.pose_options)
-        self.hand_detector = HandLandmarker.create_from_options(self.hand_options)
+        try:
+            self.face_detector = FaceLandmarker.create_from_options(self.face_options)
+            self.pose_detector = PoseLandmarker.create_from_options(self.pose_options)
+            self.hand_detector = HandLandmarker.create_from_options(self.hand_options)
+        except Exception:
+            logger.exception("event=mediapipe.detector.init.failed")
+            raise
+
+        logger.info("event=mediapipe.detector.init.done")
 
 
     def _detect_face(self, mp_image: Any) -> Any:
@@ -82,3 +92,4 @@ class MediaPipeDetector:
         self.face_detector.close()
         self.pose_detector.close()
         self.hand_detector.close()
+        logger.info("event=mediapipe.detector.close")

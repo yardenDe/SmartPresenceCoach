@@ -3,6 +3,7 @@ from typing import Any
 from fastapi import UploadFile
 
 from analytics.manager import AnalyticsManager
+from core.exceptions import AppError, VisionProcessingError
 from core.logger import get_logger
 from vision.mediapipe_detector import MediaPipeDetector
 from vision.pipline import VisionPipeline
@@ -39,6 +40,11 @@ class LiveService:
                 response["overall_score"],
             )
             return response
+        except AppError:
+            raise
+        except Exception:
+            self.logger.exception("event=live.process.failed session_id=%s", session_id)
+            raise VisionProcessingError()
         finally:
             self.close()
 
