@@ -1,6 +1,11 @@
 from fastapi import status, Request
 from fastapi.responses import JSONResponse
 
+from core.logger import get_logger
+
+logger = get_logger("app.core.exceptions")
+
+
 class AppError(Exception):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     code = "INTERNAL_SERVER_ERROR"
@@ -66,6 +71,13 @@ class MissingFieldsError(ValidationError):
 
 
 async def app_exceptions_handler(request: Request, exc: AppError) -> JSONResponse:
+    logger.warning(
+        "event=app.error code=%s status=%s path=%s",
+        exc.code,
+        exc.status_code,
+        request.url.path,
+    )
+
     return JSONResponse(
         status_code=exc.status_code,
         content={

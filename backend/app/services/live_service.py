@@ -3,88 +3,91 @@ from typing import Any
 from fastapi import UploadFile
 
 from analytics.manager import AnalyticsManager
+from core.logger import get_logger
+from vision.mediapipe_detector import MediaPipeDetector
 from vision.pipline import VisionPipeline
 from vision.video_storage import VideoStorage
-from vision.mediapipe_detector import MediaPipeDetector
-from core.logger import get_logger
 
 
 class LiveService:
-
     def __init__(
         self,
-        video: UploadFile,
         analytics: AnalyticsManager,
         video_storage: VideoStorage,
         detector: MediaPipeDetector,
     ):
-        self.logger = get_logger("app.live_service")
-        self.logger.info("Initializing LiveService")
-
-        self.video_input = video
-        self.video_path = None
-
-        self.vision_pipline = None
         self.analytics = analytics
         self.video_storage = video_storage
         self.detector = detector
+        self.video_path = None
+        self.vision_pipeline = None
+        self.logger = get_logger("app.services.live")
 
-
-    async def process(self) -> dict[str, Any]:
-
-        self.logger.info("Saving temp video")
-        self.video_path = await self.video_storage.save_temp(self.video_input)
-        self.logger.info(f"Video saved to temp path: {self.video_path}")
-        self.logger.info("Initializing VisionPipeline with video path")
-
-        self.vision_pipline = VisionPipeline(self.detector)
-
-        chunk_index = 0
-        chunk_results = []
+    async def process(self, video: UploadFile, session_id: int) -> dict[str, Any]:
+        self.logger.info("event=live.process.start session_id=%s file=%s", session_id, video.filename)
 
         try:
-            for landmarks_list in self.vision_pipline.pipline(video_path=self.video_path):
+            self.video_path = await self.video_storage.save_temp(video)
+            landmarks = self._get_first_chunk(self.video_path)
+            scores = self._analyze(landmarks)
+            response = self._build_response(session_id, scores)
 
-                chunk_index += 1
-
-                self.logger.info(
-                    f"Processing chunk {chunk_index} | frames={len(landmarks_list)}"
-                )
-
-                analysis = {
-                    metric_name: float(score)
-                    for metric_name, score in self.analytics.run_full_analysis(landmarks_list).items()
-                }
-
-                result = {
-                    "chunk_id": chunk_index,
-                    "scores": analysis,
-                }
-
-            
-                for metric, score in analysis.items():
-                    self.logger.info(
-                      f"[CHUNK {chunk_index}] metric={metric} score={score:.2f}"
-                )
-                
-
-                chunk_results.append(result)
-
-            self.logger.info("Live processing completed")
-            return chunk_results
-
+            self.logger.info(
+                "event=live.process.done session_id=%s frames=%s overall=%.2f",
+                session_id,
+                len(landmarks),
+                response["overall_score"],
+            )
+            return response
         finally:
             self.close()
 
-    
+    def _get_first_chunk(self, video_path: str) -> list[dict[str, Any]]:
+        self.vision_pipeline = VisionPipeline(self.detector)
+
+        for chunk_index, landmarks in enumerate(self.vision_pipeline.pipline(video_path=video_path), start=1):
+            if landmarks:
+                self.logger.info(
+                    "event=live.chunk.ready chunk=%s frames=%s",
+                    chunk_index,
+                    len(landmarks),
+                )
+                return landmarks
+
+        self.logger.warning("event=live.chunk.empty")
+        return []
+
+    def _analyze(self, landmarks: list[dict[str, Any]]) -> dict[str, float]:
+        if not landmarks:
+            self.logger.warning("event=live.analysis.empty")
+            return {
+                "focus": 0.0,
+                "vitality": 0.0,
+                "posture": 0.0,
+                "presence": 0.0,
+                "composure": 0.0,
+                "overall": 0.0,
+            }
+
+        return self.analytics.run_full_analysis(landmarks)
+
+    def _build_response(self, session_id: int, scores: dict[str, float]) -> dict[str, Any]:
+        return {
+            "session_id": session_id,
+            "overall_score": scores.get("overall", 0.0),
+            "focus": scores.get("focus", 0.0),
+            "vitality": scores.get("vitality", 0.0),
+            "posture": scores.get("posture", 0.0),
+            "presence": scores.get("presence", 0.0),
+            "composure": scores.get("composure", 0.0),
+            "delivery": None,
+        }
+
     def close(self) -> None:
-
-        self.logger.info("Cleaning up LiveService")
-
-        if self.vision_pipline:
-            self.vision_pipline.close()
+        if self.vision_pipeline:
+            self.vision_pipeline.close()
+            self.vision_pipeline = None
 
         if self.video_path:
             self.video_storage.delete(self.video_path)
-
-        self.logger.info("Cleanup finished")
+            self.video_path = None

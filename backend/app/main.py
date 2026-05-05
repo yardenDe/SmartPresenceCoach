@@ -18,6 +18,7 @@ app.add_exception_handler(AppError, app_exceptions_handler)
 
 origins = [
     "http://localhost:5173", 
+    "http://127.0.0.1:5173",
     "http://127.0.0.1:3000",
 ]
 
@@ -32,7 +33,7 @@ app.add_middleware(
 init_models()
 
 settings = get_settings()
-logger.info("Application started on %s:%s", settings.APP_HOST, settings.APP_PORT)
+logger.info("event=app.start host=%s port=%s", settings.APP_HOST, settings.APP_PORT)
 
 
 if __name__ == "__main__":

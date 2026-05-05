@@ -1,27 +1,27 @@
 from typing import Any
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 
 from core.dependencies import get_current_user_id, get_live_service
-from core.logger import get_logger
-from schemas.live import LiveRequest
 from services.live_service import LiveService
+from schemas.live import LiveResponse
 
 router = APIRouter(prefix="/live", tags=["live"])
-logger = get_logger("app.routes.live")
 
 
-@router.post("/frame")
+@router.post("/frame", response_model=LiveResponse)
 async def analyze_frame(
-    request: LiveRequest = Depends(LiveRequest),
+    video: UploadFile = File(...),
+    session_id: int = Form(...),
+    timestamp: float = Form(...),
     user_id: int = Depends(get_current_user_id),
     live_service: LiveService = Depends(get_live_service)
 ) -> Any:
-    logger.info(
-        "Received live frame for session id=%s from user id=%s at timestamp=%s",
-        request.session_id,
-        user_id,
-        request.timestamp,
+    _ = timestamp, user_id
+
+    result = await live_service.process(
+        video=video,
+        session_id=session_id,
     )
 
-    return live_service.process_frame(request.frame_data, request.session_id)
+    return result
