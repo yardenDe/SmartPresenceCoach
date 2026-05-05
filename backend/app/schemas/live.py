@@ -1,17 +1,9 @@
-from fastapi import File, Form, UploadFile
 from pydantic import BaseModel
 
 
 class VerbalMetrics(BaseModel):
     tone_stability: float
     speech_rate: float
-
-
-class LiveRequest(BaseModel):
-    session_id: int
-    timestamp: float
-    frame_data: str
-    video: UploadFile
 
 
 class LiveResponse(BaseModel):

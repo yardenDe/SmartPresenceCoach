@@ -6,10 +6,8 @@ import bcrypt
 
 from core.exceptions import TokenExpiredError, InvalidTokenError
 from core.config import get_settings
-from core.logger import get_logger
 
 settings = get_settings()
-logger = get_logger("app/core/security")
 
 
 
@@ -52,9 +50,5 @@ class SecurityService:
 
     @staticmethod
     def get_hashed_password(password: str) -> str:
-        logger.info(f"Password type: {type(password)}")
-        logger.info(f"Password length: {len(str(password))}")
-        logger.info(f"Password full: {password}")
-
         bytes = password.encode("utf-8")
         return bcrypt.hashpw(bytes, bcrypt.gensalt()).decode("utf-8")

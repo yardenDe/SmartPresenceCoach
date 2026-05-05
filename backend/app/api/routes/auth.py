@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends
 
 from core.dependencies import get_auth_service
-from core.logger import get_logger
 from services.auth_service import AuthService
 from schemas.auth import ( 
     UserCreate,
@@ -10,18 +9,15 @@ from schemas.auth import (
 )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
-logger = get_logger("app.routes.auth")
 
 @router.post("/register", response_model=Token)
 async def register(request: UserCreate, auth_service: AuthService = Depends(get_auth_service)) -> Token:
-    logger.info("Received register request for username '%s'", request.username)
     token = auth_service.register_user(request.username, request.password)
     
     return Token(access_token=token)
 
 @router.post("/login", response_model=Token)
 async def login(request: UserLogin, auth_service: AuthService = Depends(get_auth_service)) -> Token:
-    logger.info("Received login request for username '%s'", request.username)
     token = auth_service.login_user(request.username, request.password)
     
     return Token(access_token=token)

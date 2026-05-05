@@ -1,11 +1,9 @@
 from fastapi import APIRouter, Depends
 
 from core.dependencies import get_current_user_id, get_session_service
-from core.logger import get_logger
 from services.session_service import SessionService
 
 router = APIRouter(prefix="/sessions", tags=["sessions"])
-logger = get_logger("app.routes.sessions")
 
 
 @router.post("/create")
@@ -13,7 +11,6 @@ def create_session(
     user_id: int = Depends(get_current_user_id),
     service: SessionService = Depends(get_session_service),
 ) -> int:
-    logger.info("Received create session request for user id=%s", user_id)
     return service.create(user_id)
 
 
@@ -23,7 +20,6 @@ def start_session(
     user_id: int = Depends(get_current_user_id),
     service: SessionService = Depends(get_session_service),
 ) -> int:
-    logger.info("Received start session request for session id=%s, user id=%s", session_id, user_id)
     return service.start(user_id, session_id)
 
 
@@ -33,5 +29,4 @@ def end_session(
     user_id: int = Depends(get_current_user_id),
     service: SessionService = Depends(get_session_service),
 ) -> int:
-    logger.info("Received end session request for session id=%s, user id=%s", session_id, user_id)
     return service.end(user_id, session_id)

@@ -18,8 +18,7 @@ class OfflineService:
         video_storage: VideoStorage,
         detector: MediaPipeDetector,
     ):
-        self.logger = get_logger("app.offline_service")
-        self.logger.info("Initializing OfflineService")
+        self.logger = get_logger("app.services.offline")
 
         self.video_input = video
         self.video_path = None
@@ -32,10 +31,8 @@ class OfflineService:
 
     async def process(self) -> dict[str, Any]:
 
-        self.logger.info("Saving temp video")
+        self.logger.info("event=offline.process.start file=%s", self.video_input.filename)
         self.video_path = await self.video_storage.save_temp(self.video_input)
-        self.logger.info(f"Video saved to temp path: {self.video_path}")
-        self.logger.info("Initializing VisionPipeline with video path")
 
         self.vision_pipline = VisionPipeline(self.detector)
 
@@ -47,10 +44,6 @@ class OfflineService:
 
                 chunk_index += 1
 
-                self.logger.info(
-                    f"Processing chunk {chunk_index} | frames={len(landmarks_list)}"
-                )
-
                 analysis = {
                     metric_name: float(score)
                     for metric_name, score in self.analytics.run_full_analysis(landmarks_list).items()
@@ -61,16 +54,16 @@ class OfflineService:
                     "scores": analysis,
                 }
 
-            
-                for metric, score in analysis.items():
-                    self.logger.info(
-                      f"[CHUNK {chunk_index}] metric={metric} score={score:.2f}"
+                self.logger.info(
+                    "event=offline.chunk.done chunk=%s frames=%s overall=%.2f",
+                    chunk_index,
+                    len(landmarks_list),
+                    analysis.get("overall", 0.0),
                 )
-                
 
                 chunk_results.append(result)
 
-            self.logger.info("Offline processing completed")
+            self.logger.info("event=offline.process.done chunks=%s", len(chunk_results))
             return chunk_results
 
         finally:
@@ -78,13 +71,10 @@ class OfflineService:
 
     
     def close(self) -> None:
-
-        self.logger.info("Cleaning up OfflineService")
-
         if self.vision_pipline:
             self.vision_pipline.close()
+            self.vision_pipline = None
 
         if self.video_path:
             self.video_storage.delete(self.video_path)
-
-        self.logger.info("Cleanup finished")
+            self.video_path = None

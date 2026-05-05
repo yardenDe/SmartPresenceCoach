@@ -11,7 +11,6 @@ from db.db_manager import SessionLocal
 from analytics.manager import AnalyticsManager
 from repositories.session_repository import SessionRepository
 from repositories.user_repository import UserRepository
-from schemas.live import LiveRequest
 from services.auth_service import AuthService
 from services.live_service import LiveService
 from services.offline_service import OfflineService
@@ -21,7 +20,7 @@ from vision.video_storage import VideoStorage
 
 security = HTTPBearer()
 
-logger = get_logger("core/dependencies")
+logger = get_logger("app.core.dependencies")
 
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
@@ -58,8 +57,9 @@ def get_mp_detector() -> MediaPipeDetector:
   
     global _detector_instance
     if _detector_instance is None:
-        logger.info("Loading MediaPipe models into memory.")
+        logger.info("event=mediapipe.load.start")
         _detector_instance = MediaPipeDetector()
+        logger.info("event=mediapipe.load.done")
     return _detector_instance
 
 
@@ -96,13 +96,11 @@ def get_session_service(
 
 
 def get_live_service(
-    request: LiveRequest = Depends(LiveRequest.as_form),
     analytics: AnalyticsManager = Depends(get_analytics_manager),
     video_storage: VideoStorage = Depends(get_video_storage),
     detector: MediaPipeDetector = Depends(get_mp_detector),
 ) -> LiveService:
     return LiveService(
-        video=request.video,
         analytics=analytics,
         video_storage=video_storage,
         detector=detector,
