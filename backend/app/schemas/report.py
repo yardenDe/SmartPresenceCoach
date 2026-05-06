@@ -5,7 +5,7 @@ from pydantic import BaseModel
 
 class ReportRead(BaseModel):
     session_id: int
-    score: float
+    overall_score: float
     summary: str
     recommendations: str
     generated_at: datetime

@@ -1,3 +1,5 @@
+from sqlalchemy import inspect, text
+
 from db.db_manager import engine, Base
 
 from models.user import User
@@ -11,4 +13,6 @@ logger = get_logger("app.db.init")
 def init_models() -> None:
     logger.info("event=db.init.start")
     Base.metadata.create_all(engine)
+   
     logger.info("event=db.init.done")
+

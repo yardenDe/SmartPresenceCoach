@@ -1,10 +1,13 @@
-from sqlalchemy.orm import Session as DBSession
-from models.session import Session 
 from datetime import datetime
+
+from sqlalchemy.orm import Session as DBSession
+
 from core.exceptions import DatabaseError
 from core.logger import get_logger
+from models.session import Session
 
 logger = get_logger("app.repositories.session")
+
 
 class SessionRepository:
     def __init__(self, db: DBSession):
@@ -12,6 +15,7 @@ class SessionRepository:
 
     def create_session(self, user_id: int) -> Session:
         session = Session(user_id=user_id)
+
         try:
             self.db.add(session)
             self.db.commit()
@@ -26,34 +30,38 @@ class SessionRepository:
 
     def start_session(self, session_id: int) -> Session | None:
         session = self.db.get(Session, session_id)
-        if session:
-            try:
-                session.start_time = datetime.now()
-                self.db.commit()
-                self.db.refresh(session)
-            except Exception:
-                self.db.rollback()
-                logger.exception("event=session.start.failed session_id=%s", session_id)
-                raise DatabaseError()
+        if not session:
+            return None
 
-            logger.info("event=session.start.saved session_id=%s", session_id)
+        try:
+            session.start_time = datetime.now()
+            self.db.commit()
+            self.db.refresh(session)
+        except Exception:
+            self.db.rollback()
+            logger.exception("event=session.start.failed session_id=%s", session_id)
+            raise DatabaseError()
+
+        logger.info("event=session.start.saved session_id=%s", session_id)
         return session
 
     def end_session(self, session_id: int) -> Session | None:
         session = self.db.get(Session, session_id)
-        if session:
-            try:
-                session.end_time = datetime.now()
-                self.db.commit()
-                self.db.refresh(session)
-            except Exception:
-                self.db.rollback()
-                logger.exception("event=session.end.failed session_id=%s", session_id)
-                raise DatabaseError()
+        if not session:
+            return None
 
-            logger.info("event=session.end.saved session_id=%s", session_id)
+        try:
+            session.end_time = datetime.now()
+            self.db.commit()
+            self.db.refresh(session)
+        except Exception:
+            self.db.rollback()
+            logger.exception("event=session.end.failed session_id=%s", session_id)
+            raise DatabaseError()
+
+        logger.info("event=session.end.saved session_id=%s", session_id)
         return session
-    
+
     def get_by_id(self, session_id: int) -> Session | None:
         try:
             session = self.db.get(Session, session_id)
@@ -63,4 +71,3 @@ class SessionRepository:
 
         logger.debug("event=session.lookup.done session_id=%s found=%s", session_id, session is not None)
         return session
-        

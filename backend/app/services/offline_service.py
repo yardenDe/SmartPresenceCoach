@@ -8,6 +8,8 @@ from core.logger import get_logger
 from vision.pipline import VisionPipeline
 from vision.video_storage import VideoStorage
 from vision.mediapipe_detector import MediaPipeDetector
+from db.buffer_manager import BufferManager
+
 
 
 class OfflineService:
@@ -18,6 +20,7 @@ class OfflineService:
         analytics: AnalyticsManager,
         video_storage: VideoStorage,
         detector: MediaPipeDetector,
+        buffer_manager: BufferManager,
     ):
         self.logger = get_logger("app.services.offline")
 
@@ -28,6 +31,7 @@ class OfflineService:
         self.analytics = analytics
         self.video_storage = video_storage
         self.detector = detector
+        self.buffer_manager=buffer_manager
 
 
     async def process(self) -> dict[str, Any]:

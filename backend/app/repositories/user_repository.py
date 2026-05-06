@@ -10,18 +10,6 @@ class UserRepository:
     def __init__(self, db: Session):
         self.db = db
 
-    def get_user_by_username(self, username: str) -> User | None:
-        try:
-            query = select(User).where(User.username == username)
-            result = self.db.execute(query)
-            user = result.scalar_one_or_none()
-        except Exception:
-            logger.exception("event=user.lookup.failed")
-            raise DatabaseError()
-
-        logger.debug("event=user.lookup.done found=%s", user is not None)
-        return user
-
     def create_user(self, username: str, password: str) -> User:
         user = User(username=username, password=password)
         try:
@@ -35,3 +23,17 @@ class UserRepository:
 
         logger.info("event=user.create.done user_id=%s", user.id)
         return user
+
+    def get_user_by_username(self, username: str) -> User | None:
+        try:
+            query = select(User).where(User.username == username)
+            result = self.db.execute(query)
+            user = result.scalar_one_or_none()
+        except Exception:
+            logger.exception("event=user.lookup.failed")
+            raise DatabaseError()
+
+        logger.debug("event=user.lookup.done found=%s", user is not None)
+        return user
+
+    

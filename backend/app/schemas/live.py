@@ -8,6 +8,7 @@ class VerbalMetrics(BaseModel):
 
 class LiveResponse(BaseModel):
     session_id: int
+    timestamp: float
     overall_score: float
     
     focus: float

@@ -8,8 +8,10 @@ from core.logger import get_logger
 from core.exceptions import InvalidCredentialsError
 from core.security import SecurityService
 from db.db_manager import SessionLocal
+from db.buffer_manager import BufferManager
 from analytics.manager import AnalyticsManager
 from repositories.session_repository import SessionRepository
+from repositories.snapshot_repository import SnapshotRepository
 from repositories.user_repository import UserRepository
 from services.auth_service import AuthService
 from services.live_service import LiveService
@@ -43,6 +45,10 @@ def get_session_repository(db: Session = Depends(get_db)) -> SessionRepository:
     return SessionRepository(db)
 
 
+def get_snapshot_repository(db: Session = Depends(get_db)) -> SnapshotRepository:
+    return SnapshotRepository(db)
+
+
 def get_analytics_manager() -> AnalyticsManager:
     return AnalyticsManager()
 
@@ -52,6 +58,7 @@ def get_video_storage() -> VideoStorage:
 
 
 _detector_instance = None
+_buffer_manager = BufferManager()
 
 def get_mp_detector() -> MediaPipeDetector:
   
@@ -101,33 +108,48 @@ def get_auth_service(
     return AuthService(user_repository=user_repository, security_service=security_service)
 
 
+def get_buffer_manager() -> BufferManager:
+    return _buffer_manager
+
+
 def get_session_service(
     session_repository: SessionRepository = Depends(get_session_repository),
+    buffer_manager: BufferManager = Depends(get_buffer_manager),
+    snapshot_repository: SnapshotRepository = Depends(get_snapshot_repository),
 ) -> SessionService:
-    return SessionService(session_repository=session_repository)
+    return SessionService(
+        session_repository=session_repository,
+        buffer_manager=buffer_manager,
+        snapshot_repository=snapshot_repository,
+    )
 
 
 def get_live_service(
     analytics: AnalyticsManager = Depends(get_analytics_manager),
     video_storage: VideoStorage = Depends(get_video_storage),
     detector: MediaPipeDetector = Depends(get_mp_detector),
+    buffer_manager: BufferManager = Depends(get_buffer_manager),
+    snapshot_repository: SnapshotRepository = Depends(get_snapshot_repository),
 ) -> LiveService:
     return LiveService(
         analytics=analytics,
         video_storage=video_storage,
         detector=detector,
+        buffer_manager=buffer_manager,
+        snapshot_repository=snapshot_repository
     )
-
 
 def get_offline_service(
     video: UploadFile = File(...),
     analytics: AnalyticsManager = Depends(get_analytics_manager),
     video_storage: VideoStorage = Depends(get_video_storage),
     detector: MediaPipeDetector = Depends(get_mp_detector),
+    buffer_manager: BufferManager = Depends(get_buffer_manager),
 ) -> OfflineService:
     return OfflineService(
         video=video,
         analytics=analytics,
         video_storage=video_storage,
         detector=detector,
+        buffer_manager=buffer_manager
     )

@@ -8,7 +8,7 @@ class Report(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer, ForeignKey("sessions.id"), unique=True, nullable=False)
-    score = Column(Float, nullable=False)
+    overall_score = Column(Float, nullable=False)
     summary = Column(Text, nullable=False)
     recommendations = Column(Text, nullable=False)
     generated_at = Column(DateTime(timezone=True), server_default=func.now())
