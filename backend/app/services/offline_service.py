@@ -1,15 +1,10 @@
-from typing import Any
-
 from fastapi import UploadFile
 
-from analytics.manager import AnalyticsManager
-from core.exceptions import AppError, NoLandmarksError, VisionProcessingError
+from core.exceptions import AppError, VisionProcessingError
 from core.logger import get_logger
-from vision.pipline import VisionPipeline
+from schemas.offline import OfflineResponse
+from services.session_analysis_service import SessionAnalysisService
 from vision.video_storage import VideoStorage
-from vision.mediapipe_detector import MediaPipeDetector
-from db.buffer_manager import BufferManager
-
 
 
 class OfflineService:
@@ -17,66 +12,30 @@ class OfflineService:
     def __init__(
         self,
         video: UploadFile,
-        analytics: AnalyticsManager,
         video_storage: VideoStorage,
-        detector: MediaPipeDetector,
-        buffer_manager: BufferManager,
+        session_analysis_service: SessionAnalysisService,
     ):
         self.logger = get_logger("app.services.offline")
 
         self.video_input = video
         self.video_path = None
-
-        self.vision_pipline = None
-        self.analytics = analytics
         self.video_storage = video_storage
-        self.detector = detector
-        self.buffer_manager=buffer_manager
+        self.session_analysis_service = session_analysis_service
 
 
-    async def process(self) -> dict[str, Any]:
+    async def process(self, session_id: int) -> OfflineResponse:
 
         self.logger.info("event=offline.process.start file=%s", self.video_input.filename)
         self.video_path = await self.video_storage.save_temp(self.video_input)
 
-        self.vision_pipline = VisionPipeline(self.detector)
-
-        chunk_index = 0
-        chunk_results = []
-
         try:
-            for landmarks_list in self.vision_pipline.pipline(video_path=self.video_path):
-                if not landmarks_list:
-                    self.logger.debug("event=offline.chunk.empty")
-                    continue
+            response = self.session_analysis_service.process_offline(
+                video_path=self.video_path,
+                session_id=session_id,
+            )
 
-                chunk_index += 1
-
-                analysis = {
-                    metric_name: float(score)
-                    for metric_name, score in self.analytics.run_full_analysis(landmarks_list).items()
-                }
-
-                result = {
-                    "chunk_id": chunk_index,
-                    "scores": analysis,
-                }
-
-                self.logger.info(
-                    "event=offline.chunk.done chunk=%s frames=%s overall=%.2f",
-                    chunk_index,
-                    len(landmarks_list),
-                    analysis.get("overall", 0.0),
-                )
-
-                chunk_results.append(result)
-
-            if not chunk_results:
-                self.logger.warning("event=offline.process.empty")
-                raise NoLandmarksError()
-
-            self.logger.info("event=offline.process.done chunks=%s", len(chunk_results))
-            return chunk_results
+            self.logger.info("event=offline.process.done chunks=%s", len(response.results))
+            return response
 
         except AppError:
             raise
@@ -88,10 +47,6 @@ class OfflineService:
 
     
     def close(self) -> None:
-        if self.vision_pipline:
-            self.vision_pipline.close()
-            self.vision_pipline = None
-
         if self.video_path:
             self.video_storage.delete(self.video_path)
             self.video_path = None

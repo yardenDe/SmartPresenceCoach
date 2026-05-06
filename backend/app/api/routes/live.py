@@ -16,8 +16,6 @@ async def analyze_frame(
     user_id: int = Depends(get_current_user_id),
     live_service: LiveService = Depends(get_live_service)
 ) -> Any:
-    _ = user_id
-
     result = await live_service.process(
         video=video,
         session_id=session_id,

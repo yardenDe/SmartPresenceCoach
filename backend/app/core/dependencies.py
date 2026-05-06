@@ -16,6 +16,7 @@ from repositories.user_repository import UserRepository
 from services.auth_service import AuthService
 from services.live_service import LiveService
 from services.offline_service import OfflineService
+from services.session_analysis_service import SessionAnalysisService
 from services.session_service import SessionService
 from vision.mediapipe_detector import MediaPipeDetector
 from vision.video_storage import VideoStorage
@@ -124,32 +125,36 @@ def get_session_service(
     )
 
 
-def get_live_service(
+def get_session_analysis_service(
     analytics: AnalyticsManager = Depends(get_analytics_manager),
-    video_storage: VideoStorage = Depends(get_video_storage),
     detector: MediaPipeDetector = Depends(get_mp_detector),
     buffer_manager: BufferManager = Depends(get_buffer_manager),
     snapshot_repository: SnapshotRepository = Depends(get_snapshot_repository),
-) -> LiveService:
-    return LiveService(
+) -> SessionAnalysisService:
+    return SessionAnalysisService(
         analytics=analytics,
-        video_storage=video_storage,
         detector=detector,
         buffer_manager=buffer_manager,
-        snapshot_repository=snapshot_repository
+        snapshot_repository=snapshot_repository,
+    )
+
+
+def get_live_service(
+    video_storage: VideoStorage = Depends(get_video_storage),
+    session_analysis_service: SessionAnalysisService = Depends(get_session_analysis_service),
+) -> LiveService:
+    return LiveService(
+        video_storage=video_storage,
+        session_analysis_service=session_analysis_service,
     )
 
 def get_offline_service(
     video: UploadFile = File(...),
-    analytics: AnalyticsManager = Depends(get_analytics_manager),
     video_storage: VideoStorage = Depends(get_video_storage),
-    detector: MediaPipeDetector = Depends(get_mp_detector),
-    buffer_manager: BufferManager = Depends(get_buffer_manager),
+    session_analysis_service: SessionAnalysisService = Depends(get_session_analysis_service),
 ) -> OfflineService:
     return OfflineService(
         video=video,
-        analytics=analytics,
         video_storage=video_storage,
-        detector=detector,
-        buffer_manager=buffer_manager
+        session_analysis_service=session_analysis_service,
     )

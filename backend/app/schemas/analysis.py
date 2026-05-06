@@ -3,13 +3,16 @@ from pydantic import BaseModel
 
 class AnalysisScores(BaseModel):
     focus: float
-    posture: float
     vitality: float
+    posture: float
     presence: float
     composure: float
     overall: float
 
 
-class AnalysisChunk(BaseModel):
-    chunk_id: int
+class AnalysisResponse(BaseModel):
+    id: int
+    timestamp: float
+    frames_analyzed: int
+    overall_score: float
     scores: AnalysisScores
