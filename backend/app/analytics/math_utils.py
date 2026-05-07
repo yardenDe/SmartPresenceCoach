@@ -1,8 +1,14 @@
 from statistics import mean
 from typing import Any
 
+from analytics.config import AnalyticsConfig
 
-def clamp(value: float, min_value: float = 0.0, max_value: float = 100.0) -> float:
+
+def clamp(
+    value: float,
+    min_value: float = AnalyticsConfig.MIN_SCORE,
+    max_value: float = AnalyticsConfig.MAX_SCORE,
+) -> float:
     return max(min_value, min(max_value, value))
 
 
@@ -11,7 +17,7 @@ def round_score(value: float, digits: int = 2) -> float:
 
 
 def clamp_score(value: float) -> float:
-    return round_score(clamp(value, 0.0, 100.0))
+    return round_score(clamp(value, AnalyticsConfig.MIN_SCORE, AnalyticsConfig.MAX_SCORE))
 
 
 def average(values: list[float]) -> float:
@@ -63,25 +69,55 @@ def midpoint(point_a: dict[str, float], point_b: dict[str, float]) -> dict[str, 
     }
 
 
+def midpoint_axis(point_a: dict[str, float], point_b: dict[str, float], axis: str) -> float:
+    return midpoint(point_a, point_b)[axis]
+
+
+def midpoint_axis_distance(
+    point_a: dict[str, float],
+    point_b: dict[str, float],
+    point_c: dict[str, float],
+    point_d: dict[str, float],
+    axis: str,
+) -> float:
+    first_midpoint = midpoint_axis(point_a, point_b, axis)
+    second_midpoint = midpoint_axis(point_c, point_d, axis)
+    return difference(first_midpoint, second_midpoint)
+
+
 def ratio(value_a: float, value_b: float, epsilon: float = 1e-6) -> float:
     return value_a / (value_b + epsilon)
 
 
-def normalize_inverse(raw_value: float, scale: float, max_score: float = 100.0) -> float:
+def normalize_inverse(
+    raw_value: float,
+    scale: float,
+    max_score: float = AnalyticsConfig.DEFAULT_SCORE,
+) -> float:
     return clamp_score(max_score - (raw_value * scale))
 
 
-def normalize_direct(raw_value: float, scale: float, max_score: float = 100.0) -> float:
+def normalize_direct(
+    raw_value: float,
+    scale: float,
+    max_score: float = AnalyticsConfig.DEFAULT_SCORE,
+) -> float:
     return clamp_score(raw_value * scale)
 
 
-def weighted_average(weighted_values: list[tuple[float, float]]) -> float:
-    if not weighted_values:
-        return 0.0
+def weighted_average(weighted_values: list[tuple[float, float] | None]) -> float | None:
+    available_values = [
+        weighted_value
+        for weighted_value in weighted_values
+        if weighted_value is not None
+    ]
 
-    total_weight = sum(weight for _, weight in weighted_values)
+    if not available_values:
+        return None
+
+    total_weight = sum(weight for _, weight in available_values)
     if total_weight == 0:
-        return 0.0
+        return None
 
-    weighted_sum = sum(value * weight for value, weight in weighted_values)
+    weighted_sum = sum(value * weight for value, weight in available_values)
     return weighted_sum / total_weight

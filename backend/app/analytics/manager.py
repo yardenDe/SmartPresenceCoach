@@ -31,11 +31,16 @@ class AnalyticsManager:
 
         try:
             results = {
-                analyzer_name: analyzer.analyze(landmarks)
+                analyzer_name: score
                 for analyzer_name, analyzer in self.analyzers.items()
+                if (score := analyzer.analyze(landmarks)) is not None
             }
         except Exception:
             logger.exception("event=analytics.run.failed")
+            raise AnalyticsProcessingError()
+
+        if not results:
+            logger.warning("event=analytics.run.no_available_metrics")
             raise AnalyticsProcessingError()
 
         results["overall"] = average(list(results.values()))

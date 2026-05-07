@@ -1,13 +1,9 @@
+from typing import TypeAlias
+
 from pydantic import BaseModel
 
 
-class AnalysisScores(BaseModel):
-    focus: float
-    vitality: float
-    posture: float
-    presence: float
-    composure: float
-    overall: float
+AnalysisScores: TypeAlias = dict[str, float]
 
 
 class AnalysisResponse(BaseModel):

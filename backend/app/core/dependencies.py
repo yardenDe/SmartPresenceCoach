@@ -2,14 +2,17 @@ from typing import Generator
 
 from fastapi import Depends, File, UploadFile
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from google import genai
 from sqlalchemy.orm import Session
 
+from core.config import get_settings
 from core.logger import get_logger
 from core.exceptions import InvalidCredentialsError
 from core.security import SecurityService
 from db.db_manager import SessionLocal
 from db.buffer_manager import BufferManager
 from analytics.manager import AnalyticsManager
+from llm.manager import LLMManager
 from repositories.session_repository import SessionRepository
 from repositories.snapshot_repository import SnapshotRepository
 from repositories.user_repository import UserRepository
@@ -60,6 +63,27 @@ def get_video_storage() -> VideoStorage:
 
 _detector_instance = None
 _buffer_manager = BufferManager()
+_llm_manager = None
+
+
+def get_llm() -> LLMManager:
+    global _llm_manager
+
+    if _llm_manager is None:
+        settings = get_settings()
+
+        if not settings.LLM_API_KEY:
+            raise RuntimeError("LLM_API_KEY is not set")
+
+        _llm_manager = LLMManager(
+            client=genai.Client(api_key=settings.LLM_API_KEY),
+            model=settings.LLM_MODEL,
+            temperature=settings.LLM_TEMPERATURE,
+            max_output_tokens=settings.LLM_MAX_OUTPUT_TOKENS,
+        )
+
+    return _llm_manager
+
 
 def get_mp_detector() -> MediaPipeDetector:
   

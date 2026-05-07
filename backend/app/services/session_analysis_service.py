@@ -97,6 +97,7 @@ class SessionAnalysisService:
         scores = {
             metric_name: float(score)
             for metric_name, score in self.analytics.run_full_analysis(landmarks_list).items()
+            if score is not None
         }
 
         result = {
