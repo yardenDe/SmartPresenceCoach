@@ -12,13 +12,16 @@ from core.security import SecurityService
 from db.db_manager import SessionLocal
 from db.buffer_manager import BufferManager
 from analytics.manager import AnalyticsManager
-from llm.manager import LLMManager
+from llm.manager import Manager
 from repositories.session_repository import SessionRepository
 from repositories.snapshot_repository import SnapshotRepository
+from repositories.report_repository import ReportRepository
 from repositories.user_repository import UserRepository
 from services.auth_service import AuthService
 from services.live_service import LiveService
+from services.llm_service import LLMService
 from services.offline_service import OfflineService
+from services.report_service import ReportService
 from services.session_analysis_service import SessionAnalysisService
 from services.session_service import SessionService
 from vision.mediapipe_detector import MediaPipeDetector
@@ -53,6 +56,10 @@ def get_snapshot_repository(db: Session = Depends(get_db)) -> SnapshotRepository
     return SnapshotRepository(db)
 
 
+def get_report_repository(db: Session = Depends(get_db)) -> ReportRepository:
+    return ReportRepository(db)
+
+
 def get_analytics_manager() -> AnalyticsManager:
     return AnalyticsManager()
 
@@ -66,7 +73,7 @@ _buffer_manager = BufferManager()
 _llm_manager = None
 
 
-def get_llm() -> LLMManager:
+def get_llm() -> Manager:
     global _llm_manager
 
     if _llm_manager is None:
@@ -75,7 +82,7 @@ def get_llm() -> LLMManager:
         if not settings.LLM_API_KEY:
             raise RuntimeError("LLM_API_KEY is not set")
 
-        _llm_manager = LLMManager(
+        _llm_manager = Manager(
             client=genai.Client(api_key=settings.LLM_API_KEY),
             model=settings.LLM_MODEL,
             temperature=settings.LLM_TEMPERATURE,
@@ -83,6 +90,10 @@ def get_llm() -> LLMManager:
         )
 
     return _llm_manager
+
+
+def get_llm_service(llm: Manager = Depends(get_llm)) -> LLMService:
+    return LLMService(manager=llm)
 
 
 def get_mp_detector() -> MediaPipeDetector:
@@ -146,6 +157,20 @@ def get_session_service(
         session_repository=session_repository,
         buffer_manager=buffer_manager,
         snapshot_repository=snapshot_repository,
+    )
+
+
+def get_report_service(
+    session_repository: SessionRepository = Depends(get_session_repository),
+    snapshot_repository: SnapshotRepository = Depends(get_snapshot_repository),
+    report_repository: ReportRepository = Depends(get_report_repository),
+    llm_service: LLMService = Depends(get_llm_service),
+) -> ReportService:
+    return ReportService(
+        session_repository=session_repository,
+        snapshot_repository=snapshot_repository,
+        report_repository=report_repository,
+        llm_service=llm_service,
     )
 
 

@@ -19,6 +19,8 @@ class Settings(BaseSettings):
 
     LLM_API_KEY: str | None = None
     LLM_MODEL: str = "gemini-2.0-flash"
+    LLM_TEMPERATURE: float = 0.4
+    LLM_MAX_OUTPUT_TOKENS: int = 800
 
 
     MEDIAPIPE_MODEL_PATH: str = str(Path(__file__).resolve().parent.parent / "models" / "mediapipe")

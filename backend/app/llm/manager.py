@@ -6,7 +6,7 @@ from core.logger import get_logger
 logger = get_logger("app.llm.manager")
 
 
-class LLMManager:
+class Manager:
     def __init__(
         self,
         client: genai.Client,

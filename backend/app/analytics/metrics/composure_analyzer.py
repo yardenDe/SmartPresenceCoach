@@ -51,8 +51,11 @@ class ComposureAnalyzer(BaseAnalyzer):
             nose_positions_x.append(pose_data["nose"]["x"])
             nose_positions_y.append(pose_data["nose"]["y"])
 
-        if len(nose_positions_x) < 2:
+        if not nose_positions_x:
             return None
+
+        if len(nose_positions_x) == 1:
+            return self.DEFAULT_SCORE
 
         movement_variance = variance(nose_positions_x) + variance(nose_positions_y)
         return normalize_inverse(

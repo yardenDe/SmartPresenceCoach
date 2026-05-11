@@ -107,12 +107,6 @@ class DatabaseError(AppError):
     message = "Database operation failed"
 
 
-class FeatureNotImplementedError(AppError):
-    status_code = status.HTTP_501_NOT_IMPLEMENTED
-    code = "FEATURE_NOT_IMPLEMENTED"
-    message = "Feature is not implemented"
-
-
 async def app_exceptions_handler(request: Request, exc: AppError) -> JSONResponse:
     logger.warning(
         "event=app.error code=%s status=%s path=%s",
