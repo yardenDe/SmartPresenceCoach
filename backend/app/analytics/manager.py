@@ -6,6 +6,10 @@ from analytics.metrics.posture_analyzer import PostureAnalyzer
 from analytics.metrics.presence_analyzer import PresenceAnalyzer
 from analytics.metrics.vitality_analyzer import VitalityAnalyzer
 from analytics.math_utils import average
+from core.exceptions import AnalyticsProcessingError
+from core.logger import get_logger
+
+logger = get_logger("app.analytics.manager")
 
 
 class AnalyticsManager:
@@ -19,11 +23,27 @@ class AnalyticsManager:
         }
 
     def run_full_analysis(self, landmarks: list[dict[str, Any]]) -> dict[str, float]:
-        results = {
-            analyzer_name: analyzer.analyze(landmarks)
-            for analyzer_name, analyzer in self.analyzers.items()
-        }
+        logger.debug("event=analytics.run.start frames=%s", len(landmarks))
+
+        if not landmarks:
+            logger.warning("event=analytics.run.empty")
+            raise AnalyticsProcessingError()
+
+        try:
+            results = {
+                analyzer_name: score
+                for analyzer_name, analyzer in self.analyzers.items()
+                if (score := analyzer.analyze(landmarks)) is not None
+            }
+        except Exception:
+            logger.exception("event=analytics.run.failed")
+            raise AnalyticsProcessingError()
+
+        if not results:
+            logger.warning("event=analytics.run.no_available_metrics")
+            raise AnalyticsProcessingError()
 
         results["overall"] = average(list(results.values()))
+        logger.debug("event=analytics.run.done frames=%s overall=%.2f", len(landmarks), results["overall"])
 
         return results

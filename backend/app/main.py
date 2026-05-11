@@ -1,9 +1,12 @@
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.router import api_router
-from core.exceptions import AppError, app_exceptions_handler
+from core.dependencies import close_mp_detector
+from core.exceptions import AppError, app_exceptions_handler, unhandled_exceptions_handler
 from db.init_db import init_models
 from core.config import get_settings
 from core.logger import get_logger, setup_logging
@@ -11,9 +14,18 @@ from core.logger import get_logger, setup_logging
 
 setup_logging()
 logger = get_logger("app.main")
-app = FastAPI()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    yield
+    close_mp_detector()
+
+
+app = FastAPI(lifespan=lifespan)
 app.include_router(api_router)
 app.add_exception_handler(AppError, app_exceptions_handler)
+app.add_exception_handler(Exception, unhandled_exceptions_handler)
 
 
 origins = [

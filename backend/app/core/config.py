@@ -15,7 +15,12 @@ class Settings(BaseSettings):
 
     APP_HOST: str = "127.0.0.1"
     APP_PORT: int = 8000
-    LOG_LEVEL: str = "INFO"
+    LOG_LEVEL: str = "DEBUG"
+
+    LLM_API_KEY: str | None = None
+    LLM_MODEL: str = "gemini-2.0-flash"
+    LLM_TEMPERATURE: float = 0.4
+    LLM_MAX_OUTPUT_TOKENS: int = 800
 
 
     MEDIAPIPE_MODEL_PATH: str = str(Path(__file__).resolve().parent.parent / "models" / "mediapipe")

@@ -1,19 +1,8 @@
 from pydantic import BaseModel
 
-
-class VerbalMetrics(BaseModel):
-    tone_stability: float
-    speech_rate: float
+from schemas.analysis import AnalysisResponse
 
 
 class LiveResponse(BaseModel):
     session_id: int
-    overall_score: float
-    
-    focus: float
-    vitality: float
-    posture: float
-    presence: float
-    composure: float
-    
-    delivery: VerbalMetrics | None = None
+    result: AnalysisResponse

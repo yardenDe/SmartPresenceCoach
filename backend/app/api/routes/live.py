@@ -13,12 +13,9 @@ router = APIRouter(prefix="/live", tags=["live"])
 async def analyze_frame(
     video: UploadFile = File(...),
     session_id: int = Form(...),
-    timestamp: float = Form(...),
     user_id: int = Depends(get_current_user_id),
     live_service: LiveService = Depends(get_live_service)
 ) -> Any:
-    _ = timestamp, user_id
-
     result = await live_service.process(
         video=video,
         session_id=session_id,
