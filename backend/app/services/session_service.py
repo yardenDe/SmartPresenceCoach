@@ -2,7 +2,7 @@ from models.session import Session as SessionModel
 
 from core.exceptions import SessionNotFoundError, UnauthorizedError
 from core.logger import get_logger
-from db.buffer_manager import BufferManager
+from services.session_buffer import SessionBuffer
 from repositories.session_repository import SessionRepository
 from repositories.snapshot_repository import SnapshotRepository
 
@@ -11,11 +11,11 @@ class SessionService:
     def __init__(
         self,
         session_repository: SessionRepository,
-        buffer_manager: BufferManager,
+        session_buffer: SessionBuffer,
         snapshot_repository: SnapshotRepository,
     ):
         self.session_repository = session_repository
-        self.buffer_manager = buffer_manager
+        self.session_buffer = session_buffer
         self.snapshot_repository = snapshot_repository
         self.logger = get_logger("app.sessions")
 
@@ -64,14 +64,12 @@ class SessionService:
         return session.id
 
     def _flush_pending_snapshots(self, session_id: int) -> None:
-        snapshots = self.buffer_manager.close_session(session_id)
+        snapshots = self.session_buffer.close_session(session_id)
 
-        for snapshot in snapshots:
-            self.snapshot_repository.create_snapshot(
-                session_id=session_id,
-                timestamp=snapshot.get("timestamp", 0.0),
-                scores=snapshot,
-            )
+        self.snapshot_repository.create_snapshots(
+            session_id=session_id,
+            snapshots=snapshots,
+        )
 
         if snapshots:
             self.logger.info(

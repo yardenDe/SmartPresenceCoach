@@ -34,7 +34,7 @@ class OfflineService:
                 session_id=session_id,
             )
 
-            self.logger.info("event=offline.process.done chunks=%s", len(response.results))
+            self.logger.info("event=offline.process.done status=%s", response.status)
             return response
 
         except AppError:

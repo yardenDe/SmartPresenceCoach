@@ -1,9 +1,7 @@
-from typing import Any
-
-
 def session_report_prompt(
     overall_score: float,
-    metric_vectors: dict[str, list[float]],
+    timestamps: list[float],
+    metric_vectors: dict[str, list[float | None]],
 ) -> str:
     return f"""
 You are Smart Presence Coach, an expert presentation and communication coach.
@@ -16,9 +14,13 @@ Overall score:
 Metric vectors:
 {metric_vectors}
 
+Time vector:
+{timestamps}
+
 Vector meaning:
-- Each vector is ordered chronologically.
-- Each value represents one time window in the session.
+- Each metric vector is aligned with the time vector by index.
+- Each timestamp is the start time, in seconds, of one analyzed time window.
+- A null metric value means that metric was unavailable for that time window.
 - Scores are from 0 to 100.
 - Higher is better.
 

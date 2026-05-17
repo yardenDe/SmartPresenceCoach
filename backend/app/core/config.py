@@ -29,6 +29,15 @@ class Settings(BaseSettings):
     POSE_LANDMARKER_MODEL: str = "pose_landmarker.task"
     HAND_LANDMARKER_MODEL: str = "hand_landmarker.task"
 
+    MAIL_HOST: str | None = None
+    MAIL_PORT: int = 587
+    MAIL_USERNAME: str | None = None
+    MAIL_PASSWORD: str | None = None
+    MAIL_USE_TLS: bool = True
+    MAIL_USE_SSL: bool = False
+    MAIL_TIMEOUT: float = 10.0
+    
+
     
     class Config:
         env_file = Path(__file__).resolve().parent.parent.parent / ".env"

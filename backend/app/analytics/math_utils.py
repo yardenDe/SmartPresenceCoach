@@ -51,7 +51,9 @@ def points_exist(data: dict[str, Any] | None, *point_names: str) -> bool:
 
 
 def point_distance(point_a: dict[str, float], point_b: dict[str, float]) -> float:
-    return abs(point_a["x"] - point_b["x"]) + abs(point_a["y"] - point_b["y"])
+    x_distance = point_a["x"] - point_b["x"]
+    y_distance = point_a["y"] - point_b["y"]
+    return (x_distance ** 2 + y_distance ** 2) ** 0.5
 
 
 def axis_distance(point_a: dict[str, float], point_b: dict[str, float], axis: str) -> float:

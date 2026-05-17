@@ -1,5 +1,3 @@
-from sqlalchemy import inspect, text
-
 from db.db_manager import engine, Base
 
 from models.user import User
