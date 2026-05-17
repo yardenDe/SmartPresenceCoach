@@ -1,3 +1,4 @@
+from sqlalchemy import select
 from sqlalchemy.orm import Session as DBSession
 
 from core.exceptions import DatabaseError
@@ -43,11 +44,10 @@ class ReportRepository:
 
     def get_by_session(self, session_id: int) -> Report | None:
         try:
-            report = (
-                self.db.query(Report)
-                .filter(Report.session_id == session_id)
-                .one_or_none()
+            result = self.db.execute(
+                select(Report).where(Report.session_id == session_id)
             )
+            report = result.scalar_one_or_none()
         except Exception:
             logger.exception("event=report.lookup.failed session_id=%s", session_id)
             raise DatabaseError()

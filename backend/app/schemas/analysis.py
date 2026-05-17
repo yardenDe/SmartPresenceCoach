@@ -14,5 +14,5 @@ class AnalysisResponse(BaseModel):
     id: int
     timestamp: float
     frames_analyzed: int
-    overall_score: float
+    overall: float
     scores: AnalysisScores

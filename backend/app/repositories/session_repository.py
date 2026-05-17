@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session as DBSession
 
@@ -34,7 +34,7 @@ class SessionRepository:
             return None
 
         try:
-            session.start_time = datetime.now()
+            session.start_time = datetime.now(timezone.utc)
             self.db.commit()
             self.db.refresh(session)
         except Exception:
@@ -51,7 +51,7 @@ class SessionRepository:
             return None
 
         try:
-            session.end_time = datetime.now()
+            session.end_time = datetime.now(timezone.utc)
             self.db.commit()
             self.db.refresh(session)
         except Exception:

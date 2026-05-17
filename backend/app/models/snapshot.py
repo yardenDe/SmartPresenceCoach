@@ -8,7 +8,7 @@ class Snapshot(Base):
     session_id = Column(Integer, ForeignKey("sessions.id"), nullable=False)
     timestamp = Column(Float, nullable=False)
 
-    overall_score = Column(Float, nullable=False)
+    overall = Column(Float, nullable=False)
 
     focus = Column(Float, nullable=True)
     vitality = Column(Float, nullable=True)

@@ -33,7 +33,7 @@ class LiveService:
                 "event=live.process.done session_id=%s frames=%s overall=%.2f",
                 session_id,
                 response.result.frames_analyzed,
-                response.result.overall_score,
+                response.result.overall,
             )
             return response
         except AppError:

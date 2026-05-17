@@ -55,6 +55,14 @@ class SessionNotFoundError(ResourceNotFoundError):
     code = "SESSION_NOT_FOUND"
     message = "Session not found"
 
+class ReportNotFoundError(ResourceNotFoundError):
+    code = "REPORT_NOT_FOUND"
+    message = "Report not found"
+
+class SnapshotsNotFoundError(ResourceNotFoundError):
+    code = "SNAPSHOTS_NOT_FOUND"
+    message = "No snapshots found for this session"
+
 class ValidationError(AppError):
     status_code = status.HTTP_400_BAD_REQUEST
     code = "VALIDATION_ERROR"
@@ -99,6 +107,16 @@ class AnalyticsProcessingError(AppError):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
     code = "ANALYTICS_PROCESSING_ERROR"
     message = "Analysis failed"
+
+class LLMUnavailableError(AppError):
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    code = "LLM_UNAVAILABLE"
+    message = "Report generation is currently unavailable"
+
+class EmailUnavailableError(AppError):
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    code = "EMAIL_UNAVAILABLE"
+    message = "Email delivery is currently unavailable"
 
 
 class DatabaseError(AppError):

@@ -3,6 +3,7 @@ from typing import TypeVar
 
 from pydantic import BaseModel
 
+from core.exceptions import LLMUnavailableError
 from core.logger import get_logger
 from llm.manager import Manager
 
@@ -19,13 +20,17 @@ class LLMService:
         prompt: str,
         response_model: type[T],
     ) -> T:
-        response = self.manager.generate(prompt)
-        data = json.loads(self._clean_json_response(response))
+        try:
+            response = self.manager.generate(prompt)
+            data = json.loads(self._clean_json_response(response))
 
-        if not isinstance(data, dict):
-            raise ValueError("LLM response must be a JSON object")
+            if not isinstance(data, dict):
+                raise ValueError("LLM response must be a JSON object")
 
-        return response_model.model_validate(data)
+            return response_model.model_validate(data)
+        except Exception:
+            self.logger.exception("event=llm.generate_json.failed")
+            raise LLMUnavailableError()
 
     def _clean_json_response(self, response: str) -> str:
         text = response.strip()

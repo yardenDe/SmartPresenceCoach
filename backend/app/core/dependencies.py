@@ -7,10 +7,9 @@ from sqlalchemy.orm import Session
 
 from core.config import get_settings
 from core.logger import get_logger
-from core.exceptions import InvalidCredentialsError
+from core.exceptions import InvalidCredentialsError, LLMUnavailableError
 from core.security import SecurityService
 from db.db_manager import SessionLocal
-from db.buffer_manager import BufferManager
 from analytics.manager import AnalyticsManager
 from llm.manager import Manager
 from repositories.session_repository import SessionRepository
@@ -22,6 +21,7 @@ from services.live_service import LiveService
 from services.llm_service import LLMService
 from services.offline_service import OfflineService
 from services.report_service import ReportService
+from services.session_buffer import SessionBuffer
 from services.session_analysis_service import SessionAnalysisService
 from services.session_service import SessionService
 from vision.mediapipe_detector import MediaPipeDetector
@@ -69,7 +69,7 @@ def get_video_storage() -> VideoStorage:
 
 
 _detector_instance = None
-_buffer_manager = BufferManager()
+_session_buffer = SessionBuffer()
 _llm_manager = None
 
 
@@ -80,7 +80,7 @@ def get_llm() -> Manager:
         settings = get_settings()
 
         if not settings.LLM_API_KEY:
-            raise RuntimeError("LLM_API_KEY is not set")
+            raise LLMUnavailableError()
 
         _llm_manager = Manager(
             client=genai.Client(api_key=settings.LLM_API_KEY),
@@ -144,18 +144,18 @@ def get_auth_service(
     return AuthService(user_repository=user_repository, security_service=security_service)
 
 
-def get_buffer_manager() -> BufferManager:
-    return _buffer_manager
+def get_session_buffer() -> SessionBuffer:
+    return _session_buffer
 
 
 def get_session_service(
     session_repository: SessionRepository = Depends(get_session_repository),
-    buffer_manager: BufferManager = Depends(get_buffer_manager),
+    session_buffer: SessionBuffer = Depends(get_session_buffer),
     snapshot_repository: SnapshotRepository = Depends(get_snapshot_repository),
 ) -> SessionService:
     return SessionService(
         session_repository=session_repository,
-        buffer_manager=buffer_manager,
+        session_buffer=session_buffer,
         snapshot_repository=snapshot_repository,
     )
 
@@ -163,27 +163,23 @@ def get_session_service(
 def get_report_service(
     session_repository: SessionRepository = Depends(get_session_repository),
     snapshot_repository: SnapshotRepository = Depends(get_snapshot_repository),
-    report_repository: ReportRepository = Depends(get_report_repository),
-    llm_service: LLMService = Depends(get_llm_service),
 ) -> ReportService:
     return ReportService(
         session_repository=session_repository,
         snapshot_repository=snapshot_repository,
-        report_repository=report_repository,
-        llm_service=llm_service,
     )
 
 
 def get_session_analysis_service(
     analytics: AnalyticsManager = Depends(get_analytics_manager),
     detector: MediaPipeDetector = Depends(get_mp_detector),
-    buffer_manager: BufferManager = Depends(get_buffer_manager),
+    session_buffer: SessionBuffer = Depends(get_session_buffer),
     snapshot_repository: SnapshotRepository = Depends(get_snapshot_repository),
 ) -> SessionAnalysisService:
     return SessionAnalysisService(
         analytics=analytics,
         detector=detector,
-        buffer_manager=buffer_manager,
+        session_buffer=session_buffer,
         snapshot_repository=snapshot_repository,
     )
 

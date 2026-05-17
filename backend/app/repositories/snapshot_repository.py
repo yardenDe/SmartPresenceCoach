@@ -1,6 +1,7 @@
 from typing import Any
 
-from sqlalchemy import delete, select
+from sqlalchemy import func, select
+from sqlalchemy.engine import Row
 from sqlalchemy.orm import Session as DBSession
 
 from core.exceptions import DatabaseError
@@ -14,39 +15,43 @@ class SnapshotRepository:
     def __init__(self, db: DBSession):
         self.db = db
 
-    def create_snapshot(
+    def create_snapshots(
         self,
         session_id: int,
-        timestamp: float,
-        scores: dict[str, Any],
-    ) -> Snapshot:
-        snapshot = Snapshot(
-            session_id=session_id,
-            timestamp=timestamp,
-            overall_score=float(scores.get("overall_score", scores.get("overall", 0.0))),
-            focus=float(scores.get("focus", 0.0)),
-            vitality=float(scores.get("vitality", 0.0)),
-            posture=float(scores.get("posture", 0.0)),
-            presence=float(scores.get("presence", 0.0)),
-            composure=float(scores.get("composure", 0.0)),
-            delivery=float(scores.get("delivery", 0.0)),
-        )
+        snapshots: list[dict[str, Any]],
+    ) -> list[Snapshot]:
+        if not snapshots:
+            return []
+
+        snapshot_models = [
+            Snapshot(
+                session_id=session_id,
+                timestamp=snapshot.get("timestamp"),
+                overall=snapshot["overall"],
+                focus=snapshot.get("focus"),
+                vitality=snapshot.get("vitality"),
+                posture=snapshot.get("posture"),
+                presence=snapshot.get("presence"),
+                composure=snapshot.get("composure"),
+                delivery=snapshot.get("delivery"),
+            )
+            for snapshot in snapshots
+        ]
 
         try:
-            self.db.add(snapshot)
+            self.db.add_all(snapshot_models)
             self.db.commit()
-            self.db.refresh(snapshot)
         except Exception:
             self.db.rollback()
-            logger.exception("event=snapshot.create.failed session_id=%s", session_id)
+            logger.exception("event=snapshot.bulk_create.failed session_id=%s", session_id)
             raise DatabaseError()
 
         logger.info(
-            "event=snapshot.create.done snapshot_id=%s session_id=%s",
-            snapshot.id,
+            "event=snapshot.bulk_create.done session_id=%s count=%s",
             session_id,
+            len(snapshot_models),
         )
-        return snapshot
+        return snapshot_models
 
     def get_by_id(self, snapshot_id: int) -> Snapshot | None:
         try:
@@ -64,12 +69,13 @@ class SnapshotRepository:
 
     def list_by_session(self, session_id: int) -> list[Snapshot]:
         try:
-            result = self.db.execute(
+            query = (
                 select(Snapshot)
                 .where(Snapshot.session_id == session_id)
                 .order_by(Snapshot.timestamp.asc(), Snapshot.id.asc())
             )
-            snapshots = list(result.scalars().all())
+            result = self.db.execute(query)
+            snapshots = result.scalars().all()
         except Exception:
             logger.exception("event=snapshot.list.failed session_id=%s", session_id)
             raise DatabaseError()
@@ -81,19 +87,64 @@ class SnapshotRepository:
         )
         return snapshots
 
-    def delete_by_session(self, session_id: int) -> int:
+    def get_overall_timeline(self, session_id: int) -> list[dict[str, Any]]:
         try:
-            result = self.db.execute(delete(Snapshot).where(Snapshot.session_id == session_id))
-            self.db.commit()
+            query = (
+                select(Snapshot.timestamp, Snapshot.overall)
+                .where(Snapshot.session_id == session_id)
+                .order_by(Snapshot.timestamp.asc())
+            )
+            result = self.db.execute(query).mappings().all()
         except Exception:
-            self.db.rollback()
-            logger.exception("event=snapshot.delete.failed session_id=%s", session_id)
+            logger.exception("event=snapshot.overall_timeline.failed session_id=%s", session_id)
             raise DatabaseError()
 
-        deleted_count = result.rowcount or 0
-        logger.info(
-            "event=snapshot.delete.done session_id=%s count=%s",
+        logger.debug(
+            "event=snapshot.overall_timeline.done session_id=%s count=%s",
             session_id,
-            deleted_count,
+            len(result),
         )
-        return deleted_count
+        return result
+
+    def get_metrics_stats(self, metrics: list[str], session_id: int) -> dict[str, Any]:
+        select_fields = []
+        for metric in metrics:
+            column = getattr(Snapshot, metric)
+            select_fields.extend([
+                func.avg(column).label(f"{metric}_avg"),
+                func.min(column).label(f"{metric}_min"),
+                func.max(column).label(f"{metric}_max")
+            ])
+
+        try:
+            query = select(*select_fields).where(Snapshot.session_id == session_id)
+            row_map = self.db.execute(query).mappings().one_or_none()
+            return dict(row_map) if row_map else {}
+        except Exception:
+            logger.exception("event=snapshot.all_metrics_stats.failed session_id=%s", session_id)
+            raise DatabaseError()
+
+    def get_metric_vector_rows(
+        self,
+        session_id: int,
+        metrics: list[str],
+    ) -> list[Row]:
+        columns = [Snapshot.timestamp, *[getattr(Snapshot, metric) for metric in metrics]]
+
+        try:
+            query = (
+                select(*columns)
+                .where(Snapshot.session_id == session_id)
+                .order_by(Snapshot.timestamp.asc(), Snapshot.id.asc())
+            )
+            rows = self.db.execute(query).all()
+        except Exception:
+            logger.exception("event=snapshot.metric_vectors.failed session_id=%s", session_id)
+            raise DatabaseError()
+
+        logger.debug(
+            "event=snapshot.metric_vectors.done session_id=%s count=%s",
+            session_id,
+            len(rows),
+        )
+        return rows

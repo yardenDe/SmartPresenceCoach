@@ -1,18 +1,8 @@
-from core.exceptions import ResourceNotFoundError, SessionNotFoundError, UnauthorizedError
+from core.exceptions import SessionNotFoundError, SnapshotsNotFoundError, UnauthorizedError
 from core.logger import get_logger
-from llm.prompts import session_report_prompt
-from models.report import Report
-from models.snapshot import Snapshot
-from repositories.report_repository import ReportRepository
 from repositories.session_repository import SessionRepository
 from repositories.snapshot_repository import SnapshotRepository
-from schemas.report import ReportLLMResponse
-from services.llm_service import LLMService
-
-
-class ReportNotFoundError(ResourceNotFoundError):
-    code = "REPORT_NOT_FOUND"
-    message = "Report not found"
+from schemas.report import FullReportResponse, ShortReportResponse
 
 
 class ReportService:
@@ -28,61 +18,114 @@ class ReportService:
         self,
         session_repository: SessionRepository,
         snapshot_repository: SnapshotRepository,
-        report_repository: ReportRepository,
-        llm_service: LLMService,
     ):
         self.session_repository = session_repository
         self.snapshot_repository = snapshot_repository
-        self.report_repository = report_repository
-        self.llm_service = llm_service
         self.logger = get_logger("app.reports")
 
+    def generate_short_report(self, user_id: int, session_id: int) -> ShortReportResponse:
+        self._validate_session(user_id, session_id)
+        return self._get_short_report(session_id)
 
-    def generate_report(self, session_id: int) -> Report:
-       
-        snapshots = self.snapshot_repository.list_by_session(session_id)
-        metric_vectors, overall_score = self._create_metric_vectors(snapshots)
+    def generate_full_report(self, user_id: int, session_id: int) -> FullReportResponse:
+        self._validate_session(user_id, session_id)
+        short_report = self._get_short_report(session_id)
+        detailed_timeline = self._get_detailed_timeline(session_id)
 
-        prompt = session_report_prompt(
-            overall_score=overall_score,
-            metric_vectors=metric_vectors,
-        )
-        llm_result = self.llm_service.generate_json(
-            prompt=prompt,
-            response_model=ReportLLMResponse,
-        )
-
-        report = self.report_repository.create_report(
-            session_id=session_id,
-            overall_score=overall_score,
-            summary=llm_result.summary,
-            recommendations=llm_result.recommendations,
+        return FullReportResponse.model_validate(
+            {
+                **short_report.model_dump(),
+                "detailedTimeline": detailed_timeline,
+            },
         )
 
-        return report
-    
+    def _validate_session(self, user_id: int, session_id: int) -> None:
+        session = self.session_repository.get_by_id(session_id)
+        if not session:
+            self.logger.warning("event=report.session_missing session_id=%s user_id=%s", session_id, user_id)
+            raise SessionNotFoundError()
+        if session.user_id != user_id:
+            self.logger.warning(
+                "event=report.session_denied session_id=%s user_id=%s owner_id=%s",
+                session_id,
+                user_id,
+                session.user_id,
+            )
+            raise UnauthorizedError()
 
-    def _create_metric_vectors(
-        self,
-        snapshots: list[Snapshot],
-    ) -> tuple[dict[str, list[float]], float]:
+    def _get_short_report(self, session_id: int) -> ShortReportResponse:
+        overall_timeline = self.snapshot_repository.get_overall_timeline(session_id)
+        if not overall_timeline:
+            raise SnapshotsNotFoundError()
+
+        timestamps = [item["timestamp"] for item in overall_timeline]
+        overall_scores = [item["overall"] for item in overall_timeline]
         
-        vectors: dict[str, list[float]] = {
-            metric: []
-            for metric in self.METRICS
+        all_metrics = ["overall"] + list(self.METRICS)
+        metrics_states = self.snapshot_repository.get_metrics_stats(all_metrics, session_id)
+
+        if not metrics_states or metrics_states.get("overall_avg") is None:
+            raise SnapshotsNotFoundError()
+
+        metrics = {}
+        for metric in self.METRICS:
+            metrics[metric] = {
+                "avg": metrics_states[f"{metric}_avg"],
+                "min": metrics_states[f"{metric}_min"],
+                "max": metrics_states[f"{metric}_max"],
+            }
+
+        report_data = {
+            "overall": {
+                "avg": metrics_states["overall_avg"],
+                "min": metrics_states["overall_min"],
+                "max": metrics_states["overall_max"],
+                "trend": self._trend(overall_scores),
+            },
+            "timeline": {
+                "timestampsSec": timestamps,
+                "overallScores": overall_scores,
+            },
+            "metrics": metrics,
         }
-        overall_score = 0.0
 
-        for snapshot in snapshots:
-            vectors["focus"].append(float(snapshot.focus))
-            vectors["posture"].append(float(snapshot.posture))
-            vectors["presence"].append(float(snapshot.presence))
-            vectors["vitality"].append(float(snapshot.vitality))
-            vectors["composure"].append(float(snapshot.composure))
+        return ShortReportResponse.model_validate(
+            {
+                "session_id": session_id,
+                "overall_score": report_data["overall"]["avg"],
+                **report_data,
+            },
+        )
 
-            overall_score += float(snapshot.overall_score)
+    def _get_detailed_timeline(self, session_id: int) -> dict:
+        metrics = ["overall"] + list(self.METRICS)
+        rows = self.snapshot_repository.get_metric_vector_rows(session_id, metrics)
+        if not rows:
+            raise SnapshotsNotFoundError()
 
-        if snapshots:
-            overall_score = round(overall_score / len(snapshots), 2)
+        timestamps = [float(row._mapping["timestamp"]) for row in rows]
+        series = {
+            metric: [
+                float(row._mapping[metric])
+                if row._mapping[metric] is not None
+                else None
+                for row in rows
+            ]
+            for metric in metrics
+        }
 
-        return vectors, overall_score
+        return {
+            "timestampsSec": timestamps,
+            "series": series,
+        }
+
+    def _trend(self, values: list[float]) -> str:
+        if len(values) < 2:
+            return "stable"
+
+        delta = values[-1] - values[0]
+        if delta > 2:
+            return "up"
+        if delta < -2:
+            return "down"
+        return "stable"

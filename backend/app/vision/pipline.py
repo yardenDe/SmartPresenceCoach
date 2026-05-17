@@ -1,6 +1,7 @@
 from typing import Any, Dict, Generator
 
 from core.logger import get_logger
+from vision.config import CHUNK_SECONDS, TARGET_FPS
 from vision.video_extractor import VideoExtractor
 from vision.mediapipe_detector import MediaPipeDetector
 from vision.landmark_extractor import LandmarkExtractor
@@ -100,7 +101,10 @@ class VisionPipeline:
 
         chunk_index = 0
 
-        for chunk_frames in self.video_extractor.get_chunks(chunk_sec=3, target_fps=3):
+        for chunk_frames in self.video_extractor.get_chunks(
+            chunk_sec=CHUNK_SECONDS,
+            target_fps=TARGET_FPS,
+        ):
 
             chunk_index += 1
 
