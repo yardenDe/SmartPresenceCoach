@@ -29,14 +29,33 @@ class EmailEngine:
             except Exception:
                 server.close()
 
-    def send_email(self, to: str, subject: str, body: str, html: str | None = None):
-        
+    def send_email(
+        self,
+        to: str,
+        subject: str,
+        body: str,
+        html: str | None = None,
+        attachments: list[tuple[str, bytes, str]] | None = None,
+    ):
         msg = EmailMessage()
         msg["Subject"] = subject
         msg["From"] = self.settings.MAIL_USERNAME
         msg["To"] = to
         msg.set_content(body)
 
+        if html:
+            msg.add_alternative(html, subtype="html")
+
+        for filename, content, mime_type in attachments or []:
+            maintype, subtype = mime_type.split("/", 1)
+            msg.add_attachment(
+                content,
+                maintype=maintype,
+                subtype=subtype,
+                filename=filename,
+            )
+
+        server = None
         try:
             server = self._get_connection()
             server.send_message(msg)

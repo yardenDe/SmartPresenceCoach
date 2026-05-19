@@ -2,85 +2,114 @@ from typing import Any
 
 from analytics.config import AnalyticsConfig
 from analytics.metrics.base_analyzer import BaseAnalyzer
-from analytics.math_utils import average, clamp_score, normalize_inverse, point_distance, point_exists, variance, weighted_average
+from analytics.math_utils import (
+    average_available,
+    normalize_inverse,
+    point_in_bounds,
+    point_variance,
+    weighted_average,
+)
 
 
 class ComposureAnalyzer(BaseAnalyzer):
-    HEAD_STABILITY_WEIGHT = 0.7
-    HAND_DISTANCE_WEIGHT = 0.3
+    BASIC_WEIGHT = 0.4
+    BODY_WEIGHT = 0.3
+    ADVANCED_WEIGHT = 0.3
     DEFAULT_SCORE = AnalyticsConfig.DEFAULT_SCORE
-    HAND_NEAR_FACE_LIMIT = 0.15
-    HAND_NEAR_FACE_PENALTY = 20.0
+    TOUCH_PENALTY_SCALE = 100.0
+    TOUCH_DETECTED = 1.0
+    TOUCH_CLEAR = 0.0
     HEAD_MOVEMENT_VARIANCE_SCALE = 500.0
-
-    def _score_hand_distance(self, frame_data: dict[str, Any]) -> float | None:
-        face_data = frame_data.get("face")
-        hands = frame_data.get("hands", [])
-
-        if not point_exists(face_data, "iris_center") or not hands:
-            return None
-
-        face_center = face_data["iris_center"]
-        penalty = 0.0
-        checked_hands = 0
-
-        for hand in hands:
-            wrist = hand.get("points", {}).get("hand_wrist")
-            if not wrist:
-                continue
-
-            checked_hands += 1
-            face_hand_distance = point_distance(wrist, face_center)
-            if face_hand_distance < self.HAND_NEAR_FACE_LIMIT:
-                penalty += self.HAND_NEAR_FACE_PENALTY
-
-        if checked_hands == 0:
-            return None
-
-        return normalize_inverse(penalty, 1.0, self.DEFAULT_SCORE)
+    SHOULDER_FIDGET_SCALE = 900.0
+    SHOULDER_POINTS = ["left_shoulder", "right_shoulder"]
+    FACE_TOP_POINT = "forehead"
+    FACE_BOTTOM_POINT = "chin"
+    FACE_LEFT_POINT = "left_cheek"
+    FACE_RIGHT_POINT = "right_cheek"
+    FINGERTIP_POINTS = [
+        "hand_thumb_tip",
+        "hand_index_tip",
+        "hand_middle_tip",
+        "hand_ring_tip",
+        "hand_pinky_tip",
+    ]
 
     def _analyze_head_stability(self, frames: list[dict[str, Any]]) -> float | None:
-        nose_positions_x = []
-        nose_positions_y = []
+        nose_positions = self._collect_points(frames, "pose", "nose")
 
-        for frame_data in frames:
-            pose_data = frame_data.get("pose")
-            if not point_exists(pose_data, "nose"):
-                continue
-
-            nose_positions_x.append(pose_data["nose"]["x"])
-            nose_positions_y.append(pose_data["nose"]["y"])
-
-        if not nose_positions_x:
+        if not nose_positions:
             return None
 
-        if len(nose_positions_x) == 1:
+        if len(nose_positions) == 1:
             return self.DEFAULT_SCORE
 
-        movement_variance = variance(nose_positions_x) + variance(nose_positions_y)
         return normalize_inverse(
-            movement_variance,
+            point_variance(nose_positions),
             self.HEAD_MOVEMENT_VARIANCE_SCALE,
             self.DEFAULT_SCORE,
         )
 
-    def _analyze_hand_distance(self, frames: list[dict[str, Any]]) -> float | None:
-        scores = [
-            score
-            for frame_data in frames
-            if (score := self._score_hand_distance(frame_data)) is not None
-        ]
-
-        if not scores:
+    def _analyze_shoulder_fidgeting(self, frames: list[dict[str, Any]]) -> float | None:
+        shoulder_motion = self._average_named_point_motion(frames, "pose", self.SHOULDER_POINTS)
+        if shoulder_motion is None:
             return None
 
-        return clamp_score(average(scores))
+        return normalize_inverse(shoulder_motion, self.SHOULDER_FIDGET_SCALE, self.DEFAULT_SCORE)
+
+    def _score_face_touch(self, frame_data: dict[str, Any]) -> float | None:
+        face_data = frame_data.get("face")
+        hands = frame_data.get("hands", [])
+
+        if not face_data or not hands:
+            return None
+
+        if not self._has_points(
+            face_data,
+            self.FACE_TOP_POINT,
+            self.FACE_BOTTOM_POINT,
+            self.FACE_LEFT_POINT,
+            self.FACE_RIGHT_POINT,
+        ):
+            return None
+
+        for hand in hands:
+            hand_points = hand.get("points", {})
+            for point_name in self.FINGERTIP_POINTS:
+                if not self._has_point(hand_points, point_name):
+                    continue
+
+                fingertip = hand_points[point_name]
+                if point_in_bounds(
+                    fingertip,
+                    face_data[self.FACE_TOP_POINT],
+                    face_data[self.FACE_BOTTOM_POINT],
+                    face_data[self.FACE_LEFT_POINT],
+                    face_data[self.FACE_RIGHT_POINT],
+                ):
+                    return self.TOUCH_DETECTED
+
+        return self.TOUCH_CLEAR
+
+    def _analyze_face_touch(self, frames: list[dict[str, Any]]) -> float | None:
+        touch_scores = [
+            score
+            for frame_data in frames
+            if (score := self._score_face_touch(frame_data)) is not None
+        ]
+        touch_ratio = average_available(touch_scores)
+
+        if touch_ratio is None:
+            return None
+
+        return normalize_inverse(touch_ratio, self.TOUCH_PENALTY_SCALE, self.DEFAULT_SCORE)
 
     def analyze(self, frames: list[dict[str, Any]]) -> float | None:
         head_score = self._analyze_head_stability(frames)
-        hand_score = self._analyze_hand_distance(frames)
+        fidget_score = self._analyze_shoulder_fidgeting(frames)
+        face_touch_score = self._analyze_face_touch(frames)
 
         return weighted_average([
-            (head_score, self.HEAD_STABILITY_WEIGHT) if head_score is not None else None,
-            (hand_score, self.HAND_DISTANCE_WEIGHT) if hand_score is not None else None,
+            (head_score, self.BASIC_WEIGHT) if head_score is not None else None,
+            (fidget_score, self.BODY_WEIGHT) if fidget_score is not None else None,
+            (face_touch_score, self.ADVANCED_WEIGHT) if face_touch_score is not None else None,
         ])

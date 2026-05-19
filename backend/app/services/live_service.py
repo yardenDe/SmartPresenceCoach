@@ -19,14 +19,20 @@ class LiveService:
 
         self.logger = get_logger("app.services.live")
 
-    async def process(self, video: UploadFile, session_id: int) -> LiveResponse:
-        self.logger.info("event=live.process.start session_id=%s file=%s", session_id, video.filename)
+    async def process(self, video: UploadFile, session_id: int, timestamp: float = 0.0) -> LiveResponse:
+        self.logger.info(
+            "event=live.process.start session_id=%s timestamp=%.2f file=%s",
+            session_id,
+            timestamp,
+            video.filename,
+        )
 
         try:
             self.video_path = await self.video_storage.save_temp(video)
             response = self.session_analysis_service.process_live(
                 video_path=self.video_path,
                 session_id=session_id,
+                timestamp_offset=timestamp,
             )
 
             self.logger.info(

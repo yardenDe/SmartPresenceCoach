@@ -17,10 +17,13 @@ from repositories.snapshot_repository import SnapshotRepository
 from repositories.report_repository import ReportRepository
 from repositories.user_repository import UserRepository
 from services.auth_service import AuthService
+from services.email_engine import EmailEngine
+from services.email_service import EmailService
 from services.live_service import LiveService
 from services.llm_service import LLMService
 from services.offline_service import OfflineService
 from services.report_service import ReportService
+from services.report_pdf_service import ReportPdfService
 from services.session_buffer import SessionBuffer
 from services.session_analysis_service import SessionAnalysisService
 from services.session_service import SessionService
@@ -96,6 +99,14 @@ def get_llm_service(llm: Manager = Depends(get_llm)) -> LLMService:
     return LLMService(manager=llm)
 
 
+def get_optional_llm_service() -> LLMService | None:
+    try:
+        return LLMService(manager=get_llm())
+    except LLMUnavailableError:
+        logger.warning("event=llm.optional.unavailable")
+        return None
+
+
 def get_mp_detector() -> MediaPipeDetector:
   
     global _detector_instance
@@ -163,10 +174,40 @@ def get_session_service(
 def get_report_service(
     session_repository: SessionRepository = Depends(get_session_repository),
     snapshot_repository: SnapshotRepository = Depends(get_snapshot_repository),
+    report_repository: ReportRepository = Depends(get_report_repository),
+    llm_service: LLMService | None = Depends(get_optional_llm_service),
 ) -> ReportService:
     return ReportService(
         session_repository=session_repository,
         snapshot_repository=snapshot_repository,
+        report_repository=report_repository,
+        llm_service=llm_service,
+    )
+
+
+def get_email_engine() -> EmailEngine:
+    return EmailEngine()
+
+
+def get_email_service(
+    session_repository: SessionRepository = Depends(get_session_repository),
+    report_repository: ReportRepository = Depends(get_report_repository),
+    email_engine: EmailEngine = Depends(get_email_engine),
+) -> EmailService:
+    return EmailService(
+        session_repository=session_repository,
+        report_repository=report_repository,
+        email_engine=email_engine,
+    )
+
+
+def get_report_pdf_service(
+    session_repository: SessionRepository = Depends(get_session_repository),
+    report_repository: ReportRepository = Depends(get_report_repository),
+) -> ReportPdfService:
+    return ReportPdfService(
+        session_repository=session_repository,
+        report_repository=report_repository,
     )
 
 

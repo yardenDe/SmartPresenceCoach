@@ -26,7 +26,12 @@ class SessionAnalysisService:
         self.snapshot_repository = snapshot_repository
         self.logger = get_logger("app.services.session_analysis")
 
-    def process_live(self, video_path: str, session_id: int) -> LiveResponse:
+    def process_live(
+        self,
+        video_path: str,
+        session_id: int,
+        timestamp_offset: float = 0.0,
+    ) -> LiveResponse:
         pipeline = VisionPipeline(self.detector)
 
         try:
@@ -41,6 +46,7 @@ class SessionAnalysisService:
                     session_id=session_id,
                     chunk_index=chunk_index,
                     landmarks_list=landmarks_list,
+                    timestamp_offset=timestamp_offset,
                 )
 
                 return LiveResponse(**self._build_live_response(analysis))
@@ -86,6 +92,7 @@ class SessionAnalysisService:
         session_id: int,
         chunk_index: int,
         landmarks_list: list[dict[str, Any]],
+        timestamp_offset: float = 0.0,
     ) -> dict[str, Any]:
         scores = {
             metric_name: float(score)
@@ -96,7 +103,7 @@ class SessionAnalysisService:
         result = {
             "session_id": session_id,
             "chunk_index": chunk_index,
-            "timestamp": self._timestamp_for_chunk(chunk_index),
+            "timestamp": self._timestamp_for_chunk(chunk_index, timestamp_offset),
             "frames_count": len(landmarks_list),
             "scores": scores,
         }
@@ -150,5 +157,5 @@ class SessionAnalysisService:
             "scores": scores,
         }
 
-    def _timestamp_for_chunk(self, chunk_index: int) -> float:
-        return float((chunk_index - 1) * CHUNK_SECONDS)
+    def _timestamp_for_chunk(self, chunk_index: int, timestamp_offset: float = 0.0) -> float:
+        return float(timestamp_offset + (chunk_index - 1) * CHUNK_SECONDS)

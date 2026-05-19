@@ -11,6 +11,8 @@ class PointNames:
     NOSE: str = "nose"
     LEFT_EYE_BASIC: str = "left_eye_basic"
     RIGHT_EYE_BASIC: str = "right_eye_basic"
+    LEFT_EAR: str = "left_ear"
+    RIGHT_EAR: str = "right_ear"
     LEFT_SHOULDER: str = "left_shoulder"
     RIGHT_SHOULDER: str = "right_shoulder"
     LEFT_ELBOW: str = "left_elbow"
@@ -25,20 +27,32 @@ class PointNames:
     RIGHT_ANKLE: str = "right_ankle"
 
     IRIS_CENTER: str = "iris_center"
+    LEFT_IRIS_CENTER: str = "left_iris_center"
+    RIGHT_IRIS_CENTER: str = "right_iris_center"
+    LEFT_EYE_OUTER: str = "left_eye_outer"
+    LEFT_EYE_INNER: str = "left_eye_inner"
+    RIGHT_EYE_INNER: str = "right_eye_inner"
+    RIGHT_EYE_OUTER: str = "right_eye_outer"
     MOUTH_TOP: str = "mouth_top"
     MOUTH_BOTTOM: str = "mouth_bottom"
-    LEFT_EYEBROW: str = "left_eyebrow"
-    RIGHT_EYEBROW: str = "right_eyebrow"
     CHIN: str = "chin"
+    FOREHEAD: str = "forehead"
+    LEFT_CHEEK: str = "left_cheek"
+    RIGHT_CHEEK: str = "right_cheek"
 
     HAND_WRIST: str = "hand_wrist"
     HAND_INDEX_TIP: str = "hand_index_tip"
     HAND_THUMB_TIP: str = "hand_thumb_tip"
+    HAND_MIDDLE_TIP: str = "hand_middle_tip"
+    HAND_RING_TIP: str = "hand_ring_tip"
+    HAND_PINKY_TIP: str = "hand_pinky_tip"
 
 MEDIAPIPE_POSE_MAP: dict[int, str] = {
     0: PointNames.NOSE,
     1: PointNames.LEFT_EYE_BASIC,
     4: PointNames.RIGHT_EYE_BASIC,
+    7: PointNames.LEFT_EAR,
+    8: PointNames.RIGHT_EAR,
     11: PointNames.LEFT_SHOULDER,
     12: PointNames.RIGHT_SHOULDER,
     13: PointNames.LEFT_ELBOW,
@@ -54,16 +68,25 @@ MEDIAPIPE_POSE_MAP: dict[int, str] = {
 }
 
 MEDIAPIPE_FACE_MAP: dict[int, str] = {
-    468: PointNames.IRIS_CENTER,
+    468: PointNames.LEFT_IRIS_CENTER,
+    473: PointNames.RIGHT_IRIS_CENTER,
+    33: PointNames.LEFT_EYE_OUTER,
+    133: PointNames.LEFT_EYE_INNER,
+    362: PointNames.RIGHT_EYE_INNER,
+    263: PointNames.RIGHT_EYE_OUTER,
     13: PointNames.MOUTH_TOP,
     14: PointNames.MOUTH_BOTTOM,
-    70: PointNames.LEFT_EYEBROW,
-    300: PointNames.RIGHT_EYEBROW,
-    152: PointNames.CHIN
+    152: PointNames.CHIN,
+    10: PointNames.FOREHEAD,
+    234: PointNames.LEFT_CHEEK,
+    454: PointNames.RIGHT_CHEEK
 }
 
 MEDIAPIPE_HAND_MAP: dict[int, str] = {
     0: PointNames.HAND_WRIST,
     4: PointNames.HAND_THUMB_TIP,
-    8: PointNames.HAND_INDEX_TIP
+    8: PointNames.HAND_INDEX_TIP,
+    12: PointNames.HAND_MIDDLE_TIP,
+    16: PointNames.HAND_RING_TIP,
+    20: PointNames.HAND_PINKY_TIP
 }

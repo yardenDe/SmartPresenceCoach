@@ -18,6 +18,7 @@ logger = get_logger("app.main")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    init_models()
     yield
     close_mp_detector()
 
@@ -41,8 +42,6 @@ app.add_middleware(
     allow_methods=["*"],              
     allow_headers=["*"],
 )
-
-init_models()
 
 settings = get_settings()
 logger.info("event=app.start host=%s port=%s", settings.APP_HOST, settings.APP_PORT)
