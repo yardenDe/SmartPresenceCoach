@@ -1,6 +1,6 @@
 from core.exceptions import LLMUnavailableError, SessionNotFoundError, SnapshotsNotFoundError, UnauthorizedError
 from core.logger import get_logger
-from llm.prompts import session_report_prompt
+from llm.prompts import session_report_prompt, session_report_system_instruction
 from repositories.report_repository import ReportRepository
 from repositories.session_repository import SessionRepository
 from repositories.snapshot_repository import SnapshotRepository
@@ -108,7 +108,11 @@ class ReportService:
         )
 
         try:
-            text = self.llm_service.generate_json(prompt, LLMReportText)
+            text = self.llm_service.generate_json(
+                prompt,
+                LLMReportText,
+                system_instruction=session_report_system_instruction(),
+            )
             return text.model_dump()
         except LLMUnavailableError:
             self.logger.warning("event=report.llm_unavailable fallback=true")
