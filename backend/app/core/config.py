@@ -18,7 +18,7 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "DEBUG"
 
     LLM_API_KEY: str | None = None
-    LLM_MODEL: str = "gemini-2.0-flash"
+    LLM_MODEL: str = "gemini-3.1-flash-lite"
     LLM_TEMPERATURE: float = 0.4
     LLM_MAX_OUTPUT_TOKENS: int = 800
 

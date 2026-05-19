@@ -1,4 +1,3 @@
-import json
 from typing import TypeVar
 
 from pydantic import BaseModel
@@ -19,28 +18,17 @@ class LLMService:
         self,
         prompt: str,
         response_model: type[T],
+        system_instruction: str | None = None,
+        response_mime_type: str = "application/json",
     ) -> T:
         try:
-            response = self.manager.generate(prompt)
-            data = json.loads(self._clean_json_response(response))
-
-            if not isinstance(data, dict):
-                raise ValueError("LLM response must be a JSON object")
-
-            return response_model.model_validate(data)
+            response = self.manager.generate(
+                prompt,
+                system_instruction=system_instruction,
+                response_mime_type=response_mime_type,
+                response_json_schema=response_model.model_json_schema(),
+            )
+            return response_model.model_validate_json(response)
         except Exception:
             self.logger.exception("event=llm.generate_json.failed")
             raise LLMUnavailableError()
-
-    def _clean_json_response(self, response: str) -> str:
-        text = response.strip()
-
-        if text.startswith("```json"):
-            text = text.removeprefix("```json").strip()
-        elif text.startswith("```"):
-            text = text.removeprefix("```").strip()
-
-        if text.endswith("```"):
-            text = text.removesuffix("```").strip()
-
-        return text
