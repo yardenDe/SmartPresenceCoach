@@ -69,6 +69,9 @@ class LandmarkExtractor:
                     "y": face_points[idx].y
                 }
 
+        if "left_iris_center" in extracted:
+            extracted["iris_center"] = extracted["left_iris_center"]
+
         return extracted
 
     def _extract_hands(self, hands_data: Any) -> list[dict[str, Any]]:

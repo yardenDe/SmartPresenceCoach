@@ -11,6 +11,5 @@ logger = get_logger("app.db.init")
 def init_models() -> None:
     logger.info("event=db.init.start")
     Base.metadata.create_all(engine)
-   
     logger.info("event=db.init.done")
 

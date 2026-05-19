@@ -4,18 +4,16 @@ from pydantic import BaseModel, Field
 
 
 class ReportMetricSummary(BaseModel):
+    avg: float | None
+    min: float | None
+    max: float | None
+
+
+class ReportOverallSummary(BaseModel):
     avg: float
     min: float
     max: float
-
-
-class ReportOverallSummary(ReportMetricSummary):
     trend: str
-
-
-class ReportTimeline(BaseModel):
-    timestampsSec: list[float]
-    overallScores: list[float]
 
 
 class ReportMetricTimeline(BaseModel):
@@ -26,13 +24,27 @@ class ReportMetricTimeline(BaseModel):
 class ShortReportResponse(BaseModel):
     session_id: int
     overall_score: float
-    overall: ReportOverallSummary | None = None
-    timeline: ReportTimeline | None = None
+    overall_state: ReportOverallSummary | None = None
+    timeline: ReportMetricTimeline | None = None
     metrics: dict[str, ReportMetricSummary] = Field(default_factory=dict)
 
 
 class FullReportResponse(ShortReportResponse):
-    detailedTimeline: ReportMetricTimeline
+    summary: str
+    recommendations: str
+
+
+class LLMReportText(BaseModel):
+    summary: str
+    recommendations: str
+
+
+class ReportEmailRequest(BaseModel):
+    to: str
+
+
+class ReportEmailResponse(BaseModel):
+    status: str
 
 
 class ReportResponse(BaseModel):

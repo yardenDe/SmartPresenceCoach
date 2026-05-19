@@ -111,12 +111,17 @@ class AnalyticsProcessingError(AppError):
 class LLMUnavailableError(AppError):
     status_code = status.HTTP_503_SERVICE_UNAVAILABLE
     code = "LLM_UNAVAILABLE"
-    message = "Report generation is currently unavailable"
+    message = "LLM is currently unavaliable."
 
 class EmailUnavailableError(AppError):
     status_code = status.HTTP_503_SERVICE_UNAVAILABLE
     code = "EMAIL_UNAVAILABLE"
     message = "Email delivery is currently unavailable"
+
+class PdfUnavailableError(AppError):
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    code = "PDF_UNAVAILABLE"
+    message = "PDF generation is currently unavailable"
 
 
 class DatabaseError(AppError):

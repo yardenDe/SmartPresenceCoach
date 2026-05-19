@@ -1,7 +1,6 @@
 from typing import Any
 
 from sqlalchemy import func, select
-from sqlalchemy.engine import Row
 from sqlalchemy.orm import Session as DBSession
 
 from core.exceptions import DatabaseError
@@ -87,22 +86,26 @@ class SnapshotRepository:
         )
         return snapshots
 
-    def get_overall_timeline(self, session_id: int) -> list[dict[str, Any]]:
+    def get_metrics_timeline(self, metrics: list[str], session_id: int) -> dict[str, Any]:
+        columns = [Snapshot.timestamp] + [getattr(Snapshot, metric) for metric in metrics]
+
         try:
             query = (
-                select(Snapshot.timestamp, Snapshot.overall)
+                select(*columns)
                 .where(Snapshot.session_id == session_id)
-                .order_by(Snapshot.timestamp.asc())
+                .order_by(Snapshot.timestamp.asc(), Snapshot.id.asc())
             )
             result = self.db.execute(query).mappings().all()
         except Exception:
-            logger.exception("event=snapshot.overall_timeline.failed session_id=%s", session_id)
+            logger.exception("event=snapshot.metrics_timeline.failed session_id=%s", session_id)
             raise DatabaseError()
 
+        
         logger.debug(
-            "event=snapshot.overall_timeline.done session_id=%s count=%s",
+            "event=snapshot.metrics_timeline.done session_id=%s count=%s metrics=%s",
             session_id,
             len(result),
+            metrics,
         )
         return result
 
@@ -123,28 +126,3 @@ class SnapshotRepository:
         except Exception:
             logger.exception("event=snapshot.all_metrics_stats.failed session_id=%s", session_id)
             raise DatabaseError()
-
-    def get_metric_vector_rows(
-        self,
-        session_id: int,
-        metrics: list[str],
-    ) -> list[Row]:
-        columns = [Snapshot.timestamp, *[getattr(Snapshot, metric) for metric in metrics]]
-
-        try:
-            query = (
-                select(*columns)
-                .where(Snapshot.session_id == session_id)
-                .order_by(Snapshot.timestamp.asc(), Snapshot.id.asc())
-            )
-            rows = self.db.execute(query).all()
-        except Exception:
-            logger.exception("event=snapshot.metric_vectors.failed session_id=%s", session_id)
-            raise DatabaseError()
-
-        logger.debug(
-            "event=snapshot.metric_vectors.done session_id=%s count=%s",
-            session_id,
-            len(rows),
-        )
-        return rows
