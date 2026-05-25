@@ -28,6 +28,7 @@ class ReportPdfService:
         return build_pdf_bytes(report.report_data)
 
 
+
 def build_pdf_bytes(report_data: dict) -> bytes:
     try:
         from weasyprint import HTML

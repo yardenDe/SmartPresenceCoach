@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 
 from sqlalchemy.orm import Session as DBSession
+from sqlalchemy import select
 
 from core.exceptions import DatabaseError
 from core.logger import get_logger
@@ -62,12 +63,19 @@ class SessionRepository:
         logger.info("event=session.end.saved session_id=%s", session_id)
         return session
 
+
     def get_by_id(self, session_id: int) -> Session | None:
         try:
-            session = self.db.get(Session, session_id)
+            query = select(Session).where(Session.id == session_id)
+            session = self.db.execute(query).scalar_one_or_none()
         except Exception:
             logger.exception("event=session.lookup.failed session_id=%s", session_id)
             raise DatabaseError()
 
-        logger.debug("event=session.lookup.done session_id=%s found=%s", session_id, session is not None)
+        logger.debug(
+            "event=session.lookup.done session_id=%s found=%s",
+            session_id,
+            session is not None,
+        )
         return session
+

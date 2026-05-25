@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from analytics.math_utils import average_available, average_point_motion
+from analytics.math_utils import average_available, average_point_motion, axis_distance
 
 
 class BaseAnalyzer(ABC):
@@ -30,14 +30,22 @@ class BaseAnalyzer(ABC):
         return points
 
     @classmethod
-    def _collect_axis_values(
+    def _collect_axis_distances(
         cls,
         frames: list[dict[str, Any]],
         source: str,
-        point_name: str,
+        point_a_name: str,
+        point_b_name: str,
         axis: str,
     ) -> list[float]:
-        return [point[axis] for point in cls._collect_points(frames, source, point_name)]
+        distances = []
+
+        for frame in frames:
+            source_data = frame.get(source)
+            if cls._has_points(source_data, point_a_name, point_b_name):
+                distances.append(axis_distance(source_data[point_a_name], source_data[point_b_name], axis))
+
+        return distances
 
     @classmethod
     def _average_named_point_motion(

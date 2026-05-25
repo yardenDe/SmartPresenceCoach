@@ -5,7 +5,7 @@ class AnalysisScores(BaseModel):
 
     focus: float | None = None
     posture: float | None = None
-    vitality: float | None = None
+    engagement: float | None = None
     presence: float | None = None
     composure: float | None = None
 

@@ -31,6 +31,17 @@ def average_score(values: list[float]) -> float | None:
     return clamp_score(avg) if avg is not None else None
 
 
+def percentage_of(value: float, total: float) -> float:
+    if total <= 0:
+        return AnalyticsConfig.DEFAULT_SCORE
+
+    return (value / total) * 100.0
+
+
+def subtract_from(value: float, total: float = AnalyticsConfig.DEFAULT_SCORE) -> float:
+    return clamp_score(total - value)
+
+
 def variance(values: list[float]) -> float:
     if len(values) < 2:
         return 0.0
@@ -48,16 +59,6 @@ def average_absolute_change(values: list[float]) -> float | None:
         for index in range(1, len(values))
     ]
     return average(changes)
-
-
-def second_half_average_increase(values: list[float]) -> float:
-    if len(values) < 2:
-        return 0.0
-
-    midpoint_index = len(values) // 2
-    first_half = values[:midpoint_index]
-    second_half = values[midpoint_index:]
-    return max(0.0, average(second_half) - average(first_half))
 
 
 def weighted_average(weighted_values: list[tuple[float, float] | None]) -> float | None:
@@ -91,6 +92,21 @@ def average_point_motion(points: list[Point]) -> float | None:
     return average(distances)
 
 
+def average_common_point_distance(
+    previous_points: dict[str, Point],
+    current_points: dict[str, Point],
+    point_names: list[str],
+) -> float | None:
+    distances = [
+        point_distance(current_points[point_name], previous_points[point_name])
+        for point_name in point_names
+        if previous_points.get(point_name) is not None
+        and current_points.get(point_name) is not None
+    ]
+
+    return average_available(distances)
+
+
 def point_variance(points: list[Point]) -> float:
     return variance([point["x"] for point in points]) + variance([point["y"] for point in points])
 
@@ -113,18 +129,3 @@ def line_angle_degrees(point_a: Point, point_b: Point) -> float:
     y_delta = point_b["y"] - point_a["y"]
     x_delta = point_b["x"] - point_a["x"]
     return abs(degrees(atan2(y_delta, x_delta)))
-
-
-def normalize_inverse(
-    raw_value: float,
-    scale: float,
-    max_score: float = AnalyticsConfig.DEFAULT_SCORE,
-) -> float:
-    return clamp_score(max_score - (raw_value * scale))
-
-
-def normalize_direct(
-    raw_value: float,
-    scale: float,
-) -> float:
-    return clamp_score(raw_value * scale)

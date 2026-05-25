@@ -11,7 +11,7 @@ class Snapshot(Base):
     overall = Column(Float, nullable=False)
 
     focus = Column(Float, nullable=True)
-    vitality = Column(Float, nullable=True)
+    engagement = Column(Float, nullable=True)
     posture = Column(Float, nullable=True)
     presence = Column(Float, nullable=True)
     composure = Column(Float, nullable=True)

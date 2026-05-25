@@ -28,7 +28,7 @@ class SnapshotRepository:
                 timestamp=snapshot.get("timestamp"),
                 overall=snapshot["overall"],
                 focus=snapshot.get("focus"),
-                vitality=snapshot.get("vitality"),
+                engagement=snapshot.get("engagement"),
                 posture=snapshot.get("posture"),
                 presence=snapshot.get("presence"),
                 composure=snapshot.get("composure"),

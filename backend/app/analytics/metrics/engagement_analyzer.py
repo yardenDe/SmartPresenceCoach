@@ -5,16 +5,16 @@ from analytics.math_utils import (
     average,
     average_absolute_change,
     average_available,
+    average_common_point_distance,
     average_point_motion,
-    axis_distance,
-    normalize_direct,
-    point_distance,
+    clamp_score,
+    percentage_of,
     point_variance,
     weighted_average,
 )
 
 
-class VitalityAnalyzer(BaseAnalyzer):
+class EngagementAnalyzer(BaseAnalyzer):
     BASIC_WEIGHT = 0.2
     BODY_WEIGHT = 0.4
     ADVANCED_WEIGHT = 0.4
@@ -22,6 +22,12 @@ class VitalityAnalyzer(BaseAnalyzer):
     HEAD_VARIANCE_WEIGHT = 0.3
     MOUTH_MOTION_WEIGHT = 0.5
     HAND_MOTION_WEIGHT = 0.5
+    MAX_HEAD_MOTION = 0.11
+    MAX_HEAD_VARIANCE = 0.08
+    MAX_BODY_MOTION = 0.14
+    MAX_MOUTH_MOTION = 0.83
+    MAX_HAND_MOTION = 0.14
+
     BODY_POINTS = [
         "left_shoulder",
         "right_shoulder",
@@ -31,55 +37,31 @@ class VitalityAnalyzer(BaseAnalyzer):
         "right_wrist_basic",
     ]
     HAND_POINTS = ["hand_wrist", "hand_index_tip", "hand_thumb_tip"]
-    HEAD_MOTION_SCALE = 900.0
-    HEAD_VARIANCE_SCALE = 1200.0
-    BODY_MOTION_SCALE = 700.0
-    MOTION_VARIATION_SCALE = 120.0
-    HAND_MOTION_SCALE = 700.0
-
-    def _collect_axis_distances(
-        self,
-        frames: list[dict[str, Any]],
-        source: str,
-        point_a_name: str,
-        point_b_name: str,
-        axis: str,
-    ) -> list[float]:
-        distances = []
-
-        for frame in frames:
-            source_data = frame.get(source)
-            if self._has_points(source_data, point_a_name, point_b_name):
-                distances.append(axis_distance(source_data[point_a_name], source_data[point_b_name], axis))
-
-        return distances
 
     def _average_hand_motion(self, frames: list[dict[str, Any]]) -> float | None:
-        frame_motions = []
-        hands_by_frame = [frame.get("hands", []) for frame in frames]
+        frame_scores = []
 
-        for index in range(1, len(hands_by_frame)):
-            previous_hands = hands_by_frame[index - 1]
-            current_hands = hands_by_frame[index]
-            point_movements = []
+        for index in range(1, len(frames)):
+            previous_hands = frames[index - 1].get("hands", [])
+            current_hands = frames[index].get("hands", [])
+            hand_scores = []
 
             for hand_index, current_hand in enumerate(current_hands):
                 if hand_index >= len(previous_hands):
                     continue
 
-                previous_points = previous_hands[hand_index].get("points", {})
-                current_points = current_hand.get("points", {})
-                point_movements.extend([
-                    point_distance(current_points[point_name], previous_points[point_name])
-                    for point_name in self.HAND_POINTS
-                    if self._has_points(previous_points, point_name)
-                    and self._has_points(current_points, point_name)
-                ])
+                hand_score = average_common_point_distance(
+                    previous_hands[hand_index].get("points", {}),
+                    current_hand.get("points", {}),
+                    self.HAND_POINTS,
+                )
+                if hand_score is not None:
+                    hand_scores.append(hand_score)
 
-            if point_movements:
-                frame_motions.append(average(point_movements))
+            if hand_scores:
+                frame_scores.append(average(hand_scores))
 
-        return average_available(frame_motions)
+        return average_available(frame_scores)
 
     def _analyze_head_motion(self, frames: list[dict[str, Any]]) -> float | None:
         nose_points = self._collect_points(frames, "pose", "nose")
@@ -88,15 +70,12 @@ class VitalityAnalyzer(BaseAnalyzer):
         if nose_motion is None:
             return None
 
-        motion_score = normalize_direct(nose_motion, self.HEAD_MOTION_SCALE)
-        variance_score = normalize_direct(
-            point_variance(nose_points),
-            self.HEAD_VARIANCE_SCALE,
-        )
+        motion_percentage = percentage_of(nose_motion, self.MAX_HEAD_MOTION)
+        variance_percentage = percentage_of(point_variance(nose_points), self.MAX_HEAD_VARIANCE)
 
         return weighted_average([
-            (motion_score, self.HEAD_MOTION_WEIGHT),
-            (variance_score, self.HEAD_VARIANCE_WEIGHT),
+            (clamp_score(motion_percentage), self.HEAD_MOTION_WEIGHT),
+            (clamp_score(variance_percentage), self.HEAD_VARIANCE_WEIGHT),
         ])
 
     def _analyze_body_motion(self, frames: list[dict[str, Any]]) -> float | None:
@@ -104,7 +83,21 @@ class VitalityAnalyzer(BaseAnalyzer):
         if body_motion is None:
             return None
 
-        return normalize_direct(body_motion, self.BODY_MOTION_SCALE)
+        motion_percentage = percentage_of(body_motion, self.MAX_BODY_MOTION)
+
+        return clamp_score(motion_percentage)
+
+    def _analyze_mouth_motion(self, frames: list[dict[str, Any]]) -> float | None:
+        mouth_motion = average_absolute_change(
+            self._collect_axis_distances(frames, "face", "mouth_top", "mouth_bottom", "y")
+        )
+
+        if mouth_motion is None:
+            return None
+
+        motion_percentage = percentage_of(mouth_motion, self.MAX_MOUTH_MOTION)
+
+        return clamp_score(motion_percentage)
 
     def _analyze_hand_motion(self, frames: list[dict[str, Any]]) -> float | None:
         hand_motion = self._average_hand_motion(frames)
@@ -112,17 +105,9 @@ class VitalityAnalyzer(BaseAnalyzer):
         if hand_motion is None:
             return None
 
-        return normalize_direct(hand_motion, self.HAND_MOTION_SCALE)
+        motion_percentage = percentage_of(hand_motion, self.MAX_HAND_MOTION)
 
-    def _analyze_mouth_motion(self, frames: list[dict[str, Any]]) -> float | None:
-        motion_amount = average_absolute_change(
-            self._collect_axis_distances(frames, "face", "mouth_top", "mouth_bottom", "y")
-        )
-
-        if motion_amount is None:
-            return None
-
-        return normalize_direct(motion_amount, self.MOTION_VARIATION_SCALE)
+        return clamp_score(motion_percentage)
 
     def analyze(self, frames: list[dict[str, Any]]) -> float | None:
         head_score = self._analyze_head_motion(frames)
