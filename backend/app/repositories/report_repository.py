@@ -1,9 +1,10 @@
-from sqlalchemy import select
+from sqlalchemy import desc, select
 from sqlalchemy.orm import Session as DBSession
 
 from core.exceptions import DatabaseError
 from core.logger import get_logger
 from models.report import Report
+from models.session import Session
 
 logger = get_logger("app.repositories.report")
 
@@ -60,3 +61,20 @@ class ReportRepository:
             report is not None,
         )
         return report
+
+    def list_recent_by_user(self, user_id: int, limit: int = 5) -> list[tuple[Report, Session]]:
+        try:
+            result = self.db.execute(
+                select(Report, Session)
+                .join(Session, Session.id == Report.session_id)
+                .where(Session.user_id == user_id)
+                .order_by(desc(Report.generated_at), desc(Report.id))
+                .limit(limit)
+            )
+        except Exception:
+            logger.exception("event=report.recent.failed user_id=%s", user_id)
+            raise DatabaseError()
+
+        rows = [(report, session) for report, session in result.all()]
+        logger.debug("event=report.recent.done user_id=%s count=%s", user_id, len(rows))
+        return rows

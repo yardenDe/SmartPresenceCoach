@@ -1,10 +1,10 @@
 from typing import Any
 
 from analytics.metrics.composure_analyzer import ComposureAnalyzer
+from analytics.metrics.engagement_analyzer import EngagementAnalyzer
 from analytics.metrics.focus_analyzer import FocusAnalyzer
 from analytics.metrics.posture_analyzer import PostureAnalyzer
 from analytics.metrics.presence_analyzer import PresenceAnalyzer
-from analytics.metrics.vitality_analyzer import VitalityAnalyzer
 from analytics.math_utils import average
 from core.exceptions import AnalyticsProcessingError
 from core.logger import get_logger
@@ -17,7 +17,7 @@ class AnalyticsManager:
         self.analyzers = {
             "focus": FocusAnalyzer(),
             "posture": PostureAnalyzer(),
-            "vitality": VitalityAnalyzer(),
+            "engagement": EngagementAnalyzer(),
             "presence": PresenceAnalyzer(),
             "composure": ComposureAnalyzer(),
         }

@@ -47,6 +47,14 @@ class ReportEmailResponse(BaseModel):
     status: str
 
 
+class RecentReportResponse(BaseModel):
+    session_id: int
+    started_at: datetime | None = None
+    ended_at: datetime | None = None
+    overall_score: float | None = None
+    generated_at: datetime | None = None
+
+
 class ReportResponse(BaseModel):
     session_id: int
     overall_score: float

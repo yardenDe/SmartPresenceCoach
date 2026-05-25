@@ -1,13 +1,13 @@
 from typing import Any
 
-from analytics.config import AnalyticsConfig
 from analytics.metrics.base_analyzer import BaseAnalyzer
 from analytics.math_utils import (
     average_score,
     axis_distance,
     midpoint,
-    normalize_inverse,
+    percentage_of,
     point_distance,
+    subtract_from,
     weighted_average,
 )
 
@@ -17,10 +17,9 @@ class FocusAnalyzer(BaseAnalyzer):
     BODY_WEIGHT = 0.3
     ADVANCED_WEIGHT = 0.5
     SCREEN_CENTER_X = 0.5
-    SCREEN_CENTER_SCALE = 200.0
-    BODY_ALIGNMENT_SCALE = 250.0
-    EYE_DEVIATION_SCALE = 500.0
-    DEFAULT_SCORE = AnalyticsConfig.DEFAULT_SCORE
+    MAX_SCREEN_DEVIATION = 0.15
+    MAX_BODY_DEVIATION = 0.12
+    MAX_EYE_DEVIATION = 0.02
 
     def _score_screen_center(self, pose_data: dict[str, Any] | None) -> float | None:
         if not self._has_point(pose_data, "nose"):
@@ -28,8 +27,9 @@ class FocusAnalyzer(BaseAnalyzer):
 
         nose = pose_data["nose"]
         deviation = abs(nose["x"] - self.SCREEN_CENTER_X)
+        deviation_percentage = percentage_of(deviation, self.MAX_SCREEN_DEVIATION)
 
-        return normalize_inverse(deviation, self.SCREEN_CENTER_SCALE, self.DEFAULT_SCORE)
+        return subtract_from(deviation_percentage)
 
     def _score_body_alignment(self, pose_data: dict[str, Any] | None) -> float | None:
         if not self._has_points(pose_data, "nose", "left_shoulder", "right_shoulder"):
@@ -37,8 +37,9 @@ class FocusAnalyzer(BaseAnalyzer):
 
         shoulder_center = midpoint(pose_data["left_shoulder"], pose_data["right_shoulder"])
         head_deviation = axis_distance(pose_data["nose"], shoulder_center, "x")
+        deviation_percentage = percentage_of(head_deviation, self.MAX_BODY_DEVIATION)
 
-        return normalize_inverse(head_deviation, self.BODY_ALIGNMENT_SCALE, self.DEFAULT_SCORE)
+        return subtract_from(deviation_percentage)
 
     def _score_eye_alignment(self, face_data: dict[str, Any] | None) -> float | None:
         left_eye_ready = self._has_points(face_data, "left_iris_center", "left_eye_outer", "left_eye_inner")
@@ -49,13 +50,17 @@ class FocusAnalyzer(BaseAnalyzer):
 
         scores = []
 
-        left_eye_center = midpoint(face_data["left_eye_outer"], face_data["left_eye_inner"])
-        left_deviation = point_distance(face_data["left_iris_center"], left_eye_center)
-        scores.append(normalize_inverse(left_deviation, self.EYE_DEVIATION_SCALE, self.DEFAULT_SCORE))
+        if left_eye_ready:
+            left_eye_center = midpoint(face_data["left_eye_outer"], face_data["left_eye_inner"])
+            left_deviation = point_distance(face_data["left_iris_center"], left_eye_center)
+            left_deviation_percentage = percentage_of(left_deviation, self.MAX_EYE_DEVIATION)
+            scores.append(subtract_from(left_deviation_percentage))
 
-        right_eye_center = midpoint(face_data["right_eye_inner"], face_data["right_eye_outer"])
-        right_deviation = point_distance(face_data["right_iris_center"], right_eye_center)
-        scores.append(normalize_inverse(right_deviation, self.EYE_DEVIATION_SCALE, self.DEFAULT_SCORE))
+        if right_eye_ready:
+            right_eye_center = midpoint(face_data["right_eye_inner"], face_data["right_eye_outer"])
+            right_deviation = point_distance(face_data["right_iris_center"], right_eye_center)
+            right_deviation_percentage = percentage_of(right_deviation, self.MAX_EYE_DEVIATION)
+            scores.append(subtract_from(right_deviation_percentage))
 
         return average_score(scores)
 

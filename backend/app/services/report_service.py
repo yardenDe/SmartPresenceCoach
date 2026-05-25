@@ -9,7 +9,7 @@ from services.llm_service import LLMService
 
 
 class ReportService:
-    METRICS = ["focus", "posture", "presence", "vitality", "composure"]
+    METRICS = ["focus", "posture", "presence", "engagement", "composure"]
 
     def __init__(
         self,
@@ -42,6 +42,21 @@ class ReportService:
             "metrics": self._build_metrics_summary(metrics_states),
         }
         return ShortReportResponse.model_validate(report)
+
+    def list_recent_reports(self, user_id: int, limit: int = 5) -> list[dict]:
+        return [
+            {
+                "session_id": session.id,
+                "started_at": session.start_time,
+                "ended_at": session.end_time,
+                "overall_score": report.overall_score,
+                "generated_at": report.generated_at,
+            }
+            for report, session in self.report_repository.list_recent_by_user(
+                user_id=user_id,
+                limit=limit,
+            )
+        ]
 
     def generate_full_report(self, user_id: int, session_id: int) -> FullReportResponse:
         self._validate_session(user_id, session_id)

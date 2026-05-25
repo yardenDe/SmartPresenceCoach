@@ -1,13 +1,13 @@
 from html import escape
 
 
-METRICS = ["focus", "posture", "presence", "vitality", "composure"]
+METRICS = ["focus", "posture", "presence", "engagement", "composure"]
 COLORS = {
     "overall": "#111827",
     "focus": "#2563eb",
     "posture": "#16a34a",
     "presence": "#9333ea",
-    "vitality": "#f97316",
+    "engagement": "#f97316",
     "composure": "#0891b2",
 }
 LABELS = {
@@ -15,7 +15,7 @@ LABELS = {
     "focus": "Focus",
     "posture": "Posture",
     "presence": "Presence",
-    "vitality": "Vitality",
+    "engagement": "Engagement",
     "composure": "Composure",
 }
 
