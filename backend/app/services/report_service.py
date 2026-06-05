@@ -1,6 +1,7 @@
 from core.exceptions import LLMUnavailableError, SessionNotFoundError, SnapshotsNotFoundError, UnauthorizedError
 from core.logger import get_logger
 from llm.prompts import session_report_prompt, session_report_system_instruction
+from models.session import Session as SessionModel
 from repositories.report_repository import ReportRepository
 from repositories.session_repository import SessionRepository
 from repositories.snapshot_repository import SnapshotRepository
@@ -47,6 +48,7 @@ class ReportService:
         return [
             {
                 "session_id": session.id,
+                "mode": session.mode,
                 "started_at": session.start_time,
                 "ended_at": session.end_time,
                 "overall_score": report.overall_score,
@@ -59,7 +61,7 @@ class ReportService:
         ]
 
     def generate_full_report(self, user_id: int, session_id: int) -> FullReportResponse:
-        self._validate_session(user_id, session_id)
+        session = self._validate_session(user_id, session_id)
 
         existing_report = self.report_repository.get_by_session(session_id)
         if existing_report and existing_report.report_data:
@@ -82,13 +84,14 @@ class ReportService:
             **self._build_llm_report_text(
                 overall_score=metrics_states["overall_avg"],
                 timeline_data=timeline_data,
+                mode=session.mode,
             ),
         }
         self._create_full_report(session_id, report)
 
         return FullReportResponse.model_validate(report)
 
-    def _validate_session(self, user_id: int, session_id: int) -> None:
+    def _validate_session(self, user_id: int, session_id: int) -> SessionModel:
         session = self.session_repository.get_by_id(session_id)
         if not session:
             self.logger.warning("event=report.session_missing session_id=%s user_id=%s", session_id, user_id)
@@ -103,6 +106,8 @@ class ReportService:
             )
             raise UnauthorizedError()
 
+        return session
+
     def _create_full_report(self, session_id: int, report: dict) -> None:
         self.report_repository.create_report(
             session_id=session_id,
@@ -112,7 +117,7 @@ class ReportService:
             report_data=report,
         )
 
-    def _build_llm_report_text(self, overall_score: float, timeline_data: dict) -> dict:
+    def _build_llm_report_text(self, overall_score: float, timeline_data: dict, mode: str | None) -> dict:
         if not self.llm_service:
             return self._fallback_report_text()
 
@@ -120,6 +125,7 @@ class ReportService:
             overall_score=overall_score,
             timestamps=timeline_data["timestampsSec"],
             metric_vectors=timeline_data["series"],
+            mode=mode,
         )
 
         try:

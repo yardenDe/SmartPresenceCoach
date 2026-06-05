@@ -14,6 +14,7 @@ from core.logger import get_logger, setup_logging
 
 setup_logging()
 logger = get_logger("app.main")
+settings = get_settings()
 
 
 @asynccontextmanager
@@ -29,21 +30,14 @@ app.add_exception_handler(AppError, app_exceptions_handler)
 app.add_exception_handler(Exception, unhandled_exceptions_handler)
 
 
-origins = [
-    "http://localhost:5173", 
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:3000",
-]
-
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=origins,          
+    allow_origins=[settings.FRONTEND_ORIGIN],          
     allow_methods=["*"],              
     allow_headers=["*"],
 )
 
-settings = get_settings()
 logger.info("event=app.start host=%s port=%s", settings.APP_HOST, settings.APP_PORT)
 
 

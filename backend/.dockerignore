@@ -1,4 +1,6 @@
 .venv
+.env
 __pycache__
 *.pyc
 sql_app.db
+data/*.db

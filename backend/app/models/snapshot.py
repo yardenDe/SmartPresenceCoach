@@ -15,5 +15,6 @@ class Snapshot(Base):
     posture = Column(Float, nullable=True)
     presence = Column(Float, nullable=True)
     composure = Column(Float, nullable=True)
+    
     delivery = Column(Float, nullable=True)
 
