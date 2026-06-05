@@ -1,10 +1,14 @@
 ﻿# Smart Presence Coach
 
+**Created by Yarden Deshe**
+
 Real-time AI-powered system for analyzing body language and improving communication skills.
 
 ## Overview
 
 Smart Presence Coach helps people practice presentations, interviews, and high-stakes conversations by turning camera or video input into actionable feedback. The system analyzes body language signals and generates personalized insights that help users understand how they are perceived and what to improve next.
+
+This project focuses on backend architecture, real-time computer vision processing, session data aggregation, and AI-based feedback generation.
 
 ## Tech Stack
 
@@ -36,11 +40,7 @@ flowchart LR
 
 ## Demo / Screenshots
 
-Add a screenshot or short GIF of the live dashboard here:
-
-```md
-![Smart Presence Coach dashboard](docs/screenshots/dashboard.png)
-```
+<img width="1672" height="941" alt="Smart Presence Coach dashboard" src="https://github.com/user-attachments/assets/aae8557b-ba3c-47c9-b236-c420998e2234" />
 
 ## Getting Started
 
@@ -150,3 +150,4 @@ frontend/
     services/                     API clients
     context/                      Authentication context
 ```
+
