@@ -49,6 +49,7 @@ class ReportEmailResponse(BaseModel):
 
 class RecentReportResponse(BaseModel):
     session_id: int
+    mode: str | None = None
     started_at: datetime | None = None
     ended_at: datetime | None = None
     overall_score: float | None = None

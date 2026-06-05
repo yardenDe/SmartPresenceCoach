@@ -12,9 +12,9 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     EXPIRE_MINUTES: int = 30
     
-
-    APP_HOST: str = "127.0.0.1"
+    APP_HOST: str = "localhost"
     APP_PORT: int = 8000
+    FRONTEND_ORIGIN: str = "http://localhost:5173"
     LOG_LEVEL: str = "DEBUG"
 
     LLM_API_KEY: str | None = None

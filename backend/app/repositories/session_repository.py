@@ -14,8 +14,8 @@ class SessionRepository:
     def __init__(self, db: DBSession):
         self.db = db
 
-    def create_session(self, user_id: int) -> Session:
-        session = Session(user_id=user_id)
+    def create_session(self, user_id: int, mode: str | None = None) -> Session:
+        session = Session(user_id=user_id, mode=mode)
 
         try:
             self.db.add(session)

@@ -37,8 +37,8 @@ class SessionService:
 
         return session
 
-    def create(self, user_id: int) -> int:
-        session = self.session_repository.create_session(user_id=user_id)
+    def create(self, user_id: int, mode: str | None = None) -> int:
+        session = self.session_repository.create_session(user_id=user_id, mode=mode)
         self.logger.info("event=session.create.done session_id=%s user_id=%s", session.id, user_id)
         return session.id
 

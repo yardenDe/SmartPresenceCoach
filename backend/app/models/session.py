@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, String
 from db.db_manager import Base
 
 class Session(Base):
@@ -8,4 +8,4 @@ class Session(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     start_time = Column(DateTime(timezone=True), nullable=True)
     end_time = Column(DateTime(timezone=True), nullable=True)
-
+    mode = Column(String, nullable=True)
