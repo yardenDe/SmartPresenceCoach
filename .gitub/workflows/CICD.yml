@@ -19,10 +19,4 @@ jobs:
       - name: Run backend tests
         run: docker run --rm smart-presence-backend pytest 
 
-    CD:
-    needs: CI
-    runs-on: 
-
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    
+   
