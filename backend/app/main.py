@@ -42,4 +42,4 @@ logger.info("event=app.start host=%s port=%s", settings.APP_HOST, settings.APP_P
 
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host=settings.APP_HOST, port=settings.APP_PORT, reload=True)
+    uvicorn.run("main:app", host=settings.APP_HOST, port=settings.APP_PORT, reload=settings.RELOAD)

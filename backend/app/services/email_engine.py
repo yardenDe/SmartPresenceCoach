@@ -39,7 +39,7 @@ class EmailEngine:
     ):
         msg = EmailMessage()
         msg["Subject"] = subject
-        msg["From"] = self.settings.MAIL_USERNAME
+        msg["From"] = self.settings.MAIL_FROM or self.settings.MAIL_USERNAME
         msg["To"] = to
         msg.set_content(body)
 
