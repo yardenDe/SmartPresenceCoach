@@ -1,0 +1,28 @@
+name: CI CD 
+
+on:
+  push:
+  pull_request:
+    branches: [main]
+
+jobs:
+    CI:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build backend Docker image
+        run: docker build -t smart-presence-backend ./backend
+
+      - name: Run backend tests
+        run: docker run --rm smart-presence-backend pytest 
+
+    CD:
+    needs: CI
+    runs-on: 
+
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    

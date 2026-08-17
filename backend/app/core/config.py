@@ -6,14 +6,16 @@ from mediapipe.tasks.python.vision import RunningMode
 
 class Settings(BaseSettings):
   
-    DATABASE_URL: str
+    DATABASE_URL: str = "sqlite:///./data/sql_app.db"
 
     SECRET_KEY: str = "secret"
     ALGORITHM: str = "HS256"
     EXPIRE_MINUTES: int = 30
     
-    APP_HOST: str = "localhost"
+    APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
+    RELOAD: bool = False
+
     FRONTEND_ORIGIN: str = "http://localhost:5173"
     LOG_LEVEL: str = "DEBUG"
 
@@ -33,6 +35,7 @@ class Settings(BaseSettings):
     MAIL_PORT: int = 587
     MAIL_USERNAME: str | None = None
     MAIL_PASSWORD: str | None = None
+    MAIL_FROM: str | None = None
     MAIL_USE_TLS: bool = True
     MAIL_USE_SSL: bool = False
     MAIL_TIMEOUT: float = 10.0

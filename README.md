@@ -52,6 +52,14 @@ cd SmartPresenceCoach
 docker compose up --build
 ```
 
+`docker compose` works without an environment file using a local SQLite
+database. To enable the LLM or email integrations locally, copy the example
+file and fill only the values you need:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
 The app will be available at:
 
 - **Frontend:** `http://localhost:5173`
@@ -63,6 +71,7 @@ The app will be available at:
 
 ```bash
 cd backend
+cp .env.example .env  # optional; defaults work without it
 pip install -r requirements.txt
 python app/main.py
 ```
@@ -71,13 +80,18 @@ python app/main.py
 
 ```bash
 cd frontend
+cp .env.example .env  # optional; the default is http://localhost:8000
 npm install
 npm run dev
 ```
 
 ## Environment Variables
 
-Create `backend/.env` and configure the required values:
+`backend/.env` is optional and intended only for local development. Start from
+`backend/.env.example`; all variables are optional for the local SQLite setup.
+Docker Compose does not load this file. In cloud deployments, inject values as
+environment variables through the hosting platform's secret/configuration
+mechanism; environment values take precedence over a local `.env` file.
 
 ```env
 DATABASE_URL=sqlite:///./data/sql_app.db
@@ -87,11 +101,21 @@ LLM_API_KEY=your-google-genai-api-key
 LLM_MODEL=gemini-3.1-flash-lite
 ```
 
-For the frontend, configure the backend API URL:
+For the frontend, `frontend/.env` is optional. Its only runtime setting is the
+browser-visible backend URL:
 
 ```env
 VITE_API_BASE_URL=http://localhost:8000
 ```
+
+### Configuration ownership
+
+| Setting | Source of truth | Why it is also mentioned elsewhere |
+| --- | --- | --- |
+| Backend host, port and reload | `backend/app/core/config.py` / `backend/.env` | Compose only maps port `8000` to the host and enables reload for development. |
+| Frontend dev-server host and port | `frontend/vite.config.ts` | The Dockerfile runs the same `npm run dev` command as local development. |
+| Frontend API URL | `frontend/.env` or `VITE_API_BASE_URL` | Compose supplies `http://localhost:8000` because this URL is used by the browser, not by one container talking to another. |
+| Database files in Compose | `backend-data` Docker volume | This is needed so SQLite data survives container recreation; local runs use `backend/data/`. |
 
 ## MediaPipe Models
 

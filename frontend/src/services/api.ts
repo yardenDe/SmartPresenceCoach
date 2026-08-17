@@ -10,7 +10,7 @@ type BackendErrorResponse = {
 };
 
 const resolveApiBaseUrl = () => {
-  const configuredUrl = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
+  const configuredUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
   if (
     window.location.hostname === "127.0.0.1" &&
