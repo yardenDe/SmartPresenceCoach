@@ -85,6 +85,16 @@ npm install
 npm run dev
 ```
 
+### Run Backend Tests
+
+```bash
+cd backend
+pytest tests/unit -v
+```
+
+The unit tests are grouped by domain under `tests/unit/` and share lightweight
+MediaPipe and database fakes from `tests/config_test.py`.
+
 ## Environment Variables
 
 `backend/.env` is optional and intended only for local development. Start from
