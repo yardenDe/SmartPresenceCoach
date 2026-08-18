@@ -9,7 +9,7 @@ services:
       RELOAD: "true"
     volumes:
       - ./backend/app:/app
-      - ./ackend/data:/app/data
+      - ./backend/data:/app/data
 
   frontend:
     build:
