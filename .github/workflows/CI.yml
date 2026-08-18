@@ -1,14 +1,14 @@
-name: CI CD 
+name: CI/CD Pipeline
 
 on:
   push:
+    branches: [main]
   pull_request:
     branches: [main]
 
 jobs:
-    CI:
+  CI:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -17,6 +17,4 @@ jobs:
         run: docker build -t smart-presence-backend ./backend
 
       - name: Run backend tests
-        run: docker run --rm smart-presence-backend pytest 
-
-   
+        run: docker run --rm smart-presence-backend pytest
