@@ -14,10 +14,6 @@ import pytest
 PROJECT_DIR = Path(__file__).resolve().parents[1]
 APP_DIR = PROJECT_DIR / "app"
 
-# In the Docker image, application modules are copied directly to /app.
-if not APP_DIR.exists():
-    APP_DIR = PROJECT_DIR
-
 if str(APP_DIR) not in sys.path:
     sys.path.insert(0, str(APP_DIR))
 
