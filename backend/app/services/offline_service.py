@@ -4,7 +4,7 @@ from core.exceptions import AppError, VisionProcessingError
 from core.logger import get_logger
 from schemas.offline import OfflineResponse
 from services.session_analysis_service import SessionAnalysisService
-from vision.video_storage import VideoStorage
+from video.video_storage import VideoStorage
 
 
 class OfflineService:
