@@ -2,7 +2,7 @@ from typing import Any, Dict, Generator
 
 from core.logger import get_logger
 from vision.config import CHUNK_SECONDS, TARGET_FPS
-from vision.video_extractor import VideoExtractor
+from video.frame_extractor import VideoExtractor
 from vision.mediapipe_detector import MediaPipeDetector
 from vision.landmark_extractor import LandmarkExtractor
 

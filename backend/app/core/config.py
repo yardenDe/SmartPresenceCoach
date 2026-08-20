@@ -24,8 +24,9 @@ class Settings(BaseSettings):
     LLM_TEMPERATURE: float = 1.0
     LLM_MAX_OUTPUT_TOKENS: int = 4096
 
+    TRANSCRIBER_MODEL = "base"
 
-    MEDIAPIPE_MODEL_PATH: str = str(Path(__file__).resolve().parent.parent / "models" / "mediapipe")
+    MEDIAPIPE_MODEL_PATH: str = str(Path(__file__).resolve().parents[2] / "assets" / "mediapipe")
     MEDIAPIPE_RUNNING_MODE: RunningMode = RunningMode.IMAGE
     FACE_LANDMARKER_MODEL: str = "face_landmarker.task"
     POSE_LANDMARKER_MODEL: str = "pose_landmarker.task"

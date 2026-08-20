@@ -28,11 +28,16 @@ from services.session_buffer import SessionBuffer
 from services.session_analysis_service import SessionAnalysisService
 from services.session_service import SessionService
 from vision.mediapipe_detector import MediaPipeDetector
-from vision.video_storage import VideoStorage
+from video.video_storage import VideoStorage
 
 security = HTTPBearer()
 
 logger = get_logger("app.core.dependencies")
+
+_detector_instance = None
+_session_buffer = SessionBuffer()
+_llm_manager = None
+_transcriber = None
 
 def get_db() -> Generator[Session, None, None]:
     db = SessionLocal()
@@ -69,11 +74,6 @@ def get_analytics_manager() -> AnalyticsManager:
 
 def get_video_storage() -> VideoStorage:
     return VideoStorage()
-
-
-_detector_instance = None
-_session_buffer = SessionBuffer()
-_llm_manager = None
 
 
 def get_llm() -> Manager:
@@ -244,3 +244,12 @@ def get_offline_service(
         video_storage=video_storage,
         session_analysis_service=session_analysis_service,
     )
+
+
+def get_transcriber():
+    global _transcriber
+    if _transcriber is None:
+        settings = get_settings()
+        _transcriber = get_transcriber(settings.TRANSCRIBER_MODEL)
+
+    return _transcriber

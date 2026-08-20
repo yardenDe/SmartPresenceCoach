@@ -132,7 +132,7 @@ VITE_API_BASE_URL=http://localhost:8000
 The computer vision pipeline expects the MediaPipe task models to exist locally at:
 
 ```text
-backend/app/models/mediapipe/
+backend/assets/mediapipe/
 ```
 
 Required files:
@@ -141,7 +141,7 @@ Required files:
 - `pose_landmarker.task`
 - `hand_landmarker.task`
 
-These model files are not committed to the repository, so add them manually before running live or offline analysis.
+These model files are versioned with the repository so live and offline analysis work after cloning.
 
 ## API Overview
 
