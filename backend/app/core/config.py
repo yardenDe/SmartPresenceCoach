@@ -44,8 +44,7 @@ class Settings(BaseSettings):
 
     
     class Config:
-        env_file = Path(__file__).resolve().parent.parent.parent / ".env"
-   
+        env_file = Path(__file__).resolve().parents[2] / ".env"   
 
 @lru_cache()
 def get_settings() -> Settings:

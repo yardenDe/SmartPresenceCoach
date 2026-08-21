@@ -95,15 +95,12 @@ def get_llm() -> Manager:
     return _llm_manager
 
 
-def get_llm_service(llm: Manager = Depends(get_llm)) -> LLMService:
-    return LLMService(manager=llm)
 
-
-def get_optional_llm_service() -> LLMService | None:
+def get_llm_service() -> LLMService | None:
     try:
         return LLMService(manager=get_llm())
     except LLMUnavailableError:
-        logger.warning("event=llm.optional.unavailable")
+        logger.warning("event=llm.unavailable")
         return None
 
 
@@ -175,13 +172,11 @@ def get_report_service(
     session_repository: SessionRepository = Depends(get_session_repository),
     snapshot_repository: SnapshotRepository = Depends(get_snapshot_repository),
     report_repository: ReportRepository = Depends(get_report_repository),
-    llm_service: LLMService | None = Depends(get_optional_llm_service),
 ) -> ReportService:
     return ReportService(
         session_repository=session_repository,
         snapshot_repository=snapshot_repository,
         report_repository=report_repository,
-        llm_service=llm_service,
     )
 
 

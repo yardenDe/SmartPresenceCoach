@@ -5,6 +5,7 @@ from core.dependencies import (
     get_email_service,
     get_report_pdf_service,
     get_report_service,
+    get_llm_service,
 )
 from schemas.report import (
     FullReportResponse,
@@ -16,7 +17,7 @@ from schemas.report import (
 from services.email_service import EmailService
 from services.report_pdf_service import ReportPdfService
 from services.report_service import ReportService
-
+from services.llm_service import LLMService
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -43,8 +44,9 @@ def generate_full_report(
     session_id: int,
     user_id: int = Depends(get_current_user_id),
     service: ReportService = Depends(get_report_service),
+    llm_service: LLMService | None = Depends(get_llm_service),
 ) -> FullReportResponse:
-    return service.generate_full_report(user_id=user_id, session_id=session_id)
+    return service.generate_full_report(user_id=user_id, session_id=session_id, llm_service=llm_service)
 
 
 @router.post("/{session_id}/email", response_model=ReportEmailResponse)

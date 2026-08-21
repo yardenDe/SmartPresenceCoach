@@ -17,12 +17,10 @@ class ReportService:
         session_repository: SessionRepository,
         snapshot_repository: SnapshotRepository,
         report_repository: ReportRepository,
-        llm_service: LLMService | None = None,
     ):
         self.session_repository = session_repository
         self.snapshot_repository = snapshot_repository
         self.report_repository = report_repository
-        self.llm_service = llm_service
         self.logger = get_logger("app.reports")
 
     def generate_short_report(self, user_id: int, session_id: int) -> ShortReportResponse:
@@ -60,7 +58,12 @@ class ReportService:
             )
         ]
 
-    def generate_full_report(self, user_id: int, session_id: int) -> FullReportResponse:
+    def generate_full_report(
+        self,
+        user_id: int,
+        session_id: int,
+        llm_service: LLMService | None = None,
+    ) -> FullReportResponse:
         session = self._validate_session(user_id, session_id)
 
         existing_report = self.report_repository.get_by_session(session_id)
@@ -85,6 +88,7 @@ class ReportService:
                 overall_score=metrics_states["overall_avg"],
                 timeline_data=timeline_data,
                 mode=session.mode,
+                llm_service=llm_service,
             ),
         }
         self._create_full_report(session_id, report)
@@ -117,8 +121,14 @@ class ReportService:
             report_data=report,
         )
 
-    def _build_llm_report_text(self, overall_score: float, timeline_data: dict, mode: str | None) -> dict:
-        if not self.llm_service:
+    def _build_llm_report_text(
+        self,
+        overall_score: float,
+        timeline_data: dict,
+        mode: str | None,
+        llm_service: LLMService | None,
+    ) -> dict:
+        if llm_service is None:
             return self._fallback_report_text()
 
         prompt = session_report_prompt(
@@ -129,7 +139,7 @@ class ReportService:
         )
 
         try:
-            text = self.llm_service.generate_json(
+            text = llm_service.generate_json(
                 prompt,
                 LLMReportText,
                 system_instruction=session_report_system_instruction(),
@@ -138,7 +148,7 @@ class ReportService:
         except LLMUnavailableError:
             self.logger.warning("event=report.llm_unavailable fallback=true")
             return self._fallback_report_text()
-    
+
     def _fallback_report_text(self) -> dict:
         return {
             "summary": "Your metric timeline was generated successfully, but the AI coaching summary is temporarily unavailable.",
