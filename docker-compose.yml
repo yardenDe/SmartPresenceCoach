@@ -2,6 +2,7 @@ services:
   backend:
     build:
       context: ./backend
+    image: smart-presence-backend:latest
     container_name: smart-presence-backend
     ports:
       - "8000:8000"
@@ -9,11 +10,11 @@ services:
       RELOAD: "true"
     volumes:
       - ./backend:/app
-      - ./backend/data:/app/data
 
   frontend:
     build:
       context: ./frontend
+    image: smart-presence-frontend:latest
     container_name: smart-presence-frontend
     depends_on:
       - backend
@@ -24,4 +25,3 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
-

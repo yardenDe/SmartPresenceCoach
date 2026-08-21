@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     LLM_TEMPERATURE: float = 1.0
     LLM_MAX_OUTPUT_TOKENS: int = 4096
 
-    TRANSCRIBER_MODEL = "base"
+    TRANSCRIBER_MODEL: str = "base"
 
     MEDIAPIPE_MODEL_PATH: str = str(Path(__file__).resolve().parents[2] / "assets" / "mediapipe")
     MEDIAPIPE_RUNNING_MODE: RunningMode = RunningMode.IMAGE

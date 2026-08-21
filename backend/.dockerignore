@@ -2,5 +2,7 @@
 .env
 **/__pycache__/
 *.pyc
+.pytest_cache/
+*.db
 sql_app.db
 data/*.db
