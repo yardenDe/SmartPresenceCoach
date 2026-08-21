@@ -18,8 +18,8 @@ const AppShell = () => {
   }
 
   return (
-    <main className="hud-shell h-screen overflow-hidden p-2">
-      <div className="flex h-full w-full flex-col">
+    <main className="hud-shell min-h-screen overflow-x-hidden p-2 xl:h-screen xl:overflow-hidden">
+      <div className="flex min-h-0 w-full flex-col xl:h-full">
         <PresenceDashboard />
       </div>
     </main>

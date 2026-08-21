@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 
-import { DASHBOARD_LAYOUT } from "../config/theme.tokens";
 import type { DashboardState } from "../dashboard.types";
 import { Header } from "./Header";
 
@@ -12,15 +11,9 @@ type DashboardShellProps = {
 };
 
 export const DashboardShell = ({ state, username, leftRail, workspace }: DashboardShellProps) => (
-  <section
-    className="grid h-full min-h-0 gap-[1vh]"
-    style={{ gridTemplateRows: `${DASHBOARD_LAYOUT.headerHeight} minmax(0,1fr)` }}
-  >
+  <section className="grid min-h-0 gap-[1vh] xl:h-full xl:grid-rows-[clamp(3rem,5.6vh,4rem)_minmax(0,1fr)]">
     <Header state={state} username={username} />
-    <div
-      className="grid min-h-0 gap-[1vh]"
-      style={{ gridTemplateColumns: `${DASHBOARD_LAYOUT.leftRailWidth} minmax(0,81fr)` }}
-    >
+    <div className="grid min-h-0 grid-cols-1 gap-[1vh] xl:grid-cols-[minmax(250px,19fr)_minmax(0,81fr)]">
       {leftRail}
       {workspace}
     </div>

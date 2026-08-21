@@ -32,23 +32,23 @@ export const LiveView = ({
   attachCanvasElement,
 }: LiveViewProps) => (
   <>
-    <div className="hud-panel relative min-h-0 overflow-hidden bg-[radial-gradient(circle_at_center,#162b3a_0%,#0c1a25_100%)]">
+    <div className="hud-panel relative aspect-video min-h-[240px] overflow-hidden bg-[radial-gradient(circle_at_center,#162b3a_0%,#0c1a25_100%)] xl:aspect-auto xl:min-h-0">
       <video
         ref={attachVideoElement}
         autoPlay={!isOffline}
         controls={isOffline}
         muted
         playsInline
-        className="h-full w-full object-cover opacity-[0.9]"
+        className="h-full w-full object-contain opacity-[0.9]"
       />
-      <canvas ref={attachCanvasElement} className="pointer-events-none absolute inset-0 h-full w-full object-cover" />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-center justify-between gap-4 border-t border-cyan-300/12 bg-[#08141d]/70 px-[clamp(1rem,1.5vw,1.5rem)] py-[clamp(0.7rem,1vh,0.95rem)] text-[clamp(0.9rem,1vw,1.05rem)] text-[#d8f3ff] backdrop-blur">
+      <canvas ref={attachCanvasElement} className="pointer-events-none absolute inset-0 h-full w-full object-contain" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 flex flex-wrap items-center justify-between gap-2 border-t border-cyan-300/12 bg-[#08141d]/70 px-[clamp(1rem,1.5vw,1.5rem)] py-[clamp(0.7rem,1vh,0.95rem)] text-[clamp(0.9rem,1vw,1.05rem)] text-[#d8f3ff] backdrop-blur">
         <span className="flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-emerald-300" />
           Tracking
         </span>
         <span className="min-w-0 truncate">{statusMessage}</span>
-        <span className="flex shrink-0 items-center gap-4">
+        <span className="flex shrink-0 items-center gap-2 sm:gap-4">
           <span>{availabilityIcon(sessionInfo.cameraStatus)} Camera</span>
           <span>{availabilityIcon(sessionInfo.micStatus)} Mic</span>
         </span>

@@ -64,7 +64,6 @@ const FACE_CONNECTIONS: readonly Connection[] = [
 ] as const;
 
 const BODY_POINTS = [
-  0,
   11, 12,
   13, 14,
   15, 16,
