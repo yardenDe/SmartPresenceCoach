@@ -90,7 +90,7 @@ class VisionPipeline:
         return chunk_results
 
 
-    def pipline(
+    def pipeline(
         self,
         video_path: str,
     ) -> Generator[list[dict[str, Any]], None, list[dict[str, Any]] | None]:

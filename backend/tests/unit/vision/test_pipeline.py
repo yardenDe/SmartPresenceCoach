@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 
 def test_process_frame_uses_detector_and_landmark_extractor():
-    from vision.pipline import VisionPipeline
+    from vision.pipeline import VisionPipeline
 
     detector = Mock()
     detector.detect.return_value = {"raw": "data"}
@@ -24,7 +24,7 @@ def test_process_frame_uses_detector_and_landmark_extractor():
 
 
 def test_pipeline_yields_one_landmark_list_per_chunk(monkeypatch):
-    import vision.pipline as pipeline_module
+    import vision.pipeline as pipeline_module
 
     class FakeVideoExtractor:
         def __init__(self, video_path):
@@ -46,7 +46,7 @@ def test_pipeline_yields_one_landmark_list_per_chunk(monkeypatch):
     )
     monkeypatch.setattr(pipeline_module, "VideoExtractor", FakeVideoExtractor)
 
-    chunks = list(pipeline.pipline(video_path="demo.mp4"))
+    chunks = list(pipeline.pipeline(video_path="demo.mp4"))
 
     assert [len(chunk) for chunk in chunks] == [1, 1]
     assert pipeline.process_frame.call_count == 3

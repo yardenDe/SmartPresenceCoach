@@ -8,7 +8,7 @@ from repositories.snapshot_repository import SnapshotRepository
 from schemas.live import LiveResponse
 from schemas.offline import OfflineResponse
 from vision.mediapipe_detector import MediaPipeDetector
-from vision.pipline import VisionPipeline
+from vision.pipeline import VisionPipeline
 from vision.config import CHUNK_SECONDS
 
 
@@ -37,7 +37,7 @@ class SessionAnalysisService:
 
         try:
             for chunk_index, landmarks_list in enumerate(
-                pipeline.pipline(video_path=video_path),
+                pipeline.pipeline(video_path=video_path),
                 start=1,
             ):
                 if not landmarks_list:
@@ -62,7 +62,7 @@ class SessionAnalysisService:
 
         try:
             for chunk_index, landmarks_list in enumerate(
-                pipeline.pipline(video_path=video_path),
+                pipeline.pipeline(video_path=video_path),
                 start=1,
             ):
                 if not landmarks_list:

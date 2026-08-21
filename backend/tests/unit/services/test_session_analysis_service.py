@@ -53,7 +53,7 @@ def test_process_offline_uses_fake_pipeline_and_flushes(monkeypatch, sample_fram
             self.closed = False
             FakePipeline.last_instance = self
 
-        def pipline(self, video_path):
+        def pipeline(self, video_path):
             assert video_path == "video.mp4"
             yield [sample_frame()]
             yield []
