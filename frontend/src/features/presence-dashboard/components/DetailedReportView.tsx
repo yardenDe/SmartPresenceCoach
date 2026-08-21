@@ -17,7 +17,7 @@ export const DetailedReportView = ({
   summary,
   recommendations,
 }: DetailedReportViewProps) => (
-  <div className="grid min-h-0 gap-[1vh] xl:grid-rows-[minmax(0,24fr)_minmax(0,46fr)_minmax(0,30fr)]">
+  <div className="grid min-h-0 gap-[1vh] xl:h-full xl:grid-rows-[minmax(0,24fr)_minmax(0,46fr)_minmax(0,30fr)]">
     <section className="hud-panel grid min-h-0 grid-rows-[auto_minmax(0,1fr)] p-[clamp(0.85rem,1.15vw,1.2rem)]">
       <h2 className="hud-title text-[clamp(1.05rem,1.35vw,1.55rem)] font-bold">Overall & Metrics Timeline</h2>
       <div className="mt-[clamp(0.45rem,0.8vh,0.7rem)] min-h-0">

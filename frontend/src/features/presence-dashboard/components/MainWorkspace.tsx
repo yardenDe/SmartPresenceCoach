@@ -55,12 +55,12 @@ type MainWorkspaceProps = {
 export const MainWorkspace = (props: MainWorkspaceProps) => {
   const commonClass =
     props.state === "setup"
-      ? "grid h-full min-h-0 gap-[1vh]"
+      ? "grid min-h-0 gap-[1vh] xl:h-full"
       : props.state === "detailed"
-        ? "grid h-full min-h-0 gap-[1vh]"
+        ? "grid min-h-0 gap-[1vh] xl:h-full"
       : props.state === "summary"
-        ? "grid h-full min-h-0 gap-[1vh] xl:grid-cols-[minmax(0,76fr)_minmax(180px,14fr)] xl:grid-rows-[minmax(0,72fr)_minmax(150px,28fr)]"
-        : "grid h-full min-h-0 gap-[1vh] xl:grid-cols-[minmax(0,76fr)_minmax(180px,14fr)] xl:grid-rows-[minmax(0,72fr)_minmax(150px,28fr)]";
+        ? "grid min-h-0 gap-[1vh] xl:h-full xl:grid-cols-[minmax(0,76fr)_minmax(180px,14fr)] xl:grid-rows-[minmax(0,72fr)_minmax(150px,28fr)]"
+        : "grid min-h-0 gap-[1vh] xl:h-full xl:grid-cols-[minmax(0,76fr)_minmax(180px,14fr)] xl:grid-rows-[minmax(0,72fr)_minmax(150px,28fr)]";
 
   return (
     <main className={commonClass}>

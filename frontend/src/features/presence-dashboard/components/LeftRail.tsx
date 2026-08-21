@@ -62,7 +62,7 @@ export const LeftRail = ({
   onDownloadPdf,
   onSendEmail,
 }: LeftRailProps) => (
-  <aside className="grid min-h-0 gap-[1vh] overflow-hidden xl:grid-rows-[auto_auto_auto_minmax(0,1fr)]">
+  <aside className="grid min-h-0 gap-[1vh] overflow-visible xl:grid-rows-[auto_auto_auto_minmax(0,1fr)] xl:overflow-hidden">
     <div className="hud-panel grid content-start gap-[clamp(0.9rem,1.6vh,1.25rem)] p-[clamp(0.95rem,1.25vw,1.25rem)]">
       <div className="flex items-center justify-between">
         <p className="hud-label text-[clamp(0.95rem,1.05vw,1.1rem)]">Session</p>
