@@ -4,8 +4,6 @@ class AnalysisLevel(Enum):
     LEVEL1 = 1
     LEVEL2 = 2
 
-CHUNK_SECONDS = 3
-TARGET_FPS = 3
 
 class PointNames:
     NOSE: str = "nose"

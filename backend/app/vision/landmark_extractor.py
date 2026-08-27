@@ -14,10 +14,7 @@ logger = get_logger("app.vision.landmarks")
 class LandmarkExtractor:
 
     def filter_landmarks(self, landmarks_results: dict[str, Any]) -> dict[str, Any]:
-        if not isinstance(landmarks_results, dict):
-            logger.warning("event=landmarks.input.invalid")
-            raise VisionProcessingError()
-
+       
         try:
             result = {
                 "pose": self._extract_pose(landmarks_results.get("pose_landmarks")),

@@ -9,7 +9,7 @@ from schemas.live import LiveResponse
 from schemas.offline import OfflineResponse
 from vision.mediapipe_detector import MediaPipeDetector
 from vision.pipeline import VisionPipeline
-from vision.config import CHUNK_SECONDS
+from video.config import CHUNK_SECONDS
 
 
 

@@ -1,8 +1,7 @@
 from typing import Any, Dict, Generator
 
 from core.logger import get_logger
-from vision.config import CHUNK_SECONDS, TARGET_FPS
-from video.frame_extractor import VideoExtractor
+from video.frame_extractor import FrameExtractor
 from vision.mediapipe_detector import MediaPipeDetector
 from vision.landmark_extractor import LandmarkExtractor
 
@@ -97,14 +96,11 @@ class VisionPipeline:
 
         logger.debug("event=vision.pipeline.start mode=%s", self.mode)
 
-        self.video_extractor = VideoExtractor(video_path=video_path)
+        self.video_extractor = FrameExtractor(video_path=video_path)
 
         chunk_index = 0
 
-        for chunk_frames in self.video_extractor.get_chunks(
-            chunk_sec=CHUNK_SECONDS,
-            target_fps=TARGET_FPS,
-        ):
+        for chunk_frames in self.video_extractor.get_chunks():
 
             chunk_index += 1
 
