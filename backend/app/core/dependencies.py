@@ -4,6 +4,7 @@ from fastapi import Depends, File, UploadFile
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from google import genai
 from sqlalchemy.orm import Session
+from groq import Groq
 
 from core.config import get_settings
 from core.logger import get_logger
@@ -29,6 +30,8 @@ from services.session_analysis_service import SessionAnalysisService
 from services.session_service import SessionService
 from vision.mediapipe_detector import MediaPipeDetector
 from video.video_storage import VideoStorage
+from audio.transcriber import Transcriber
+
 
 security = HTTPBearer()
 
@@ -241,10 +244,15 @@ def get_offline_service(
     )
 
 
-def get_transcriber():
+def get_transcriber() -> Transcriber:
     global _transcriber
+
     if _transcriber is None:
         settings = get_settings()
-        _transcriber = get_transcriber(settings.TRANSCRIBER_MODEL)
+
+        _transcriber = Transcriber(
+            client=Groq(api_key=settings.GROQ_API_KEY),
+            model=settings.TRANSCRIBER_MODEL,
+        )
 
     return _transcriber

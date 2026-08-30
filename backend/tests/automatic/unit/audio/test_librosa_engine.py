@@ -8,9 +8,9 @@ from audio.librosa_engine import LibrosaEngine
 
 def test_rms(monkeypatch):
     audio = np.array([0.1, 0.2, 0.3], dtype=np.float32)
-    expected = np.array([[0.2, 0.3]], dtype=np.float32)
+    librosa_result = np.array([[0.2, 0.3]], dtype=np.float32)
 
-    rms_mock = Mock(return_value=expected)
+    rms_mock = Mock(return_value=librosa_result)
     monkeypatch.setattr(
         librosa_engine_module.librosa.feature,
         "rms",
@@ -20,7 +20,7 @@ def test_rms(monkeypatch):
     engine = LibrosaEngine()
     result = engine.rms(audio)
 
-    np.testing.assert_array_equal(result, expected[0])
+    np.testing.assert_array_equal(result, librosa_result[0])
     rms_mock.assert_called_once_with(y=audio)
 
 
@@ -46,6 +46,9 @@ def test_pitch(monkeypatch):
     result = engine.pitch(audio)
 
     np.testing.assert_array_equal(result, expected)
+
+    assert note_to_hz_mock.call_args_list[0].args == ("C2",)
+    assert note_to_hz_mock.call_args_list[1].args == ("C7",)
 
     yin_mock.assert_called_once_with(
         audio,

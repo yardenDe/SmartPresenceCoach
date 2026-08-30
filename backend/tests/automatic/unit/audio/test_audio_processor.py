@@ -19,10 +19,15 @@ def test_normalize_audio():
 
 def test_extract(monkeypatch):
     samples = np.array([-1000, 0, 1000], dtype=np.int16)
-    run_result = Mock(stdout=samples.tobytes())
 
-    run_mock = Mock(return_value=run_result)
-    monkeypatch.setattr(audio_processor_module.subprocess, "run", run_mock)
+    run_mock = Mock(
+        return_value=Mock(stdout=samples.tobytes())
+    )
+    monkeypatch.setattr(
+        audio_processor_module.subprocess,
+        "run",
+        run_mock,
+    )
 
     processor = AudioProcessor("video.mp4")
     result = processor.extract()
@@ -53,19 +58,23 @@ def test_stream(monkeypatch):
     process.stdout = stdout
 
     popen_mock = Mock(return_value=process)
-    monkeypatch.setattr(audio_processor_module.subprocess, "Popen", popen_mock)
+    monkeypatch.setattr(
+        audio_processor_module.subprocess,
+        "Popen",
+        popen_mock,
+    )
 
     processor = AudioProcessor("video.mp4")
-    result = list(processor.stream())
+    chunks = list(processor.stream())
 
-    assert len(result) == 2
+    assert len(chunks) == 2
 
     np.testing.assert_allclose(
-        result[0],
+        chunks[0],
         first.astype(np.float32) / audio_processor_module.PCM_SCALE,
     )
     np.testing.assert_allclose(
-        result[1],
+        chunks[1],
         second.astype(np.float32) / audio_processor_module.PCM_SCALE,
     )
 
@@ -79,6 +88,8 @@ def test_to_wav_bytes():
 
     wav_bytes = processor.to_wav_bytes(audio)
 
+    assert isinstance(wav_bytes, bytes)
+
     with wave.open(io.BytesIO(wav_bytes), "rb") as wav_file:
         assert wav_file.getnchannels() == processor.channels
         assert wav_file.getframerate() == processor.sample_rate
@@ -86,7 +97,7 @@ def test_to_wav_bytes():
         assert wav_file.getnframes() == len(audio)
 
 
-def test_custom_settings_are_added_to_command():
+def test_custom_audio_settings_are_used():
     processor = AudioProcessor(
         "video.mp4",
         sample_rate=44100,
@@ -96,8 +107,10 @@ def test_custom_settings_are_added_to_command():
     assert processor.sample_rate == 44100
     assert processor.channels == 2
 
-    sample_rate_index = processor.command.index("-ar")
-    channels_index = processor.command.index("-ac")
+    assert processor.command[
+        processor.command.index("-ar") + 1
+    ] == "44100"
 
-    assert processor.command[sample_rate_index + 1] == "44100"
-    assert processor.command[channels_index + 1] == "2"
+    assert processor.command[
+        processor.command.index("-ac") + 1
+    ] == "2"
