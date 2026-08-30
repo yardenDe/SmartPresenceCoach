@@ -1,17 +1,22 @@
-from pydantic_settings import BaseSettings
 from functools import lru_cache
 from pathlib import Path
+
 from mediapipe.tasks.python.vision import RunningMode
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-  
+    model_config = SettingsConfigDict(
+        env_file=Path(__file__).resolve().parents[2] / ".env",
+        extra="ignore",
+    )
+
     DATABASE_URL: str = "sqlite:///./data/sql_app.db"
 
     SECRET_KEY: str = "secret"
     ALGORITHM: str = "HS256"
     EXPIRE_MINUTES: int = 30
-    
+
     APP_HOST: str = "0.0.0.0"
     APP_PORT: int = 8000
     RELOAD: bool = False
@@ -26,7 +31,9 @@ class Settings(BaseSettings):
 
     TRANSCRIBER_MODEL: str = "base"
 
-    MEDIAPIPE_MODEL_PATH: str = str(Path(__file__).resolve().parents[2] / "assets" / "mediapipe")
+    MEDIAPIPE_MODEL_PATH: str = str(
+        Path(__file__).resolve().parents[2] / "assets" / "mediapipe"
+    )
     MEDIAPIPE_RUNNING_MODE: RunningMode = RunningMode.IMAGE
     FACE_LANDMARKER_MODEL: str = "face_landmarker.task"
     POSE_LANDMARKER_MODEL: str = "pose_landmarker.task"
@@ -40,11 +47,7 @@ class Settings(BaseSettings):
     MAIL_USE_TLS: bool = True
     MAIL_USE_SSL: bool = False
     MAIL_TIMEOUT: float = 10.0
-    
 
-    
-    class Config:
-        env_file = Path(__file__).resolve().parents[2] / ".env"   
 
 @lru_cache()
 def get_settings() -> Settings:
