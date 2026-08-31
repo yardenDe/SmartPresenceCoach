@@ -4,16 +4,16 @@ from core.exceptions import AppError, VisionProcessingError
 from core.logger import get_logger
 from schemas.live import LiveResponse
 from services.session_analysis_service import SessionAnalysisService
-from video.video_storage import VideoStorage
+from media.storage import storage
 
 
 class LiveService:
     def __init__(
         self,
-        video_storage: VideoStorage,
+        storage: storage,
         session_analysis_service: SessionAnalysisService,
     ):
-        self.video_storage = video_storage
+        self.storage = storage
         self.video_path = None
         self.session_analysis_service = session_analysis_service
 
@@ -28,7 +28,7 @@ class LiveService:
         )
 
         try:
-            self.video_path = await self.video_storage.save_temp(video)
+            self.video_path = await self.storage.save_temp(video)
             response = self.session_analysis_service.process_live(
                 video_path=self.video_path,
                 session_id=session_id,
@@ -52,5 +52,5 @@ class LiveService:
 
     def close(self) -> None:
         if self.video_path:
-            self.video_storage.delete(self.video_path)
+            self.storage.delete(self.video_path)
             self.video_path = None

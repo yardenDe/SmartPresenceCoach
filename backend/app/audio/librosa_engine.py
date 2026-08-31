@@ -1,7 +1,7 @@
 import librosa
 import numpy as np
 
-from audio.config import SAMPLE_RATE
+from media.config import SAMPLE_RATE
 
 
 class LibrosaEngine:

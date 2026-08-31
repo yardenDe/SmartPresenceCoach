@@ -1,6 +1,5 @@
 import numpy as np
 
-from audio.audio_processor import AudioProcessor
 from audio.librosa_engine import LibrosaEngine
 from audio.transcriber import Transcriber
 
@@ -8,20 +7,18 @@ from audio.transcriber import Transcriber
 class AudioPipeline:
     def __init__(
         self,
-        processor: AudioProcessor,
         engine: LibrosaEngine,
         transcriber: Transcriber,
     ):
-        self.processor = processor
         self.engine = engine
         self.transcriber = transcriber
 
-    def process(self) -> dict[str, object]:
-        audio = self.processor.extract()
+    def process(
+        self,
+        audio: np.ndarray,
+    ) -> dict[str, object]:
 
-        transcription = self.transcriber.transcribe(
-            self.processor.to_wav_bytes(audio)
-        )
+        transcription = self.transcriber.transcribe(audio)
 
         return {
             "rms": self.engine.rms(audio),

@@ -29,7 +29,7 @@ from services.session_buffer import SessionBuffer
 from services.session_analysis_service import SessionAnalysisService
 from services.session_service import SessionService
 from vision.mediapipe_detector import MediaPipeDetector
-from video.video_storage import VideoStorage
+from media.storage import storage
 from audio.transcriber import Transcriber
 
 
@@ -75,8 +75,8 @@ def get_analytics_manager() -> AnalyticsManager:
     return AnalyticsManager()
 
 
-def get_video_storage() -> VideoStorage:
-    return VideoStorage()
+def get_storage() -> storage:
+    return storage()
 
 
 def get_llm() -> Manager:
@@ -224,22 +224,22 @@ def get_session_analysis_service(
 
 
 def get_live_service(
-    video_storage: VideoStorage = Depends(get_video_storage),
+    storage: storage = Depends(get_storage),
     session_analysis_service: SessionAnalysisService = Depends(get_session_analysis_service),
 ) -> LiveService:
     return LiveService(
-        video_storage=video_storage,
+        storage=storage,
         session_analysis_service=session_analysis_service,
     )
 
 def get_offline_service(
     video: UploadFile = File(...),
-    video_storage: VideoStorage = Depends(get_video_storage),
+    storage: storage = Depends(get_storage),
     session_analysis_service: SessionAnalysisService = Depends(get_session_analysis_service),
 ) -> OfflineService:
     return OfflineService(
         video=video,
-        video_storage=video_storage,
+        storage=storage,
         session_analysis_service=session_analysis_service,
     )
 

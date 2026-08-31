@@ -4,9 +4,9 @@ from collections.abc import Generator
 
 from core.exceptions import InvalidVideoError
 from core.logger import get_logger
-from video.config import CHUNK_SECONDS, TARGET_FPS
+from media.config import CHUNK_SECONDS, TARGET_FPS
 
-logger = get_logger("app.video.frame_extractor")
+logger = get_logger("app.media.frame_extractor")
 
 
 class FrameExtractor:

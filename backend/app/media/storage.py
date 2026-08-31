@@ -6,9 +6,9 @@ from fastapi import UploadFile
 from core.exceptions import VideoSaveError
 from core.logger import get_logger
 
-logger = get_logger("app.vision.video_storage")
+logger = get_logger("app.vision.storage")
 
-class VideoStorage:
+class storage:
 
     async def save_temp(self, video: UploadFile) -> str:
         try:

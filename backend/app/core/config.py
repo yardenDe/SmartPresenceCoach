@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     LLM_TEMPERATURE: float = 1.0
     LLM_MAX_OUTPUT_TOKENS: int = 4096
 
+    GROQ_API_KEY: str | None = None
     TRANSCRIBER_MODEL: str = "whisper-large-v3-turbo"
 
     MEDIAPIPE_MODEL_PATH: str = str(

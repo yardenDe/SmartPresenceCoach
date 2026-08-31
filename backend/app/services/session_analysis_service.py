@@ -8,8 +8,8 @@ from repositories.snapshot_repository import SnapshotRepository
 from schemas.live import LiveResponse
 from schemas.offline import OfflineResponse
 from vision.mediapipe_detector import MediaPipeDetector
-from vision.pipeline import VisionPipeline
-from video.config import CHUNK_SECONDS
+from vision.vision_pipeline import VisionPipeline
+from media.config import CHUNK_SECONDS
 
 
 

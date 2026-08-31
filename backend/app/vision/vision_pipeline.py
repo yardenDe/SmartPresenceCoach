@@ -1,7 +1,7 @@
 from typing import Any, Dict, Generator
 
 from core.logger import get_logger
-from video.frame_extractor import FrameExtractor
+from media.frame_extractor import FrameExtractor
 from vision.mediapipe_detector import MediaPipeDetector
 from vision.landmark_extractor import LandmarkExtractor
 

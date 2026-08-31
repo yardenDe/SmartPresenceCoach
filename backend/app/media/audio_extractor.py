@@ -1,21 +1,17 @@
 from collections.abc import Iterator
-import io
 import subprocess
-import wave
 
 import numpy as np
 
-from audio.config import (
+from media.config import (
     BUFFER_SIZE,
     CHANNELS,
-    PCM_MAX,
     PCM_SCALE,
     SAMPLE_RATE,
-    SAMPLE_WIDTH,
 )
 
 
-class AudioProcessor:
+class AudioExtractor:
     def __init__(
         self,
         video_path: str,
@@ -63,6 +59,7 @@ class AudioProcessor:
         )
 
         stdout = process.stdout
+
         if stdout is None:
             process.wait()
             return
@@ -75,20 +72,6 @@ class AudioProcessor:
                     break
 
                 yield self._normalize_audio(audio_bytes)
+
         finally:
             process.wait()
-
-    def to_wav_bytes(self, audio: np.ndarray) -> bytes:
-        pcm_audio = (
-            np.clip(audio, -1.0, 1.0) * PCM_MAX
-        ).astype(np.int16)
-
-        buffer = io.BytesIO()
-
-        with wave.open(buffer, "wb") as wav_file:
-            wav_file.setnchannels(self.channels)
-            wav_file.setsampwidth(SAMPLE_WIDTH)
-            wav_file.setframerate(self.sample_rate)
-            wav_file.writeframes(pcm_audio.tobytes())
-
-        return buffer.getvalue()

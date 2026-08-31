@@ -23,7 +23,7 @@ async def test_process_success():
     )
     service = OfflineService(
         video=video,
-        video_storage=storage,
+        storage=storage,
         session_analysis_service=analysis_service,
     )
 
@@ -54,7 +54,7 @@ async def test_process_deletes_temp_file_even_when_analysis_fails():
     analysis_service.process_offline.side_effect = RuntimeError("boom")
     service = OfflineService(
         video=video,
-        video_storage=storage,
+        storage=storage,
         session_analysis_service=analysis_service,
     )
 
