@@ -30,7 +30,7 @@ def test_process_frame_uses_detector_and_landmark_extractor():
     assert result["pose"]["nose"]["x"] == 0.5
 
 
-def test_process_chunk_returns_only_frames_with_landmarks():
+def test_process_returns_only_frames_with_landmarks():
     from vision.vision_pipeline import VisionPipeline
 
     pipeline = VisionPipeline(detector=Mock())
@@ -45,7 +45,7 @@ def test_process_chunk_returns_only_frames_with_landmarks():
         side_effect=lambda frame: frame_results[frame]
     )
 
-    result = pipeline.process_chunk(["a", "b", "c"])
+    result = pipeline.process(["a", "b", "c"])
 
     assert result == [
         {"pose": {"nose": {"x": 0.1, "y": 0.2}}},
@@ -54,40 +54,13 @@ def test_process_chunk_returns_only_frames_with_landmarks():
     assert pipeline.process_frame.call_count == 3
 
 
-def test_pipeline_yields_one_landmark_list_per_media_chunk(monkeypatch):
-    import vision.vision_pipeline as pipeline_module
+def test_process_returns_empty_list_when_no_frames_have_landmarks():
+    from vision.vision_pipeline import VisionPipeline
 
-    class FakeFrameExtractor:
-        def __init__(self, video_path, target_fps=3):
-            assert video_path == "demo.mp4"
-            assert target_fps > 0
+    pipeline = VisionPipeline(detector=Mock())
+    pipeline.process_frame = Mock(return_value={})
 
-        def get_chunks(self, chunk_sec=3):
-            assert chunk_sec > 0
-            yield ["a", "b"]
-            yield ["c"]
+    result = pipeline.process(["a", "b"])
 
-    pipeline = pipeline_module.VisionPipeline(detector=Mock())
-
-    frame_results = {
-        "a": {"pose": {"nose": {"x": 0.1, "y": 0.2}}},
-        "b": {},
-        "c": {"pose": {"nose": {"x": 0.2, "y": 0.2}}},
-    }
-
-    pipeline.process_frame = Mock(
-        side_effect=lambda frame: frame_results[frame]
-    )
-
-    monkeypatch.setattr(
-        pipeline_module,
-        "FrameExtractor",
-        FakeFrameExtractor,
-    )
-
-    chunks = list(
-        pipeline.pipeline(video_path="demo.mp4")
-    )
-
-    assert [len(chunk) for chunk in chunks] == [1, 1]
-    assert pipeline.process_frame.call_count == 3
+    assert result == []
+    assert pipeline.process_frame.call_count == 2

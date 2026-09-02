@@ -1,7 +1,6 @@
 import jwt
 from typing import Any
 from datetime import datetime, timedelta, timezone
-from fastapi.security import HTTPBearer
 import bcrypt
 
 from core.exceptions import TokenExpiredError, InvalidTokenError
@@ -17,7 +16,6 @@ class SecurityService:
         self.secret_key = settings.SECRET_KEY
         self.algorithm = settings.ALGORITHM
         self.expire_minutes = settings.EXPIRE_MINUTES
-        self.security = HTTPBearer()
 
     def create_token(self, user_id: int) -> str:
         payload = {

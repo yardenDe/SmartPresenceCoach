@@ -1,7 +1,11 @@
+"""HTML templates and presentation helpers for generated reports."""
+
 from html import escape
 
+from analytics.config import ANALYSIS_METRICS
 
-METRICS = ["focus", "posture", "presence", "engagement", "composure"]
+
+METRICS = ANALYSIS_METRICS
 COLORS = {
     "overall": "#111827",
     "focus": "#2563eb",

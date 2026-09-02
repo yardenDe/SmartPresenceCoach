@@ -35,7 +35,7 @@ export const sessionAnalysisApi = {
     formData.append("timestamp", String(timestamp));
     formData.append("video", asMp4File(segment));
 
-    return api.post<BackendLiveResponse>("/live/frame", formData);
+    return api.post<BackendLiveResponse>("/live/chunk", formData);
   },
 
   uploadOfflineVideo: (sessionId: number, video: File) => {

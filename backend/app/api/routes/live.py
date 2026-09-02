@@ -9,8 +9,8 @@ from schemas.live import LiveResponse
 router = APIRouter(prefix="/live", tags=["live"])
 
 
-@router.post("/frame", response_model=LiveResponse)
-async def analyze_frame(
+@router.post("/chunk", response_model=LiveResponse)
+async def analyze_chunk(
     video: UploadFile = File(...),
     session_id: int = Form(...),
     timestamp: float = Form(0.0),
@@ -19,6 +19,7 @@ async def analyze_frame(
 ) -> Any:
     result = await live_service.process(
         video=video,
+        user_id=user_id,
         session_id=session_id,
         timestamp=timestamp,
     )

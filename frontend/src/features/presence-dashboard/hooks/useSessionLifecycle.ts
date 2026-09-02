@@ -587,7 +587,7 @@ export const useSessionLifecycle = () => {
       const url = URL.createObjectURL(response.data);
       const link = document.createElement("a");
       link.href = url;
-      link.download = `presence-analysis-${reportSessionId}.pdf`;
+      link.download = `presence-report-${reportSessionId}.pdf`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -641,8 +641,6 @@ export const useSessionLifecycle = () => {
 
         setReportMessage("Uploading and analyzing video. This can take a few minutes.");
         await sessionAnalysisApi.uploadOfflineVideo(createdSessionId, offlineVideoFile);
-        setReportMessage("Finalizing analysis.");
-        await sessionAnalysisApi.endSession(createdSessionId);
         setReportMessage("Building session summary.");
         const shortReport = await loadShortReport(createdSessionId);
         sessionIdRef.current = null;

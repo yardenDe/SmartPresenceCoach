@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -44,7 +45,7 @@ class ReportEmailRequest(BaseModel):
 
 
 class ReportEmailResponse(BaseModel):
-    status: str
+    status: Literal["sent"]
 
 
 class RecentReportResponse(BaseModel):
@@ -54,13 +55,3 @@ class RecentReportResponse(BaseModel):
     ended_at: datetime | None = None
     overall_score: float | None = None
     generated_at: datetime | None = None
-
-
-class ReportResponse(BaseModel):
-    session_id: int
-    overall_score: float
-    summary: str
-    recommendations: str
-    generated_at: datetime
-
-    model_config = {"from_attributes": True}

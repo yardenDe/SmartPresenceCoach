@@ -6,7 +6,6 @@ import pytest
 
 @pytest.mark.asyncio
 async def test_process_success():
-    from schemas.offline import OfflineResponse
     from services.offline_service import OfflineService
 
     video = types.SimpleNamespace(filename="presentation.mp4")
@@ -17,25 +16,31 @@ async def test_process_success():
         return "/tmp/presentation.mp4"
 
     storage.save_temp.side_effect = fake_save_temp
+    frame_extractor = Mock()
+    frame_extractor.get_chunks.return_value = [["frame-1"], ["frame-2"]]
     analysis_service = Mock()
-    analysis_service.process_offline.return_value = OfflineResponse(
-        session_id=25, status="success"
-    )
+    analysis_service.process_chunk.side_effect = [{"scores": {"overall": 80}}, None]
+    session_service = Mock()
     service = OfflineService(
-        video=video,
         storage=storage,
-        session_analysis_service=analysis_service,
+        frame_extractor=frame_extractor,
+        analysis_service=analysis_service,
+        session_service=session_service,
     )
 
-    response = await service.process(session_id=25)
+    response = await service.process(video=video, user_id=7, session_id=25)
 
     assert response.session_id == 25
     assert response.status == "success"
-    analysis_service.process_offline.assert_called_once_with(
-        video_path="/tmp/presentation.mp4", session_id=25
+    session_service.require_owned_session.assert_called_once_with(7, 25)
+    frame_extractor.get_chunks.assert_called_once_with("/tmp/presentation.mp4")
+    assert analysis_service.process_chunk.call_count == 2
+    session_service.add_analysis.assert_called_once_with(
+        25,
+        {"scores": {"overall": 80}},
     )
+    session_service.end.assert_called_once_with(7, 25)
     storage.delete.assert_called_once_with("/tmp/presentation.mp4")
-    assert service.video_path is None
 
 
 @pytest.mark.asyncio
@@ -50,16 +55,20 @@ async def test_process_deletes_temp_file_even_when_analysis_fails():
         return "/tmp/broken.mp4"
 
     storage.save_temp.side_effect = fake_save_temp
+    frame_extractor = Mock()
+    frame_extractor.get_chunks.return_value = [["frame"]]
     analysis_service = Mock()
-    analysis_service.process_offline.side_effect = RuntimeError("boom")
+    analysis_service.process_chunk.side_effect = RuntimeError("boom")
+    session_service = Mock()
     service = OfflineService(
-        video=video,
         storage=storage,
-        session_analysis_service=analysis_service,
+        frame_extractor=frame_extractor,
+        analysis_service=analysis_service,
+        session_service=session_service,
     )
 
     with pytest.raises(VisionProcessingError):
-        await service.process(session_id=3)
+        await service.process(video=video, user_id=7, session_id=3)
 
+    session_service.end.assert_not_called()
     storage.delete.assert_called_once_with("/tmp/broken.mp4")
-    assert service.video_path is None

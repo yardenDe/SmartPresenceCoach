@@ -32,7 +32,6 @@ class SnapshotRepository:
                 posture=snapshot.get("posture"),
                 presence=snapshot.get("presence"),
                 composure=snapshot.get("composure"),
-                delivery=snapshot.get("delivery"),
             )
             for snapshot in snapshots
         ]

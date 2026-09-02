@@ -2,11 +2,12 @@ from fastapi import APIRouter, Depends, Response
 
 from core.dependencies import (
     get_current_user_id,
-    get_email_service,
+    get_report_email_service,
     get_report_pdf_service,
     get_report_service,
     get_llm_service,
 )
+from reporting.pdf_renderer import report_pdf_filename
 from schemas.report import (
     FullReportResponse,
     RecentReportResponse,
@@ -14,7 +15,7 @@ from schemas.report import (
     ReportEmailResponse,
     ShortReportResponse,
 )
-from services.email_service import EmailService
+from services.report_email_service import ReportEmailService
 from services.report_pdf_service import ReportPdfService
 from services.report_service import ReportService
 from services.llm_service import LLMService
@@ -46,7 +47,11 @@ def generate_full_report(
     service: ReportService = Depends(get_report_service),
     llm_service: LLMService | None = Depends(get_llm_service),
 ) -> FullReportResponse:
-    return service.generate_full_report(user_id=user_id, session_id=session_id, llm_service=llm_service)
+    return service.generate_full_report(
+        user_id=user_id,
+        session_id=session_id,
+        llm_service=llm_service,
+    )
 
 
 @router.post("/{session_id}/email", response_model=ReportEmailResponse)
@@ -54,7 +59,7 @@ def send_full_report_email(
     session_id: int,
     request: ReportEmailRequest,
     user_id: int = Depends(get_current_user_id),
-    service: EmailService = Depends(get_email_service),
+    service: ReportEmailService = Depends(get_report_email_service),
 ) -> ReportEmailResponse:
     return service.send_full_report(
         user_id=user_id,
@@ -75,6 +80,6 @@ def download_full_report_pdf(
         content=pdf,
         media_type="application/pdf",
         headers={
-            "Content-Disposition": f'attachment; filename="presence-analysis-{session_id}.pdf"',
+            "Content-Disposition": f'attachment; filename="{report_pdf_filename(session_id)}"',
         },
     )
