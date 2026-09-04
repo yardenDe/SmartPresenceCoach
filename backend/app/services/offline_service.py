@@ -2,6 +2,7 @@ from fastapi import UploadFile
 
 from core.exceptions import AppError, NoLandmarksError, VisionProcessingError
 from core.logger import get_logger
+from media.config import CHUNK_SECONDS
 from media.frame_extractor import FrameExtractor
 from media.storage import storage
 from schemas.offline import OfflineResponse
@@ -49,13 +50,16 @@ class OfflineService:
             ):
                 analysis = self.analysis_service.process_chunk(
                     chunk_frames=chunk_frames,
-                    chunk_index=chunk_index,
                 )
 
                 if analysis is None:
                     continue
 
-                self.session_service.add_analysis(session_id, analysis)
+                self.session_service.add_analysis(
+                    session_id=session_id,
+                    timestamp=float((chunk_index - 1) * CHUNK_SECONDS),
+                    analysis=analysis,
+                )
                 analyzed_count += 1
 
             if analyzed_count == 0:

@@ -1,8 +1,9 @@
 from pydantic import BaseModel
 
-from schemas.analysis import AnalysisResponse
+from schemas.analysis import VisualAnalysis
 
 
 class LiveResponse(BaseModel):
     session_id: int
-    result: AnalysisResponse
+    timestamp: float
+    analysis: VisualAnalysis

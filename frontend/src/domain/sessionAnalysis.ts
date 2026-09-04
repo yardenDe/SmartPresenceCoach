@@ -17,17 +17,14 @@ export const METRICS: readonly MetricDefinition[] = [
 
 export type BackendAnalysisScores = Partial<Record<MetricKey, number | null>>;
 
-export type BackendAnalysisResult = {
-  id: number;
-  timestamp: number;
-  frames_analyzed: number;
+export type BackendVisualAnalysis = BackendAnalysisScores & {
   overall: number;
-  scores: BackendAnalysisScores;
 };
 
 export type BackendLiveResponse = {
   session_id: number;
-  result: BackendAnalysisResult;
+  timestamp: number;
+  analysis: BackendVisualAnalysis;
 };
 
 export type BackendOfflineResponse = {
@@ -118,9 +115,9 @@ const liveMetricsFromScores = (scores: BackendAnalysisScores = {}): LiveMetric[]
 
 export const toLiveSnapshot = (response: BackendLiveResponse): LiveSnapshot => ({
   sessionId: response.session_id,
-  timestamp: response.result.timestamp,
-  overallScore: clampScore(response.result.overall),
-  metrics: liveMetricsFromScores(response.result.scores),
+  timestamp: response.timestamp,
+  overallScore: clampScore(response.analysis.overall),
+  metrics: liveMetricsFromScores(response.analysis),
 });
 
 export const toReportView = (response: BackendReportResponse): ReportView => {

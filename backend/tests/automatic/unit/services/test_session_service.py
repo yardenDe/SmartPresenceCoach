@@ -46,12 +46,10 @@ def test_require_owned_session_rejects_another_users_session():
 
 
 def test_add_analysis_buffers_and_persists_a_full_batch():
+    from schemas.analysis import VisualAnalysis
     from services.session_service import SessionService
 
-    analysis = {
-        "timestamp": 3.0,
-        "scores": {"overall": 85.0, "focus": 80.0},
-    }
+    analysis = VisualAnalysis(overall=85.0, focus=80.0)
     snapshots = [
         {"overall": 75.0, "focus": 70.0, "timestamp": 0.0},
         {"overall": 85.0, "focus": 80.0, "timestamp": 3.0},
@@ -65,7 +63,7 @@ def test_add_analysis_buffers_and_persists_a_full_batch():
         snapshot_repository=snapshot_repository,
     )
 
-    service.add_analysis(session_id=25, analysis=analysis)
+    service.add_analysis(session_id=25, timestamp=3.0, analysis=analysis)
 
     session_buffer.add.assert_called_once_with(
         session_id=25,

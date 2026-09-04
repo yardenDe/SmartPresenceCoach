@@ -1,5 +1,3 @@
-from typing import Any
-
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 
 from core.dependencies import get_current_user_id, get_live_service
@@ -16,7 +14,7 @@ async def analyze_chunk(
     timestamp: float = Form(0.0),
     user_id: int = Depends(get_current_user_id),
     live_service: LiveService = Depends(get_live_service)
-) -> Any:
+) -> LiveResponse:
     result = await live_service.process(
         video=video,
         user_id=user_id,

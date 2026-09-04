@@ -1,6 +1,6 @@
 from typing import Any
 
-from analytics.metrics.base_analyzer import BaseAnalyzer
+from analytics.visual.metrics.base_analyzer import BaseAnalyzer
 from analytics.math_utils import (
     average_available,
     percentage_of,

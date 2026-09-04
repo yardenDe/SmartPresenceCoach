@@ -5,6 +5,7 @@ from core.logger import get_logger
 from infrastructure.session_buffer import SessionBuffer
 from repositories.session_repository import SessionRepository
 from repositories.snapshot_repository import SnapshotRepository
+from schemas.analysis import VisualAnalysis
 
 
 class SessionService:
@@ -63,12 +64,17 @@ class SessionService:
         self.logger.info("event=session.end.done session_id=%s user_id=%s", session.id, user_id)
         return session.id
 
-    def add_analysis(self, session_id: int, analysis: dict) -> None:
+    def add_analysis(
+        self,
+        session_id: int,
+        timestamp: float,
+        analysis: VisualAnalysis,
+    ) -> None:
         snapshots = self.session_buffer.add(
             session_id=session_id,
             snapshot={
-                **analysis["scores"],
-                "timestamp": analysis["timestamp"],
+                **analysis.model_dump(exclude_none=True),
+                "timestamp": timestamp,
             },
         )
 

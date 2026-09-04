@@ -11,7 +11,9 @@ from core.logger import get_logger
 from core.exceptions import InvalidCredentialsError, LLMUnavailableError 
 from core.security import SecurityService 
 from db.db_manager import SessionLocal 
+from analytics.audio.manager import AudioAnalyticsManager
 from analytics.manager import AnalyticsManager 
+from analytics.visual.manager import VisualAnalyticsManager
 from llm.manager import Manager 
 from repositories.session_repository import SessionRepository 
 from repositories.snapshot_repository import SnapshotRepository 
@@ -75,8 +77,19 @@ def get_report_repository(db: Session = Depends(get_db)) -> ReportRepository:
     return ReportRepository(db) 
 
 
-def get_analytics_manager() -> AnalyticsManager: 
-    return AnalyticsManager() 
+def get_visual_analytics_manager() -> VisualAnalyticsManager:
+    return VisualAnalyticsManager()
+
+
+def get_audio_analytics_manager() -> AudioAnalyticsManager:
+    return AudioAnalyticsManager()
+
+
+def get_analytics_manager(
+    visual: VisualAnalyticsManager = Depends(get_visual_analytics_manager),
+    audio: AudioAnalyticsManager = Depends(get_audio_analytics_manager),
+) -> AnalyticsManager:
+    return AnalyticsManager(visual=visual, audio=audio)
 
 
 def get_storage() -> storage: 

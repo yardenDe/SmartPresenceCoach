@@ -2,8 +2,10 @@ from fastapi import UploadFile
 
 from core.exceptions import AppError, NoLandmarksError, VisionProcessingError
 from core.logger import get_logger
+from media.config import CHUNK_SECONDS
 from media.frame_extractor import FrameExtractor
 from media.storage import storage
+from schemas.analysis import VisualAnalysis
 from schemas.live import LiveResponse
 from services.analysis_service import AnalysisService
 from services.session_service import SessionService
@@ -50,24 +52,31 @@ class LiveService:
             ):
                 analysis = self.analysis_service.process_chunk(
                     chunk_frames=chunk_frames,
-                    chunk_index=chunk_index,
-                    timestamp_offset=timestamp,
                 )
 
                 if analysis is None:
                     continue
 
-                self.session_service.add_analysis(session_id, analysis)
-                response = self._build_response(session_id, analysis)
-
-                self.logger.info(
-                    "event=live.process.done session_id=%s frames=%s overall=%.2f",
-                    session_id,
-                    response.result.frames_analyzed,
-                    response.result.overall,
+                chunk_timestamp = float(
+                    timestamp + (chunk_index - 1) * CHUNK_SECONDS
+                )
+                self.session_service.add_analysis(
+                    session_id=session_id,
+                    timestamp=chunk_timestamp,
+                    analysis=analysis,
                 )
 
-                return response
+                self.logger.info(
+                    "event=live.process.done session_id=%s overall=%.2f",
+                    session_id,
+                    analysis.overall,
+                )
+
+                return LiveResponse(
+                    session_id=session_id,
+                    timestamp=chunk_timestamp,
+                    analysis=analysis,
+                )
 
             raise NoLandmarksError()
 
@@ -84,15 +93,3 @@ class LiveService:
         finally:
             if video_path:
                 self.storage.delete(video_path)
-
-    def _build_response(self, session_id: int, analysis: dict) -> LiveResponse:
-        return LiveResponse(
-            session_id=session_id,
-            result={
-                "id": analysis["chunk_index"],
-                "timestamp": analysis["timestamp"],
-                "frames_analyzed": analysis["frames_count"],
-                "overall": analysis["scores"].get("overall", 0.0),
-                "scores": analysis["scores"],
-            },
-        )

@@ -6,6 +6,7 @@ import pytest
 
 @pytest.mark.asyncio
 async def test_process_success():
+    from schemas.analysis import VisualAnalysis
     from services.offline_service import OfflineService
 
     video = types.SimpleNamespace(filename="presentation.mp4")
@@ -19,7 +20,8 @@ async def test_process_success():
     frame_extractor = Mock()
     frame_extractor.get_chunks.return_value = [["frame-1"], ["frame-2"]]
     analysis_service = Mock()
-    analysis_service.process_chunk.side_effect = [{"scores": {"overall": 80}}, None]
+    analysis = VisualAnalysis(overall=80)
+    analysis_service.process_chunk.side_effect = [analysis, None]
     session_service = Mock()
     service = OfflineService(
         storage=storage,
@@ -36,8 +38,9 @@ async def test_process_success():
     frame_extractor.get_chunks.assert_called_once_with("/tmp/presentation.mp4")
     assert analysis_service.process_chunk.call_count == 2
     session_service.add_analysis.assert_called_once_with(
-        25,
-        {"scores": {"overall": 80}},
+        session_id=25,
+        timestamp=0.0,
+        analysis=analysis,
     )
     session_service.end.assert_called_once_with(7, 25)
     storage.delete.assert_called_once_with("/tmp/presentation.mp4")

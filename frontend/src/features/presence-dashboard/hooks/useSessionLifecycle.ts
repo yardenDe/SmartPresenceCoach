@@ -440,7 +440,7 @@ export const useSessionLifecycle = () => {
         timestamp,
       );
 
-      if (typeof response.data?.result?.overall !== "number") {
+      if (typeof response.data?.analysis?.overall !== "number") {
         throw new Error("Live analysis response is not ready yet.");
       }
 
