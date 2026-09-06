@@ -1,9 +1,11 @@
+"""In-memory buffering for analysis snapshots awaiting persistence."""
+
 from typing import Any
 
 from core.logger import get_logger
 from schemas.analysis import Analysis
 
-logger = get_logger("app.services.session_buffer")
+logger = get_logger("app.infrastructure.session_buffer")
 
 
 class SessionBuffer:
@@ -11,16 +13,12 @@ class SessionBuffer:
         self.buffers: dict[int, list[dict[str, Any]]] = {}
         self.flush_size = flush_size
 
-<<<<<<< Updated upstream:backend/app/services/session_buffer.py
-    def add(self, session_id: int, snapshot: dict[str, Any]) -> None:
-=======
     def add(
         self,
         session_id: int,
         timestamp: float,
         analysis: Analysis,
     ) -> list[dict[str, Any]] | None:
->>>>>>> Stashed changes:backend/app/infrastructure/session_buffer.py
         if session_id not in self.buffers:
             self.buffers[session_id] = []
             logger.debug("event=session_buffer.create session_id=%s", session_id)
@@ -36,33 +34,20 @@ class SessionBuffer:
             len(self.buffers[session_id]),
         )
 
+        if len(self.buffers[session_id]) >= self.flush_size:
+            return self.flush(session_id)
+        return None
+
     def get(self, session_id: int) -> list[dict[str, Any]]:
         return self.buffers.get(session_id, [])
 
-    def should_flush(self, session_id: int) -> bool:
-        buffer = self.buffers.get(session_id, [])
 
-        if not buffer:
-            return False
-
-        should_flush = len(buffer) >= self.flush_size
-
-        if should_flush:
-            logger.info(
-                "event=session_buffer.should_flush.true session_id=%s count=%s flush_size=%s",
-                session_id,
-                len(buffer),
-                self.flush_size,
-            )
-
-        return should_flush
-
-    def flush(self, session_id: int) -> list[dict[str, Any]]:
+    def flush(self, session_id: int) -> list[dict[str, Any]] | None:
         buffer = self.buffers.get(session_id, [])
 
         if not buffer:
             logger.debug("event=session_buffer.flush.empty session_id=%s", session_id)
-            return []
+            return None
 
         self.buffers[session_id] = []
 
@@ -74,7 +59,7 @@ class SessionBuffer:
 
         return buffer
 
-    def close_session(self, session_id: int) -> list[dict[str, Any]]:
+    def close_session(self, session_id: int) -> list[dict[str, Any]] | None:
         buffer = self.flush(session_id)
 
         if session_id in self.buffers:

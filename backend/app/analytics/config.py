@@ -1,5 +1,3 @@
-<<<<<<< Updated upstream
-=======
 VISUAL_METRICS = (
     "focus",
     "posture",
@@ -16,7 +14,6 @@ AUDIO_METRICS = (
 )
 
 
->>>>>>> Stashed changes
 class AnalyticsConfig:
     DEFAULT_SCORE: float = 100.0
     MIN_SCORE: float = 0.0

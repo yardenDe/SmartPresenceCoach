@@ -1,12 +1,8 @@
 import librosa
 import numpy as np
 
-<<<<<<< Updated upstream
-from audio.config import SAMPLE_RATE
-=======
 from media.config import SAMPLE_RATE
 from schemas.analysis import AudioFeatures
->>>>>>> Stashed changes
 
 
 class LibrosaEngine:

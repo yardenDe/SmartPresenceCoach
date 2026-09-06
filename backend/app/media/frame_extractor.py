@@ -4,29 +4,28 @@ from collections.abc import Generator
 
 from core.exceptions import InvalidVideoError
 from core.logger import get_logger
-from video.config import CHUNK_SECONDS, TARGET_FPS
+from media.config import CHUNK_SECONDS, TARGET_FPS
 
-logger = get_logger("app.video.frame_extractor")
+logger = get_logger("app.media.frame_extractor")
 
 
 class FrameExtractor:
     def __init__(
         self,
-        video_path: str,
         target_fps: int = TARGET_FPS,
     ):
-        self.video_path = video_path
         self.target_fps = target_fps
 
     def get_chunks(
         self,
+        video_path: str,
         chunk_sec: int = CHUNK_SECONDS,
     ) -> Generator[list[np.ndarray], None, None]:
 
         chunk_size = chunk_sec * self.target_fps
         chunk = []
 
-        for frame in self._get_frames():
+        for frame in self._get_frames(video_path):
             chunk.append(frame)
 
             if len(chunk) == chunk_size:
@@ -44,9 +43,10 @@ class FrameExtractor:
         
     def _get_frames(
         self,
+        video_path: str,
     ) -> Generator[np.ndarray, None, None]:
 
-        cap = cv2.VideoCapture(self.video_path)
+        cap = cv2.VideoCapture(video_path)
 
         if not cap.isOpened():
             logger.error("event=video.open.failed")

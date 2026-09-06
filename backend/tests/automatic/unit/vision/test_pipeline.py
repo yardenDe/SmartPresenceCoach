@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 
 def test_process_frame_uses_detector_and_landmark_extractor():
-    from vision.pipeline import VisionPipeline
+    from vision.vision_pipeline import VisionPipeline
 
     detector = Mock()
     detector.detect.return_value = {"raw": "data"}
@@ -26,23 +26,14 @@ def test_process_frame_uses_detector_and_landmark_extractor():
     pipeline.landmark_extractor.filter_landmarks.assert_called_once_with(
         {"raw": "data"}
     )
+
     assert result["pose"]["nose"]["x"] == 0.5
 
 
-def test_pipeline_yields_one_landmark_list_per_chunk(monkeypatch):
-    import vision.pipeline as pipeline_module
+def test_process_returns_only_frames_with_landmarks():
+    from vision.vision_pipeline import VisionPipeline
 
-    class FakeFrameExtractor:
-        def __init__(self, video_path, target_fps=3):
-            assert video_path == "demo.mp4"
-            assert target_fps > 0
-
-        def get_chunks(self, chunk_sec=3):
-            assert chunk_sec > 0
-            yield ["a", "b"]
-            yield ["c"]
-
-    pipeline = pipeline_module.VisionPipeline(detector=Mock())
+    pipeline = VisionPipeline(detector=Mock())
 
     frame_results = {
         "a": {"pose": {"nose": {"x": 0.1, "y": 0.2}}},
@@ -54,15 +45,22 @@ def test_pipeline_yields_one_landmark_list_per_chunk(monkeypatch):
         side_effect=lambda frame: frame_results[frame]
     )
 
-    monkeypatch.setattr(
-        pipeline_module,
-        "FrameExtractor",
-        FakeFrameExtractor,
-    )
+    result = pipeline.process(["a", "b", "c"])
 
-    chunks = list(
-        pipeline.pipeline(video_path="demo.mp4")
-    )
-
-    assert [len(chunk) for chunk in chunks] == [1, 1]
+    assert result == [
+        {"pose": {"nose": {"x": 0.1, "y": 0.2}}},
+        {"pose": {"nose": {"x": 0.2, "y": 0.2}}},
+    ]
     assert pipeline.process_frame.call_count == 3
+
+
+def test_process_returns_empty_list_when_no_frames_have_landmarks():
+    from vision.vision_pipeline import VisionPipeline
+
+    pipeline = VisionPipeline(detector=Mock())
+    pipeline.process_frame = Mock(return_value={})
+
+    result = pipeline.process(["a", "b"])
+
+    assert result == []
+    assert pipeline.process_frame.call_count == 2

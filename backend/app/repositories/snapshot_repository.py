@@ -22,19 +22,6 @@ class SnapshotRepository:
         if not snapshots:
             return []
 
-<<<<<<< Updated upstream
-        snapshot_models = [
-            Snapshot(
-                session_id=session_id,
-                timestamp=snapshot.get("timestamp"),
-                overall=snapshot["overall"],
-                focus=snapshot.get("focus"),
-                engagement=snapshot.get("engagement"),
-                posture=snapshot.get("posture"),
-                presence=snapshot.get("presence"),
-                composure=snapshot.get("composure"),
-                delivery=snapshot.get("delivery"),
-=======
         snapshot_models = []
 
         for snapshot in snapshots:
@@ -63,7 +50,6 @@ class SnapshotRepository:
                     timestamp=snapshot["timestamp"],
                     **analysis_data,
                 )
->>>>>>> Stashed changes
             )
 
         if not snapshot_models:

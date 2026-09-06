@@ -17,12 +17,8 @@ export const METRICS: readonly MetricDefinition[] = [
 
 export type BackendAnalysisScores = Partial<Record<MetricKey, number | null>>;
 
-export type BackendAnalysisResult = {
-  id: number;
-  timestamp: number;
-  frames_analyzed: number;
+export type BackendVisualAnalysis = BackendAnalysisScores & {
   overall: number;
-  scores: BackendAnalysisScores;
 };
 
 export type BackendAudioAnalysis = {
@@ -40,12 +36,8 @@ export type BackendAnalysis = {
 
 export type BackendLiveResponse = {
   session_id: number;
-<<<<<<< Updated upstream
-  result: BackendAnalysisResult;
-=======
   timestamp: number;
   analysis: BackendAnalysis;
->>>>>>> Stashed changes
 };
 
 export type BackendOfflineResponse = {
@@ -137,15 +129,9 @@ const liveMetricsFromScores = (scores: BackendAnalysisScores = {}): LiveMetric[]
 
 export const toLiveSnapshot = (response: BackendLiveResponse): LiveSnapshot => ({
   sessionId: response.session_id,
-<<<<<<< Updated upstream
-  timestamp: response.result.timestamp,
-  overallScore: clampScore(response.result.overall),
-  metrics: liveMetricsFromScores(response.result.scores),
-=======
   timestamp: response.timestamp,
   overallScore: clampScore(response.analysis.visual?.overall),
   metrics: liveMetricsFromScores(response.analysis.visual ?? {}),
->>>>>>> Stashed changes
 });
 
 export const toReportView = (response: BackendReportResponse): ReportView => {

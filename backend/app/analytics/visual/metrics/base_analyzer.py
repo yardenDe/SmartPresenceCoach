@@ -5,6 +5,8 @@ from analytics.math_utils import average_available, average_point_motion, axis_d
 
 
 class BaseAnalyzer(ABC):
+    """Base class for visual metric analyzers."""
+
     @staticmethod
     def _has_point(data: dict[str, Any] | None, point_name: str) -> bool:
         return bool(data and data.get(point_name) is not None)

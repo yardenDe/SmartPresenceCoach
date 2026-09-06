@@ -1,9 +1,9 @@
-from typing import Any, Dict, Generator
+from typing import Any, Dict
 
 from core.logger import get_logger
-from video.frame_extractor import FrameExtractor
 from vision.mediapipe_detector import MediaPipeDetector
 from vision.landmark_extractor import LandmarkExtractor
+
 
 logger = get_logger("app.vision.pipeline")
 
@@ -12,7 +12,6 @@ class VisionPipeline:
 
     def __init__(self, detector: MediaPipeDetector, level: int = 1):
         self.mode = level
-        self.video_extractor = None
         self.detector = detector
         self.landmark_extractor = LandmarkExtractor()
 
@@ -26,12 +25,14 @@ class VisionPipeline:
             "hand_mode": self.mode >= 2,
         }
 
+
     def _has_landmarks(self, landmarks: dict[str, Any]) -> bool:
         return bool(
             landmarks.get("pose")
             or landmarks.get("face")
             or landmarks.get("hands")
         )
+
 
     def process_frame(self, frame: Any) -> Dict[str, Any]:
         raw = self.detector.detect(
@@ -66,8 +67,7 @@ class VisionPipeline:
         return landmarks
 
 
-    def process_chunk(self, frames: Any) -> list[dict[str, Any]]:
-
+    def process(self, frames: Any) -> list[dict[str, Any]]:
         chunk_results = []
         empty_frames = 0
 
@@ -87,30 +87,6 @@ class VisionPipeline:
         )
 
         return chunk_results
-
-
-    def pipeline(
-        self,
-        video_path: str,
-    ) -> Generator[list[dict[str, Any]], None, list[dict[str, Any]] | None]:
-
-        logger.debug("event=vision.pipeline.start mode=%s", self.mode)
-
-        self.video_extractor = FrameExtractor(video_path=video_path)
-
-        chunk_index = 0
-
-        for chunk_frames in self.video_extractor.get_chunks():
-
-            chunk_index += 1
-
-            logger.debug("event=vision.chunk.received chunk=%s frames=%s", chunk_index, len(chunk_frames))
-
-            result = self.process_chunk(chunk_frames)
-
-            yield result
-
-        logger.debug("event=vision.pipeline.done chunks=%s", chunk_index)
 
 
     def close(self) -> None:

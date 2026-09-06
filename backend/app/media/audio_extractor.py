@@ -1,29 +1,21 @@
 from collections.abc import Iterator
-import io
 import subprocess
-import wave
 
 import numpy as np
 
-<<<<<<< Updated upstream:backend/app/audio/audio_processor.py
-from audio.config import (
-=======
 from core.exceptions import AudioExtractionError
 from core.logger import get_logger
 from media.config import (
->>>>>>> Stashed changes:backend/app/media/audio_extractor.py
     BUFFER_SIZE,
     CHANNELS,
-    PCM_MAX,
     PCM_SCALE,
     SAMPLE_RATE,
-    SAMPLE_WIDTH,
 )
 
 logger = get_logger("app.media.audio_extractor")
 
 
-class AudioProcessor:
+class AudioExtractor:
     def __init__(
         self,
         sample_rate: int = SAMPLE_RATE,
@@ -77,12 +69,6 @@ class AudioProcessor:
             )
             raise AudioExtractionError() from error
 
-<<<<<<< Updated upstream:backend/app/audio/audio_processor.py
-        stdout = process.stdout
-        if stdout is None:
-            process.wait()
-            return
-=======
         except (OSError, subprocess.SubprocessError, ValueError) as error:
             logger.exception(
                 "event=audio.extract.failed path=%s",
@@ -92,7 +78,6 @@ class AudioProcessor:
 
     def stream(self, video_path: str) -> Iterator[np.ndarray]:
         process = None
->>>>>>> Stashed changes:backend/app/media/audio_extractor.py
 
         try:
             process = subprocess.Popen(
@@ -113,25 +98,6 @@ class AudioProcessor:
                     break
 
                 yield self._normalize_audio(audio_bytes)
-<<<<<<< Updated upstream:backend/app/audio/audio_processor.py
-        finally:
-            process.wait()
-
-    def to_wav_bytes(self, audio: np.ndarray) -> bytes:
-        pcm_audio = (
-            np.clip(audio, -1.0, 1.0) * PCM_MAX
-        ).astype(np.int16)
-
-        buffer = io.BytesIO()
-
-        with wave.open(buffer, "wb") as wav_file:
-            wav_file.setnchannels(self.channels)
-            wav_file.setsampwidth(SAMPLE_WIDTH)
-            wav_file.setframerate(self.sample_rate)
-            wav_file.writeframes(pcm_audio.tobytes())
-
-        return buffer.getvalue()
-=======
 
             return_code = process.wait()
             if isinstance(return_code, int) and return_code != 0:
@@ -146,4 +112,3 @@ class AudioProcessor:
         finally:
             if process is not None and process.poll() is None:
                 process.wait()
->>>>>>> Stashed changes:backend/app/media/audio_extractor.py

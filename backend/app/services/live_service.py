@@ -1,30 +1,18 @@
 from fastapi import UploadFile
 
-from core.exceptions import AppError, VisionProcessingError
+from core.exceptions import AppError, NoLandmarksError, VisionProcessingError
 from core.logger import get_logger
-<<<<<<< Updated upstream
-=======
 from media.audio_extractor import AudioExtractor
 from media.frame_extractor import FrameExtractor
 from media.storage import storage
->>>>>>> Stashed changes
 from schemas.live import LiveResponse
-from services.session_analysis_service import SessionAnalysisService
-from video.video_storage import VideoStorage
+from services.analysis_service import AnalysisService
+from services.session_service import SessionService
 
 
 class LiveService:
     def __init__(
         self,
-<<<<<<< Updated upstream
-        video_storage: VideoStorage,
-        session_analysis_service: SessionAnalysisService,
-    ):
-        self.video_storage = video_storage
-        self.video_path = None
-        self.session_analysis_service = session_analysis_service
-
-=======
         storage: storage,
         frame_extractor: FrameExtractor,
         audio_extractor: AudioExtractor,
@@ -36,10 +24,16 @@ class LiveService:
         self.audio_extractor = audio_extractor
         self.analysis_service = analysis_service
         self.session_service = session_service
->>>>>>> Stashed changes
         self.logger = get_logger("app.services.live")
 
-    async def process(self, video: UploadFile, session_id: int, timestamp: float = 0.0) -> LiveResponse:
+    async def process(
+        self,
+        video: UploadFile,
+        user_id: int,
+        session_id: int,
+        timestamp: float = 0.0,
+    ) -> LiveResponse:
+
         self.logger.info(
             "event=live.process.start session_id=%s timestamp=%.2f file=%s",
             session_id,
@@ -47,14 +41,9 @@ class LiveService:
             video.filename,
         )
 
+        video_path = None
+
         try:
-<<<<<<< Updated upstream
-            self.video_path = await self.video_storage.save_temp(video)
-            response = self.session_analysis_service.process_live(
-                video_path=self.video_path,
-                session_id=session_id,
-                timestamp_offset=timestamp,
-=======
             self.session_service.require_owned_session(
                 user_id,
                 session_id,
@@ -91,25 +80,18 @@ class LiveService:
                 session_id=session_id,
                 timestamp=timestamp,
                 analysis=analysis,
->>>>>>> Stashed changes
             )
 
-            self.logger.info(
-                "event=live.process.done session_id=%s frames=%s overall=%.2f",
-                session_id,
-                response.result.frames_analyzed,
-                response.result.overall,
-            )
-            return response
         except AppError:
             raise
-        except Exception:
-            self.logger.exception("event=live.process.failed session_id=%s", session_id)
-            raise VisionProcessingError()
-        finally:
-            self.close()
 
-    def close(self) -> None:
-        if self.video_path:
-            self.video_storage.delete(self.video_path)
-            self.video_path = None
+        except Exception:
+            self.logger.exception(
+                "event=live.process.failed session_id=%s",
+                session_id,
+            )
+            raise VisionProcessingError()
+
+        finally:
+            if video_path:
+                self.storage.delete(video_path)

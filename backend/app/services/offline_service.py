@@ -2,30 +2,20 @@ from itertools import zip_longest
 
 from fastapi import UploadFile
 
-from core.exceptions import AppError, VisionProcessingError
+from core.exceptions import AppError, NoLandmarksError, VisionProcessingError
 from core.logger import get_logger
-<<<<<<< Updated upstream
-=======
 from media.audio_extractor import AudioExtractor
 from media.config import CHUNK_SECONDS
 from media.frame_extractor import FrameExtractor
 from media.storage import storage
->>>>>>> Stashed changes
 from schemas.offline import OfflineResponse
-from services.session_analysis_service import SessionAnalysisService
-from video.video_storage import VideoStorage
+from services.analysis_service import AnalysisService
+from services.session_service import SessionService
 
 
 class OfflineService:
-
     def __init__(
         self,
-<<<<<<< Updated upstream
-        video: UploadFile,
-        video_storage: VideoStorage,
-        session_analysis_service: SessionAnalysisService,
-    ):
-=======
         storage: storage,
         frame_extractor: FrameExtractor,
         audio_extractor: AudioExtractor,
@@ -37,25 +27,23 @@ class OfflineService:
         self.audio_extractor = audio_extractor
         self.analysis_service = analysis_service
         self.session_service = session_service
->>>>>>> Stashed changes
         self.logger = get_logger("app.services.offline")
 
-        self.video_input = video
-        self.video_path = None
-        self.video_storage = video_storage
-        self.session_analysis_service = session_analysis_service
+    async def process(
+        self,
+        video: UploadFile,
+        user_id: int,
+        session_id: int,
+    ) -> OfflineResponse:
 
+        self.logger.info(
+            "event=offline.process.start file=%s",
+            video.filename,
+        )
 
-    async def process(self, session_id: int) -> OfflineResponse:
-
-        self.logger.info("event=offline.process.start file=%s", self.video_input.filename)
-        self.video_path = await self.video_storage.save_temp(self.video_input)
+        video_path = None
 
         try:
-<<<<<<< Updated upstream
-            response = self.session_analysis_service.process_offline(
-                video_path=self.video_path,
-=======
             self.session_service.require_owned_session(user_id, session_id)
             video_path = await self.storage.save_temp(video)
 
@@ -90,23 +78,28 @@ class OfflineService:
             self.session_service.end(user_id, session_id)
 
             response = OfflineResponse(
->>>>>>> Stashed changes
                 session_id=session_id,
+                status="success",
             )
 
-            self.logger.info("event=offline.process.done status=%s", response.status)
+            self.logger.info(
+                "event=offline.process.done session_id=%s chunks=%s",
+                session_id,
+                analyzed_count,
+            )
+
             return response
 
         except AppError:
             raise
-        except Exception:
-            self.logger.exception("event=offline.process.failed")
-            raise VisionProcessingError()
-        finally:
-            self.close()
 
-    
-    def close(self) -> None:
-        if self.video_path:
-            self.video_storage.delete(self.video_path)
-            self.video_path = None
+        except Exception:
+            self.logger.exception(
+                "event=offline.process.failed session_id=%s",
+                session_id,
+            )
+            raise VisionProcessingError()
+
+        finally:
+            if video_path:
+                self.storage.delete(video_path)

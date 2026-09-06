@@ -1,45 +1,31 @@
-<<<<<<< Updated upstream
-from core.exceptions import LLMUnavailableError, SessionNotFoundError, SnapshotsNotFoundError, UnauthorizedError
-=======
 from analytics.config import AUDIO_METRICS, VISUAL_METRICS
 from core.exceptions import (
     LLMUnavailableError,
     ReportNotFoundError,
     SnapshotsNotFoundError,
 )
->>>>>>> Stashed changes
 from core.logger import get_logger
 from llm.prompts import session_report_prompt, session_report_system_instruction
-from models.session import Session as SessionModel
 from repositories.report_repository import ReportRepository
-from repositories.session_repository import SessionRepository
 from repositories.snapshot_repository import SnapshotRepository
 from schemas.report import LLMReportText
 from services.llm_service import LLMService
+from services.session_service import SessionService
 
 logger = get_logger("app.reports")
 
 
 class ReportService:
-<<<<<<< Updated upstream
-    METRICS = ["focus", "posture", "presence", "engagement", "composure"]
-
-=======
->>>>>>> Stashed changes
     def __init__(
         self,
-        session_repository: SessionRepository,
+        session_service: SessionService,
         snapshot_repository: SnapshotRepository,
         report_repository: ReportRepository,
     ):
-        self.session_repository = session_repository
+        self.session_service = session_service
         self.snapshot_repository = snapshot_repository
         self.report_repository = report_repository
 
-<<<<<<< Updated upstream
-    def generate_short_report(self, user_id: int, session_id: int) -> ShortReportResponse:
-        self._validate_session(user_id, session_id)
-=======
     def generate_report(
         self,
         user_id: int,
@@ -51,7 +37,6 @@ class ReportService:
             user_id,
             session_id,
         )
->>>>>>> Stashed changes
 
         metric_names = [
             "overall",
@@ -142,69 +127,6 @@ class ReportService:
             )
         ]
 
-<<<<<<< Updated upstream
-    def generate_full_report(
-        self,
-        user_id: int,
-        session_id: int,
-        llm_service: LLMService | None = None,
-    ) -> FullReportResponse:
-        session = self._validate_session(user_id, session_id)
-
-        existing_report = self.report_repository.get_by_session(session_id)
-        if existing_report and existing_report.report_data:
-            return FullReportResponse.model_validate(existing_report.report_data)
-
-        all_metrics = ["overall"] + self.METRICS
-        rows = self.snapshot_repository.get_metrics_timeline(all_metrics, session_id)
-        if not rows:
-            raise SnapshotsNotFoundError()
-
-        metrics_states = self._get_metrics_stats(session_id)
-        timeline_data = self._build_timeline(rows, all_metrics)
-
-        report = {
-            "session_id": session_id,
-            "overall_score": metrics_states["overall_avg"],
-            "overall_state": self._build_overall_state(metrics_states, timeline_data["series"]["overall"]),
-            "timeline": timeline_data,
-            "metrics": self._build_metrics_summary(metrics_states),
-            **self._build_llm_report_text(
-                overall_score=metrics_states["overall_avg"],
-                timeline_data=timeline_data,
-                mode=session.mode,
-                llm_service=llm_service,
-            ),
-        }
-        self._create_full_report(session_id, report)
-
-        return FullReportResponse.model_validate(report)
-
-    def _validate_session(self, user_id: int, session_id: int) -> SessionModel:
-        session = self.session_repository.get_by_id(session_id)
-        if not session:
-            self.logger.warning("event=report.session_missing session_id=%s user_id=%s", session_id, user_id)
-            raise SessionNotFoundError()
-
-        if session.user_id != user_id:
-            self.logger.warning(
-                "event=report.session_denied session_id=%s user_id=%s owner_id=%s",
-                session_id,
-                user_id,
-                session.user_id,
-            )
-            raise UnauthorizedError()
-
-        return session
-
-    def _create_full_report(self, session_id: int, report: dict) -> None:
-        self.report_repository.create_report(
-            session_id=session_id,
-            overall_score=report["overall_score"],
-            summary=report["summary"],
-            recommendations=report["recommendations"],
-            report_data=report,
-=======
     def get_full_report_data(
         self,
         user_id: int,
@@ -213,7 +135,6 @@ class ReportService:
         self.session_service.require_owned_session(
             user_id,
             session_id,
->>>>>>> Stashed changes
         )
 
         saved_report = self.report_repository.get_by_session(session_id)
@@ -279,17 +200,8 @@ class ReportService:
             "recommendations": "Review the detailed charts, focus on your lowest average metric, and repeat the session later to generate the AI coaching text.",
         }
 
-<<<<<<< Updated upstream
-    def _get_metrics_stats(self, session_id: int) -> dict:
-        all_metrics = ["overall"] + self.METRICS
-        stats = self.snapshot_repository.get_metrics_stats(all_metrics, session_id)
-        if not stats or stats.get("overall_avg") is None:
-            raise SnapshotsNotFoundError()
-        return stats
-=======
         if llm_service is None:
             return fallback_content
->>>>>>> Stashed changes
 
         prompt = session_report_prompt(
             timestamps=metric_values["timestamp"],
@@ -349,9 +261,5 @@ class ReportService:
 
         if delta < -2:
             return "down"
-<<<<<<< Updated upstream
-        return "stable"
-=======
 
         return "stable"
->>>>>>> Stashed changes

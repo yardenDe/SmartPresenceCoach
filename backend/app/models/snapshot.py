@@ -15,8 +15,6 @@ class Snapshot(Base):
     posture = Column(Float, nullable=True)
     presence = Column(Float, nullable=True)
     composure = Column(Float, nullable=True)
-    
-    delivery = Column(Float, nullable=True)
 
     transcript = Column(Text, nullable=True)
     pause_ratio = Column(Float, nullable=True)

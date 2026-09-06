@@ -2,13 +2,10 @@ from models.session import Session as SessionModel
 
 from core.exceptions import SessionNotFoundError, UnauthorizedError
 from core.logger import get_logger
-from services.session_buffer import SessionBuffer
+from infrastructure.session_buffer import SessionBuffer
 from repositories.session_repository import SessionRepository
 from repositories.snapshot_repository import SnapshotRepository
-<<<<<<< Updated upstream
-=======
 from schemas.analysis import Analysis
->>>>>>> Stashed changes
 
 
 class SessionService:
@@ -23,7 +20,7 @@ class SessionService:
         self.snapshot_repository = snapshot_repository
         self.logger = get_logger("app.sessions")
 
-    def _get_session(self, user_id: int, session_id: int) -> SessionModel:
+    def require_owned_session(self, user_id: int, session_id: int) -> SessionModel:
         session = self.session_repository.get_by_id(session_id)
 
         if not session:
@@ -47,7 +44,7 @@ class SessionService:
         return session.id
 
     def start(self, user_id: int, session_id: int) -> int:
-        self._get_session(user_id, session_id)
+        self.require_owned_session(user_id, session_id)
         session = self.session_repository.start_session(session_id=session_id)
         if not session:
             self.logger.warning("event=session.start.missing session_id=%s user_id=%s", session_id, user_id)
@@ -57,8 +54,8 @@ class SessionService:
         return session.id
 
     def end(self, user_id: int, session_id: int) -> int:
-        self._get_session(user_id, session_id)
-        self._flush_pending_snapshots(session_id)
+        self.require_owned_session(user_id, session_id)
+        self.flush_analysis(session_id)
         session = self.session_repository.end_session(session_id=session_id)
         if not session:
             self.logger.warning("event=session.end.missing session_id=%s user_id=%s", session_id, user_id)
@@ -67,14 +64,6 @@ class SessionService:
         self.logger.info("event=session.end.done session_id=%s user_id=%s", session.id, user_id)
         return session.id
 
-<<<<<<< Updated upstream
-    def _flush_pending_snapshots(self, session_id: int) -> None:
-        snapshots = self.session_buffer.close_session(session_id)
-
-        self.snapshot_repository.create_snapshots(
-            session_id=session_id,
-            snapshots=snapshots,
-=======
     def add_analysis(
         self,
         session_id: int,
@@ -85,10 +74,22 @@ class SessionService:
             session_id=session_id,
             timestamp=timestamp,
             analysis=analysis,
->>>>>>> Stashed changes
         )
 
         if snapshots:
+            self.snapshot_repository.create_snapshots(
+                session_id=session_id,
+                snapshots=snapshots,
+            )
+
+    def flush_analysis(self, session_id: int) -> None:
+        snapshots = self.session_buffer.close_session(session_id)
+
+        if snapshots:
+            self.snapshot_repository.create_snapshots(
+                session_id=session_id,
+                snapshots=snapshots,
+            )
             self.logger.info(
                 "event=session.buffer.flushed session_id=%s count=%s",
                 session_id,
