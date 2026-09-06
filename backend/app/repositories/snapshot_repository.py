@@ -1,11 +1,11 @@
 from typing import Any
-
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session as DBSession
 
 from core.exceptions import DatabaseError
 from core.logger import get_logger
 from models.snapshot import Snapshot
+from schemas.analysis import Analysis
 
 logger = get_logger("app.repositories.snapshot")
 
@@ -22,6 +22,7 @@ class SnapshotRepository:
         if not snapshots:
             return []
 
+<<<<<<< Updated upstream
         snapshot_models = [
             Snapshot(
                 session_id=session_id,
@@ -33,16 +34,50 @@ class SnapshotRepository:
                 presence=snapshot.get("presence"),
                 composure=snapshot.get("composure"),
                 delivery=snapshot.get("delivery"),
+=======
+        snapshot_models = []
+
+        for snapshot in snapshots:
+            analysis: Analysis = snapshot["analysis"]
+            visual = analysis.visual
+            audio = analysis.audio
+
+            if visual is None and audio is None:
+                continue
+
+            analysis_data = {}
+
+            if visual is not None:
+                analysis_data.update(
+                    visual.model_dump(exclude_none=True)
+                )
+
+            if audio is not None:
+                analysis_data.update(
+                    audio.model_dump(exclude_none=True)
+                )
+
+            snapshot_models.append(
+                Snapshot(
+                    session_id=session_id,
+                    timestamp=snapshot["timestamp"],
+                    **analysis_data,
+                )
+>>>>>>> Stashed changes
             )
-            for snapshot in snapshots
-        ]
+
+        if not snapshot_models:
+            return []
 
         try:
             self.db.add_all(snapshot_models)
             self.db.commit()
         except Exception:
             self.db.rollback()
-            logger.exception("event=snapshot.bulk_create.failed session_id=%s", session_id)
+            logger.exception(
+                "event=snapshot.bulk_create.failed session_id=%s",
+                session_id,
+            )
             raise DatabaseError()
 
         logger.info(
@@ -56,7 +91,10 @@ class SnapshotRepository:
         try:
             snapshot = self.db.get(Snapshot, snapshot_id)
         except Exception:
-            logger.exception("event=snapshot.lookup.failed snapshot_id=%s", snapshot_id)
+            logger.exception(
+                "event=snapshot.lookup.failed snapshot_id=%s",
+                snapshot_id,
+            )
             raise DatabaseError()
 
         logger.debug(
@@ -76,7 +114,10 @@ class SnapshotRepository:
             result = self.db.execute(query)
             snapshots = result.scalars().all()
         except Exception:
-            logger.exception("event=snapshot.list.failed session_id=%s", session_id)
+            logger.exception(
+                "event=snapshot.list.failed session_id=%s",
+                session_id,
+            )
             raise DatabaseError()
 
         logger.debug(
@@ -86,8 +127,15 @@ class SnapshotRepository:
         )
         return snapshots
 
-    def get_metrics_timeline(self, metrics: list[str], session_id: int) -> dict[str, Any]:
-        columns = [Snapshot.timestamp] + [getattr(Snapshot, metric) for metric in metrics]
+    def get_metric_values(
+        self,
+        metrics: list[str],
+        session_id: int,
+    ) -> list[dict[str, Any]]:
+        columns = [Snapshot.timestamp] + [
+            getattr(Snapshot, metric)
+            for metric in metrics
+        ]
 
         try:
             query = (
@@ -97,32 +145,44 @@ class SnapshotRepository:
             )
             result = self.db.execute(query).mappings().all()
         except Exception:
-            logger.exception("event=snapshot.metrics_timeline.failed session_id=%s", session_id)
+            logger.exception(
+                "event=snapshot.metric_values.failed session_id=%s",
+                session_id,
+            )
             raise DatabaseError()
 
-        
         logger.debug(
-            "event=snapshot.metrics_timeline.done session_id=%s count=%s metrics=%s",
+            "event=snapshot.metric_values.done session_id=%s count=%s metrics=%s",
             session_id,
             len(result),
             metrics,
         )
         return result
 
-    def get_metrics_stats(self, metrics: list[str], session_id: int) -> dict[str, Any]:
+    def get_metrics_stats(
+        self,
+        metrics: list[str],
+        session_id: int,
+    ) -> dict[str, Any]:
         select_fields = []
+
         for metric in metrics:
             column = getattr(Snapshot, metric)
             select_fields.extend([
                 func.avg(column).label(f"{metric}_avg"),
                 func.min(column).label(f"{metric}_min"),
-                func.max(column).label(f"{metric}_max")
+                func.max(column).label(f"{metric}_max"),
             ])
 
         try:
-            query = select(*select_fields).where(Snapshot.session_id == session_id)
+            query = select(*select_fields).where(
+                Snapshot.session_id == session_id
+            )
             row_map = self.db.execute(query).mappings().one_or_none()
             return dict(row_map) if row_map else {}
         except Exception:
-            logger.exception("event=snapshot.all_metrics_stats.failed session_id=%s", session_id)
+            logger.exception(
+                "event=snapshot.all_metrics_stats.failed session_id=%s",
+                session_id,
+            )
             raise DatabaseError()

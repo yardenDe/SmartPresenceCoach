@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     RELOAD: bool = False
 
     FRONTEND_ORIGIN: str = "http://localhost:5173"
-    LOG_LEVEL: str = "DEBUG"
+    LOG_LEVEL: str = "INFO"
 
     LLM_API_KEY: str | None = None
     LLM_MODEL: str = "gemini-3.1-flash-lite"

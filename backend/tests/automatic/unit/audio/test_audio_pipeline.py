@@ -3,6 +3,7 @@ from unittest.mock import Mock
 import numpy as np
 
 from audio.audio_pipeline import AudioPipeline
+from schemas.analysis import AudioFeatures
 
 
 def test_process_combines_audio_processing_librosa_and_transcription():
@@ -12,32 +13,20 @@ def test_process_combines_audio_processing_librosa_and_transcription():
     rms = np.array([0.11, 0.22], dtype=np.float32)
     pitch = np.array([120.0, 125.0], dtype=np.float32)
 
-    words = [
-        {"word": "Hello", "start": 0.1, "end": 0.34},
-        {"word": "friends.", "start": 0.34, "end": 1.14},
-    ]
-
-    segments = [
-        {
-            "start": 0.0,
-            "end": 0.84,
-            "text": "Hello friends.",
-        }
-    ]
-
-    transcription = Mock(
-        text="Hello friends.",
-        words=words,
-        segments=segments,
-    )
+    transcription = Mock(text="Hello friends.")
 
     processor = Mock()
     processor.extract.return_value = audio
     processor.to_wav_bytes.return_value = wav_bytes
 
     engine = Mock()
-    engine.rms.return_value = rms
-    engine.pitch.return_value = pitch
+    features = AudioFeatures(
+        rms=rms,
+        pitch=pitch,
+        non_silent_intervals=np.array([[0, 3]]),
+        total_samples=3,
+    )
+    engine.extract_features.return_value = features
 
     transcriber = Mock()
     transcriber.transcribe.return_value = transcription
@@ -53,16 +42,19 @@ def test_process_combines_audio_processing_librosa_and_transcription():
     processor.extract.assert_called_once_with()
     processor.to_wav_bytes.assert_called_once_with(audio)
 
+<<<<<<< Updated upstream
     engine.rms.assert_called_once_with(audio)
     engine.pitch.assert_called_once_with(audio)
 
     transcriber.transcribe.assert_called_once_with(wav_bytes)
+=======
+    engine.extract_features.assert_called_once_with(audio)
+    transcriber.transcribe.assert_called_once_with(audio)
+>>>>>>> Stashed changes
 
-    assert result["rms"] is rms
-    assert result["pitch"] is pitch
-    assert result["text"] == "Hello friends."
-    assert result["words"] == words
-    assert result["segments"] == segments
+    assert result.rms is rms
+    assert result.pitch is pitch
+    assert result.transcript == "Hello friends."
 
 
 def test_process_returns_only_analysis_results():
@@ -71,15 +63,15 @@ def test_process_returns_only_analysis_results():
     processor.to_wav_bytes.return_value = b"wav"
 
     engine = Mock()
-    engine.rms.return_value = np.array([0.1])
-    engine.pitch.return_value = np.array([100.0])
+    engine.extract_features.return_value = AudioFeatures(
+        rms=np.array([0.1]),
+        pitch=np.array([100.0]),
+        non_silent_intervals=np.array([[0, 1]]),
+        total_samples=1,
+    )
 
     transcriber = Mock()
-    transcriber.transcribe.return_value = Mock(
-        text="test",
-        words=[],
-        segments=[],
-    )
+    transcriber.transcribe.return_value = Mock(text="test")
 
     pipeline = AudioPipeline(
         processor=processor,
@@ -89,10 +81,5 @@ def test_process_returns_only_analysis_results():
 
     result = pipeline.process()
 
-    assert set(result) == {
-        "rms",
-        "pitch",
-        "text",
-        "words",
-        "segments",
-    }
+    assert isinstance(result, AudioFeatures)
+    assert result.transcript == "test"

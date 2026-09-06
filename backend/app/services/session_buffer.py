@@ -1,6 +1,7 @@
 from typing import Any
 
 from core.logger import get_logger
+from schemas.analysis import Analysis
 
 logger = get_logger("app.services.session_buffer")
 
@@ -10,12 +11,24 @@ class SessionBuffer:
         self.buffers: dict[int, list[dict[str, Any]]] = {}
         self.flush_size = flush_size
 
+<<<<<<< Updated upstream:backend/app/services/session_buffer.py
     def add(self, session_id: int, snapshot: dict[str, Any]) -> None:
+=======
+    def add(
+        self,
+        session_id: int,
+        timestamp: float,
+        analysis: Analysis,
+    ) -> list[dict[str, Any]] | None:
+>>>>>>> Stashed changes:backend/app/infrastructure/session_buffer.py
         if session_id not in self.buffers:
             self.buffers[session_id] = []
             logger.debug("event=session_buffer.create session_id=%s", session_id)
 
-        self.buffers[session_id].append(snapshot)
+        self.buffers[session_id].append({
+            "timestamp": timestamp,
+            "analysis": analysis,
+        })
 
         logger.debug(
             "event=session_buffer.add session_id=%s size=%s",

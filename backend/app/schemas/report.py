@@ -19,6 +19,7 @@ class ReportOverallSummary(BaseModel):
 class ReportMetricTimeline(BaseModel):
     timestampsSec: list[float]
     series: dict[str, list[float | None]]
+    transcripts: list[str | None] = Field(default_factory=list)
 
 
 class ShortReportResponse(BaseModel):

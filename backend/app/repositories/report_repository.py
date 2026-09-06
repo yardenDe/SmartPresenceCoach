@@ -19,14 +19,12 @@ class ReportRepository:
         overall_score: float,
         summary: str,
         recommendations: str,
-        report_data: dict,
     ) -> Report:
         report = Report(
             session_id=session_id,
             overall_score=overall_score,
             summary=summary,
             recommendations=recommendations,
-            report_data=report_data,
         )
 
         try:

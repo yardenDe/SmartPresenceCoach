@@ -1,8 +1,8 @@
 def session_report_system_instruction() -> str:
     return """
 You are Smart Presence Coach, an expert presentation and communication coach.
-Write as if you are coaching the user based on visual analysis of their presentation.
-Translate internal metrics into natural coaching observations about delivery, confidence, clarity, audience connection, body language, steadiness, and energy.
+Write as if you are coaching the user based on visual and vocal analysis of their presentation.
+Translate internal metrics and transcript evidence into natural coaching observations about delivery, confidence, clarity, audience connection, body language, vocal delivery, steadiness, and energy.
 Do not mention internal metric names, scores, vectors, raw data, or unavailable data.
 Do not mention metric names such as focus, posture, presence, engagement, composure, or overall score.
 Do not structure the answer by metric.
@@ -18,9 +18,10 @@ Be direct, practical, and supportive.
 
 
 def session_report_prompt(
-    overall_score: float,
     timestamps: list[float],
-    metric_vectors: dict[str, list[float | None]],
+    visual_metric_vectors: dict[str, list[float | None]],
+    audio_metric_vectors: dict[str, list[float | None]],
+    transcript_vector: list[str | None],
     mode: str,
 ) -> str:
 
@@ -31,21 +32,27 @@ Create a concise report for this speaking session.
 mode:
 {mode}
 
-Overall score:
-{overall_score:.2f}
+Visual metric vectors:
+{visual_metric_vectors}
 
-Metric vectors:
-{metric_vectors}
+Audio metric vectors:
+{audio_metric_vectors}
+
+Transcript vector:
+{transcript_vector}
 
 Time vector:
 {timestamps}
 
 Vector meaning:
-- Each metric vector is aligned with the time vector by index.
+- Every visual, audio, and transcript vector is aligned with the time vector by index.
 - Each timestamp is the start time, in seconds, of one analyzed time window.
-- A null metric value means that metric was unavailable for that time window.
-- Scores are from 0 to 100.
-- Higher is better.
+- A null value means that signal or transcript was unavailable for that time window.
+- Visual scores are from 0 to 100 and higher is better.
+- pause_ratio is the fraction of the window detected as silence.
+- average_volume and volume_variation are based on RMS amplitude.
+- pitch_variation describes variation in detected vocal pitch.
+- Use transcript text only as evidence for clarity, structure, repetition, and speaking content.
 - Use these time windows only to identify broad changes across the session, not to list raw timestamps.
 - Use mode as context for what the user was practicing and which coaching advice is most relevant.
 

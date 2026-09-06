@@ -10,9 +10,9 @@ import { api } from "./api";
 const OFFLINE_ANALYSIS_TIMEOUT_MS = 10 * 60 * 1000;
 const REPORT_TIMEOUT_MS = 2 * 60 * 1000;
 
-const asMp4File = (blob: Blob) =>
-  new File([blob], "live-segment.mp4", {
-    type: "video/mp4",
+const asMediaFile = (blob: Blob) =>
+  new File([blob], blob.type.includes("mp4") ? "live-segment.mp4" : "live-segment.webm", {
+    type: blob.type,
   });
 
 export const sessionAnalysisApi = {
@@ -29,11 +29,15 @@ export const sessionAnalysisApi = {
   endSession: (sessionId: number) =>
     api.post<number>(`/sessions/end/${sessionId}`),
 
-  sendLiveSegment: (sessionId: number, segment: Blob, timestamp: number) => {
+  sendLiveSegment: (
+    sessionId: number,
+    segment: Blob,
+    timestamp: number,
+  ) => {
     const formData = new FormData();
     formData.append("session_id", String(sessionId));
     formData.append("timestamp", String(timestamp));
-    formData.append("video", asMp4File(segment));
+    formData.append("video", asMediaFile(segment));
 
     return api.post<BackendLiveResponse>("/live/frame", formData);
   },

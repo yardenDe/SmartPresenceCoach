@@ -62,3 +62,26 @@ def test_custom_sample_rate():
     engine = LibrosaEngine(sample_rate=44100)
 
     assert engine.sample_rate == 44100
+
+
+def test_extract_features(monkeypatch):
+    audio = np.array([0.1, 0.0, 0.2], dtype=np.float32)
+    rms = np.array([0.1, 0.2], dtype=np.float32)
+    pitch = np.array([120.0, 125.0], dtype=np.float32)
+    intervals = np.array([[0, 1], [2, 3]])
+    engine = LibrosaEngine()
+
+    monkeypatch.setattr(engine, "rms", Mock(return_value=rms))
+    monkeypatch.setattr(engine, "pitch", Mock(return_value=pitch))
+    monkeypatch.setattr(
+        engine,
+        "non_silent_intervals",
+        Mock(return_value=intervals),
+    )
+
+    result = engine.extract_features(audio)
+
+    assert result.rms is rms
+    assert result.pitch is pitch
+    assert result.non_silent_intervals is intervals
+    assert result.total_samples == 3

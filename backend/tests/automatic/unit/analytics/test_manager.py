@@ -27,4 +27,26 @@ def test_empty_input_raises_analytics_error():
     from core.exceptions import AnalyticsProcessingError
 
     with pytest.raises(AnalyticsProcessingError):
+<<<<<<< Updated upstream
         AnalyticsManager().run_full_analysis([])
+=======
+        VisualAnalyticsManager().run_full_analysis([])
+
+
+def test_analytics_manager_delegates_to_visual_and_audio():
+    from unittest.mock import Mock
+
+    from analytics.manager import AnalyticsManager
+
+    visual = Mock()
+    audio = Mock()
+    manager = AnalyticsManager(visual=visual, audio=audio)
+    landmarks = [{"pose": {}}]
+    audio_features = object()
+
+    manager.analyze_visual(landmarks)
+    manager.analyze_audio(audio_features)
+
+    visual.run_full_analysis.assert_called_once_with(landmarks)
+    audio.analyze.assert_called_once_with(audio_features)
+>>>>>>> Stashed changes

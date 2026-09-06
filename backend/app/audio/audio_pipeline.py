@@ -3,6 +3,7 @@ import numpy as np
 from audio.audio_processor import AudioProcessor
 from audio.librosa_engine import LibrosaEngine
 from audio.transcriber import Transcriber
+from schemas.analysis import AudioFeatures
 
 
 class AudioPipeline:
@@ -10,23 +11,31 @@ class AudioPipeline:
         self,
         processor: AudioProcessor,
         engine: LibrosaEngine,
-        transcriber: Transcriber,
+        transcriber: Transcriber | None,
     ):
         self.processor = processor
         self.engine = engine
         self.transcriber = transcriber
 
+<<<<<<< Updated upstream
     def process(self) -> dict[str, object]:
         audio = self.processor.extract()
+=======
+    def process(
+        self,
+        audio: np.ndarray,
+    ) -> AudioFeatures:
+
+        features = self.engine.extract_features(audio)
+
+        if self.transcriber is None:
+            return features
+>>>>>>> Stashed changes
 
         transcription = self.transcriber.transcribe(
             self.processor.to_wav_bytes(audio)
         )
 
-        return {
-            "rms": self.engine.rms(audio),
-            "pitch": self.engine.pitch(audio),
-            "text": transcription.text,
-            "words": transcription.words,
-            "segments": transcription.segments,
-        }
+        features.transcript = transcription.text
+
+        return features

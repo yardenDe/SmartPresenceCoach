@@ -1,5 +1,6 @@
 from typing import Any
 
+<<<<<<< Updated upstream
 from analytics.metrics.composure_analyzer import ComposureAnalyzer
 from analytics.metrics.engagement_analyzer import EngagementAnalyzer
 from analytics.metrics.focus_analyzer import FocusAnalyzer
@@ -10,6 +11,11 @@ from core.exceptions import AnalyticsProcessingError
 from core.logger import get_logger
 
 logger = get_logger("app.analytics.manager")
+=======
+from analytics.audio.manager import AudioAnalyticsManager
+from analytics.visual.manager import VisualAnalyticsManager
+from schemas.analysis import Analysis, AudioFeatures
+>>>>>>> Stashed changes
 
 
 class AnalyticsManager:
@@ -22,6 +28,7 @@ class AnalyticsManager:
             "composure": ComposureAnalyzer(),
         }
 
+<<<<<<< Updated upstream
     def run_full_analysis(self, landmarks: list[dict[str, Any]]) -> dict[str, float]:
         logger.debug("event=analytics.run.start frames=%s", len(landmarks))
 
@@ -47,3 +54,22 @@ class AnalyticsManager:
         logger.debug("event=analytics.run.done frames=%s overall=%.2f", len(landmarks), results["overall"])
 
         return results
+=======
+    def analyze(
+        self,
+        landmarks: list[dict[str, Any]] | None = None,
+        audio_features: AudioFeatures | None = None,
+    ) -> Analysis:
+        return Analysis(
+            visual=(
+                self.visual.run_full_analysis(landmarks)
+                if landmarks is not None
+                else None
+            ),
+            audio=(
+                self.audio.analyze(audio_features)
+                if audio_features is not None
+                else None
+            ),
+        )
+>>>>>>> Stashed changes

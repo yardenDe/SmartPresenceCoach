@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, Float, ForeignKey
+from sqlalchemy import Column, Float, ForeignKey, Integer, Text
 from db.db_manager import Base
 
 class Snapshot(Base):
@@ -17,4 +17,10 @@ class Snapshot(Base):
     composure = Column(Float, nullable=True)
     
     delivery = Column(Float, nullable=True)
+
+    transcript = Column(Text, nullable=True)
+    pause_ratio = Column(Float, nullable=True)
+    average_volume = Column(Float, nullable=True)
+    volume_variation = Column(Float, nullable=True)
+    pitch_variation = Column(Float, nullable=True)
 

@@ -1,7 +1,14 @@
 from html import escape
 
+<<<<<<< Updated upstream:backend/app/services/report_templates.py
 
 METRICS = ["focus", "posture", "presence", "engagement", "composure"]
+=======
+from analytics.config import VISUAL_METRICS
+
+
+METRICS = VISUAL_METRICS
+>>>>>>> Stashed changes:backend/app/reporting/templates.py
 COLORS = {
     "overall": "#111827",
     "focus": "#2563eb",

@@ -5,7 +5,13 @@ import wave
 
 import numpy as np
 
+<<<<<<< Updated upstream:backend/app/audio/audio_processor.py
 from audio.config import (
+=======
+from core.exceptions import AudioExtractionError
+from core.logger import get_logger
+from media.config import (
+>>>>>>> Stashed changes:backend/app/media/audio_extractor.py
     BUFFER_SIZE,
     CHANNELS,
     PCM_MAX,
@@ -14,21 +20,22 @@ from audio.config import (
     SAMPLE_WIDTH,
 )
 
+logger = get_logger("app.media.audio_extractor")
+
 
 class AudioProcessor:
     def __init__(
         self,
-        video_path: str,
         sample_rate: int = SAMPLE_RATE,
         channels: int = CHANNELS,
     ):
-        self.video_path = video_path
         self.sample_rate = sample_rate
         self.channels = channels
 
-        self.command = [
+    def _command(self, video_path: str) -> list[str]:
+        return [
             "ffmpeg",
-            "-i", self.video_path,
+            "-i", video_path,
             "-vn",
             "-ac", str(self.channels),
             "-ar", str(self.sample_rate),
@@ -45,29 +52,60 @@ class AudioProcessor:
 
         return audio / PCM_SCALE
 
-    def extract(self) -> np.ndarray:
-        result = subprocess.run(
-            self.command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            check=True,
-        )
+    def extract(self, video_path: str) -> np.ndarray:
+        try:
+            result = subprocess.run(
+                self._command(video_path),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+                text=False,
+            )
 
-        return self._normalize_audio(result.stdout)
+            return self._normalize_audio(result.stdout)
 
-    def stream(self) -> Iterator[np.ndarray]:
-        process = subprocess.Popen(
-            self.command,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-        )
+        except subprocess.CalledProcessError as error:
+            stderr = (
+                error.stderr.decode("utf-8", errors="replace")
+                if error.stderr
+                else "No FFmpeg stderr output"
+            )
+            logger.error(
+                "event=audio.extract.failed path=%s error=%s",
+                video_path,
+                stderr,
+            )
+            raise AudioExtractionError() from error
 
+<<<<<<< Updated upstream:backend/app/audio/audio_processor.py
         stdout = process.stdout
         if stdout is None:
             process.wait()
             return
+=======
+        except (OSError, subprocess.SubprocessError, ValueError) as error:
+            logger.exception(
+                "event=audio.extract.failed path=%s",
+                video_path,
+            )
+            raise AudioExtractionError() from error
+
+    def stream(self, video_path: str) -> Iterator[np.ndarray]:
+        process = None
+>>>>>>> Stashed changes:backend/app/media/audio_extractor.py
 
         try:
+            process = subprocess.Popen(
+                self._command(video_path),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.DEVNULL,
+            )
+
+            stdout = process.stdout
+
+            if stdout is None:
+                raise AudioExtractionError()
+
             while True:
                 audio_bytes = stdout.read(BUFFER_SIZE)
 
@@ -75,6 +113,7 @@ class AudioProcessor:
                     break
 
                 yield self._normalize_audio(audio_bytes)
+<<<<<<< Updated upstream:backend/app/audio/audio_processor.py
         finally:
             process.wait()
 
@@ -92,3 +131,19 @@ class AudioProcessor:
             wav_file.writeframes(pcm_audio.tobytes())
 
         return buffer.getvalue()
+=======
+
+            return_code = process.wait()
+            if isinstance(return_code, int) and return_code != 0:
+                raise AudioExtractionError()
+
+        except AudioExtractionError:
+            logger.exception("event=audio.stream.failed path=%s", video_path)
+            raise
+        except (OSError, subprocess.SubprocessError, ValueError) as error:
+            logger.exception("event=audio.stream.failed path=%s", video_path)
+            raise AudioExtractionError() from error
+        finally:
+            if process is not None and process.poll() is None:
+                process.wait()
+>>>>>>> Stashed changes:backend/app/media/audio_extractor.py

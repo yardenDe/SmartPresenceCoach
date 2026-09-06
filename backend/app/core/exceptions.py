@@ -98,6 +98,11 @@ class VisionProcessingError(VideoProcessingError):
     message = "Video analysis failed"
 
 
+class AudioExtractionError(VideoProcessingError):
+    code = "AUDIO_EXTRACTION_ERROR"
+    message = "Audio could not be extracted"
+
+
 class NoLandmarksError(VideoProcessingError):
     code = "NO_LANDMARKS"
     message = "No body landmarks were detected"

@@ -36,6 +36,12 @@ class FrameExtractor:
         if chunk:
             yield chunk
 
+    def extract(
+        self,
+        video_path: str,
+    ) -> list[np.ndarray]:
+        return list(self._get_frames(video_path))
+        
     def _get_frames(
         self,
     ) -> Generator[np.ndarray, None, None]:

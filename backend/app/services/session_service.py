@@ -5,6 +5,10 @@ from core.logger import get_logger
 from services.session_buffer import SessionBuffer
 from repositories.session_repository import SessionRepository
 from repositories.snapshot_repository import SnapshotRepository
+<<<<<<< Updated upstream
+=======
+from schemas.analysis import Analysis
+>>>>>>> Stashed changes
 
 
 class SessionService:
@@ -63,12 +67,25 @@ class SessionService:
         self.logger.info("event=session.end.done session_id=%s user_id=%s", session.id, user_id)
         return session.id
 
+<<<<<<< Updated upstream
     def _flush_pending_snapshots(self, session_id: int) -> None:
         snapshots = self.session_buffer.close_session(session_id)
 
         self.snapshot_repository.create_snapshots(
             session_id=session_id,
             snapshots=snapshots,
+=======
+    def add_analysis(
+        self,
+        session_id: int,
+        timestamp: float,
+        analysis: Analysis,
+    ) -> None:
+        snapshots = self.session_buffer.add(
+            session_id=session_id,
+            timestamp=timestamp,
+            analysis=analysis,
+>>>>>>> Stashed changes
         )
 
         if snapshots:

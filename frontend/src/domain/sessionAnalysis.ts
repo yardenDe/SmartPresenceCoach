@@ -25,9 +25,27 @@ export type BackendAnalysisResult = {
   scores: BackendAnalysisScores;
 };
 
+export type BackendAudioAnalysis = {
+  transcript?: string | null;
+  pause_ratio?: number | null;
+  average_volume?: number | null;
+  volume_variation?: number | null;
+  pitch_variation?: number | null;
+};
+
+export type BackendAnalysis = {
+  visual: BackendVisualAnalysis | null;
+  audio: BackendAudioAnalysis | null;
+};
+
 export type BackendLiveResponse = {
   session_id: number;
+<<<<<<< Updated upstream
   result: BackendAnalysisResult;
+=======
+  timestamp: number;
+  analysis: BackendAnalysis;
+>>>>>>> Stashed changes
 };
 
 export type BackendOfflineResponse = {
@@ -51,6 +69,7 @@ export type BackendOverallSummary = {
 export type BackendReportTimeline = {
   timestampsSec: number[];
   series: Record<string, Array<number | null>>;
+  transcripts?: Array<string | null>;
 };
 
 export type BackendReportResponse = {
@@ -118,9 +137,15 @@ const liveMetricsFromScores = (scores: BackendAnalysisScores = {}): LiveMetric[]
 
 export const toLiveSnapshot = (response: BackendLiveResponse): LiveSnapshot => ({
   sessionId: response.session_id,
+<<<<<<< Updated upstream
   timestamp: response.result.timestamp,
   overallScore: clampScore(response.result.overall),
   metrics: liveMetricsFromScores(response.result.scores),
+=======
+  timestamp: response.timestamp,
+  overallScore: clampScore(response.analysis.visual?.overall),
+  metrics: liveMetricsFromScores(response.analysis.visual ?? {}),
+>>>>>>> Stashed changes
 });
 
 export const toReportView = (response: BackendReportResponse): ReportView => {

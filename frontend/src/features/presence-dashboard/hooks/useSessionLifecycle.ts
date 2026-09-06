@@ -3,9 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { getApiErrorMessage } from "../../../services/api";
 import { sessionAnalysisApi } from "../../../services/sessionAnalysisApi";
 import {
-  canRecordClosedMp4,
-  recordClosedMp4Segment,
-} from "../utils/closedMp4Recorder";
+  canRecordMediaSegment,
+  recordMediaSegment,
+} from "../utils/mediaRecorder";
 import {
   buildProgressReport,
   toLiveSnapshot,
@@ -401,7 +401,7 @@ export const useSessionLifecycle = () => {
 
       const stream = await navigator.mediaDevices.getUserMedia({
         video: true,
-        audio: false,
+        audio: true,
       });
 
       streamRef.current = stream;
@@ -425,7 +425,10 @@ export const useSessionLifecycle = () => {
     }
   };
 
-  const sendVideoSegment = async (mp4Segment: Blob, timestamp: number) => {
+  const sendVideoSegment = async (
+    segment: Blob,
+    timestamp: number,
+  ) => {
     if (!sessionIdRef.current) {
       return;
     }
@@ -436,11 +439,15 @@ export const useSessionLifecycle = () => {
     try {
       const response = await sessionAnalysisApi.sendLiveSegment(
         sessionIdRef.current,
-        mp4Segment,
+        segment,
         timestamp,
       );
 
+<<<<<<< Updated upstream
       if (typeof response.data?.result?.overall !== "number") {
+=======
+      if (typeof response.data?.analysis?.visual?.overall !== "number") {
+>>>>>>> Stashed changes
         throw new Error("Live analysis response is not ready yet.");
       }
 
@@ -462,8 +469,8 @@ export const useSessionLifecycle = () => {
       return;
     }
 
-    if (!canRecordClosedMp4()) {
-      setError("This browser cannot create backend-readable MP4 segments.");
+    if (!canRecordMediaSegment()) {
+      setError("This browser cannot record video with audio.");
       setIsAnalyzing(false);
       return;
     }
@@ -481,14 +488,14 @@ export const useSessionLifecycle = () => {
       const segmentDurationMs = segmentIndex === 0 ? FIRST_LIVE_CHUNK_MS : LIVE_CHUNK_MS;
 
       try {
-        const mp4Segment = await recordClosedMp4Segment(
-          videoRef.current,
+        const segment = await recordMediaSegment(
+          streamRef.current!,
           segmentDurationMs,
           abortController.signal,
         );
 
-        if (isRecordingRef.current && mp4Segment.size > 0) {
-          await sendVideoSegment(mp4Segment, segmentTimestamp);
+        if (isRecordingRef.current && segment.size > 0) {
+          await sendVideoSegment(segment, segmentTimestamp);
           segmentIndex += 1;
         }
       } catch (recordingError) {

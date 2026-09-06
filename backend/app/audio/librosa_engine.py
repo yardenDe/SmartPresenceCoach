@@ -1,7 +1,12 @@
 import librosa
 import numpy as np
 
+<<<<<<< Updated upstream
 from audio.config import SAMPLE_RATE
+=======
+from media.config import SAMPLE_RATE
+from schemas.analysis import AudioFeatures
+>>>>>>> Stashed changes
 
 
 class LibrosaEngine:
@@ -17,4 +22,15 @@ class LibrosaEngine:
             fmin=librosa.note_to_hz("C2"),
             fmax=librosa.note_to_hz("C7"),
             sr=self.sample_rate,
+        )
+
+    def non_silent_intervals(self, audio: np.ndarray) -> np.ndarray:
+        return librosa.effects.split(y=audio)
+
+    def extract_features(self, audio: np.ndarray) -> AudioFeatures:
+        return AudioFeatures(
+            rms=self.rms(audio),
+            pitch=self.pitch(audio),
+            non_silent_intervals=self.non_silent_intervals(audio),
+            total_samples=int(audio.size),
         )
