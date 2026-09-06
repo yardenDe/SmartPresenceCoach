@@ -15,6 +15,7 @@ from audio.audio_pipeline import AudioPipeline
 from audio.librosa_engine import LibrosaEngine
 from analytics.audio.manager import AudioAnalyticsManager
 from analytics.manager import AnalyticsManager 
+from analytics.score_calculator import ScoreCalculator
 from analytics.visual.manager import VisualAnalyticsManager
 from llm.manager import Manager 
 from repositories.session_repository import SessionRepository 
@@ -88,11 +89,20 @@ def get_audio_analytics_manager() -> AudioAnalyticsManager:
     return AudioAnalyticsManager()
 
 
+def get_score_calculator() -> ScoreCalculator:
+    return ScoreCalculator()
+
+
 def get_analytics_manager(
     visual: VisualAnalyticsManager = Depends(get_visual_analytics_manager),
     audio: AudioAnalyticsManager = Depends(get_audio_analytics_manager),
+    score_calculator: ScoreCalculator = Depends(get_score_calculator),
 ) -> AnalyticsManager:
-    return AnalyticsManager(visual=visual, audio=audio)
+    return AnalyticsManager(
+        visual=visual,
+        audio=audio,
+        score_calculator=score_calculator,
+    )
 
 
 def get_storage() -> storage: 
@@ -212,11 +222,13 @@ def get_report_service(
     session_service: SessionService = Depends(get_session_service), 
     snapshot_repository: SnapshotRepository = Depends(get_snapshot_repository), 
     report_repository: ReportRepository = Depends(get_report_repository), 
+    score_calculator: ScoreCalculator = Depends(get_score_calculator),
 ) -> ReportService: 
     return ReportService( 
         session_service=session_service, 
         snapshot_repository=snapshot_repository, 
         report_repository=report_repository, 
+        score_calculator=score_calculator,
     ) 
 
 

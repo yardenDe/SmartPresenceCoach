@@ -57,6 +57,7 @@ export const useSessionLifecycle = () => {
   const lastPoseFrameAtRef = useRef(0);
   const isPoseSendingRef = useRef(false);
   const liveSegmentAbortRef = useRef<AbortController | null>(null);
+  const liveUploadQueueRef = useRef<Promise<void>>(Promise.resolve());
   const isRecordingRef = useRef(false);
   const liveRequestIdRef = useRef(0);
   const liveResultsRef = useRef<LiveSnapshot[]>([]);
@@ -65,6 +66,7 @@ export const useSessionLifecycle = () => {
 
   const [mode, setMode] = useState<AnalyzerMode>("live");
   const [isCameraReady, setIsCameraReady] = useState(false);
+  const [isMicReady, setIsMicReady] = useState(false);
   const [isOfflineVideoReady, setIsOfflineVideoReady] = useState(false);
   const [offlineVideoName, setOfflineVideoName] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -413,12 +415,16 @@ export const useSessionLifecycle = () => {
       }
 
       setIsCameraReady(true);
+      setIsMicReady(
+        stream.getAudioTracks().some((track) => track.enabled && track.readyState === "live"),
+      );
       setError(null);
       setReportMessage("Camera ready.");
       void startPoseTracking();
       return true;
     } catch (cameraError) {
       setIsCameraReady(false);
+      setIsMicReady(false);
       setReportMessage(null);
       setError(getCameraErrorMessage(cameraError));
       return false;
@@ -443,7 +449,7 @@ export const useSessionLifecycle = () => {
         timestamp,
       );
 
-      if (typeof response.data?.analysis?.visual?.overall !== "number") {
+      if (typeof response.data?.scores?.overall !== "number") {
         throw new Error("Live analysis response is not ready yet.");
       }
 
@@ -458,6 +464,12 @@ export const useSessionLifecycle = () => {
     } catch (requestError) {
       setError(getApiErrorMessage(requestError));
     }
+  };
+
+  const queueVideoSegment = (segment: Blob, timestamp: number) => {
+    liveUploadQueueRef.current = liveUploadQueueRef.current.then(() =>
+      sendVideoSegment(segment, timestamp),
+    );
   };
 
   const startLiveChunkRecorder = () => {
@@ -491,7 +503,7 @@ export const useSessionLifecycle = () => {
         );
 
         if (isRecordingRef.current && segment.size > 0) {
-          await sendVideoSegment(segment, segmentTimestamp);
+          queueVideoSegment(segment, segmentTimestamp);
           segmentIndex += 1;
         }
       } catch (recordingError) {
@@ -720,6 +732,7 @@ export const useSessionLifecycle = () => {
     }
 
     setIsCameraReady(false);
+    setIsMicReady(false);
     setIsAnalyzing(false);
   };
 
@@ -749,6 +762,8 @@ export const useSessionLifecycle = () => {
 
     try {
       const stoppedSessionId = sessionIdRef.current;
+
+      await liveUploadQueueRef.current;
 
       if (sessionIdRef.current) {
         await sessionAnalysisApi.endSession(sessionIdRef.current);
@@ -806,6 +821,7 @@ export const useSessionLifecycle = () => {
     canSendReportEmail: Boolean(reportSessionId && finalReport?.kind === "full"),
     canDownloadReportPdf: Boolean(reportSessionId && finalReport?.kind === "full"),
     isCameraReady,
+    isMicReady,
     isOfflineVideoReady,
     isAnalyzing,
     sessionSeconds,

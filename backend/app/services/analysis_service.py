@@ -5,7 +5,7 @@ import numpy as np
 from analytics.manager import AnalyticsManager
 from audio.audio_pipeline import AudioPipeline
 from core.logger import get_logger
-from schemas.analysis import Analysis
+from schemas.analysis import Analysis, Scores
 from vision.vision_pipeline import VisionPipeline
 
 logger = get_logger("app.services.analysis")
@@ -40,15 +40,18 @@ class AnalysisService:
         else:
             audio_features = self.audio_pipeline.process(audio)
 
-
         result = self.analytics.analyze(
             landmarks=landmarks,
             audio_features=audio_features,
         )
 
         logger.debug(
-        "event=analysis.process.done result=%s",
-        result.model_dump(),
-    )
+            "event=analysis.process.done visual=%s audio=%s",
+            result.visual is not None,
+            result.audio is not None,
+        )
 
-        return result   
+        return result
+
+    def generate_scores(self, analysis: Analysis) -> Scores | None:
+        return self.analytics.generate_scores(analysis)

@@ -8,13 +8,12 @@ class Snapshot(Base):
     session_id = Column(Integer, ForeignKey("sessions.id"), nullable=False)
     timestamp = Column(Float, nullable=False)
 
-    overall = Column(Float, nullable=False)
-
-    focus = Column(Float, nullable=True)
-    engagement = Column(Float, nullable=True)
-    posture = Column(Float, nullable=True)
-    presence = Column(Float, nullable=True)
-    composure = Column(Float, nullable=True)
+    gaze_direction = Column(Float, nullable=True)
+    movement_amount = Column(Float, nullable=True)
+    movement_variation = Column(Float, nullable=True)
+    head_movement = Column(Float, nullable=True)
+    shoulder_tilt = Column(Float, nullable=True)
+    hand_movement = Column(Float, nullable=True)
 
     transcript = Column(Text, nullable=True)
     pause_ratio = Column(Float, nullable=True)

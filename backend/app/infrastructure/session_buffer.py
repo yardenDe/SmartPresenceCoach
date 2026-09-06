@@ -38,10 +38,6 @@ class SessionBuffer:
             return self.flush(session_id)
         return None
 
-    def get(self, session_id: int) -> list[dict[str, Any]]:
-        return self.buffers.get(session_id, [])
-
-
     def flush(self, session_id: int) -> list[dict[str, Any]] | None:
         buffer = self.buffers.get(session_id, [])
 

@@ -1,43 +1,25 @@
 export type AnalyzerMode = "live" | "offline";
 
-export type MetricKey = "focus" | "posture" | "presence" | "engagement" | "composure";
-
-export type MetricDefinition = {
-  key: MetricKey;
-  label: string;
-};
-
-export const METRICS: readonly MetricDefinition[] = [
-  { key: "focus", label: "Focus" },
-  { key: "posture", label: "Posture" },
-  { key: "presence", label: "Presence" },
-  { key: "engagement", label: "Engagement" },
-  { key: "composure", label: "Composure" },
+export const METRIC_KEYS = [
+  "focus",
+  "posture",
+  "presence",
+  "engagement",
+  "composure",
 ] as const;
+
+export type MetricKey = (typeof METRIC_KEYS)[number];
 
 export type BackendAnalysisScores = Partial<Record<MetricKey, number | null>>;
 
-export type BackendVisualAnalysis = BackendAnalysisScores & {
-  overall: number;
-};
-
-export type BackendAudioAnalysis = {
-  transcript?: string | null;
-  pause_ratio?: number | null;
-  average_volume?: number | null;
-  volume_variation?: number | null;
-  pitch_variation?: number | null;
-};
-
-export type BackendAnalysis = {
-  visual: BackendVisualAnalysis | null;
-  audio: BackendAudioAnalysis | null;
+export type BackendScores = BackendAnalysisScores & {
+  overall?: number | null;
 };
 
 export type BackendLiveResponse = {
   session_id: number;
   timestamp: number;
-  analysis: BackendAnalysis;
+  scores: BackendScores;
 };
 
 export type BackendOfflineResponse = {
@@ -49,6 +31,7 @@ export type BackendMetricSummary = {
   avg: number | null;
   min: number | null;
   max: number | null;
+  trend?: string | null;
 };
 
 export type BackendOverallSummary = {
@@ -58,18 +41,20 @@ export type BackendOverallSummary = {
   trend: string;
 };
 
-export type BackendReportTimeline = {
-  timestampsSec: number[];
+export type BackendTimeSeries = {
+  timestamps_sec: number[];
   series: Record<string, Array<number | null>>;
-  transcripts?: Array<string | null>;
 };
 
 export type BackendReportResponse = {
   session_id: number;
   overall_score: number;
-  overall_state: BackendOverallSummary | null;
-  timeline: BackendReportTimeline | null;
-  metrics: Record<string, BackendMetricSummary>;
+  scores: Record<string, BackendMetricSummary>;
+  score_series: BackendTimeSeries;
+  visual_metrics?: Record<string, BackendMetricSummary>;
+  audio_metrics?: Record<string, BackendMetricSummary>;
+  metric_series?: BackendTimeSeries;
+  transcript?: string | null;
   summary?: string;
   recommendations?: string;
 };
@@ -89,8 +74,7 @@ export type RecentSession = {
 
 export type LiveMetric = {
   key: MetricKey;
-  label: string;
-  value: number;
+  value: number | null;
 };
 
 export type LiveSnapshot = {
@@ -122,31 +106,31 @@ const clampScore = (value: number | null | undefined) =>
   Math.max(0, Math.min(100, Math.round(value ?? 0)));
 
 const liveMetricsFromScores = (scores: BackendAnalysisScores = {}): LiveMetric[] =>
-  METRICS.map((metric) => ({
-    ...metric,
-    value: clampScore(scores[metric.key]),
+  METRIC_KEYS.map((key) => ({
+    key,
+    value: scores[key] == null ? null : clampScore(scores[key]),
   }));
 
 export const toLiveSnapshot = (response: BackendLiveResponse): LiveSnapshot => ({
   sessionId: response.session_id,
   timestamp: response.timestamp,
-  overallScore: clampScore(response.analysis.visual?.overall),
-  metrics: liveMetricsFromScores(response.analysis.visual ?? {}),
+  overallScore: clampScore(response.scores.overall),
+  metrics: liveMetricsFromScores(response.scores),
 });
 
 export const toReportView = (response: BackendReportResponse): ReportView => {
-  const timeline = response.timeline ?? { timestampsSec: [], series: {} };
-  const overallSeries = timeline.series.overall ?? [];
+  const overallSeries = response.score_series.series.overall ?? [];
+  const { overall, ...scores } = response.scores;
   const isFull = Boolean(response.summary || response.recommendations);
 
   return {
     kind: isFull ? "full" : "short",
     sessionId: response.session_id,
     overallScore: clampScore(response.overall_score),
-    overall: response.overall_state,
-    metrics: response.metrics ?? {},
-    series: timeline.series,
-    timeline: timeline.timestampsSec.map((time, index) => ({
+    overall: (overall as BackendOverallSummary | undefined) ?? null,
+    metrics: scores,
+    series: response.score_series.series,
+    timeline: response.score_series.timestamps_sec.map((time, index) => ({
       id: `report-${index + 1}`,
       time: Math.round(time),
       overallScore: clampScore(overallSeries[index]),

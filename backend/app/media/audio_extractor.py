@@ -8,8 +8,10 @@ from core.logger import get_logger
 from media.config import (
     BUFFER_SIZE,
     CHANNELS,
+    CHUNK_SECONDS,
     PCM_SCALE,
     SAMPLE_RATE,
+    SAMPLE_WIDTH,
 )
 
 logger = get_logger("app.media.audio_extractor")
@@ -76,8 +78,19 @@ class AudioExtractor:
             )
             raise AudioExtractionError() from error
 
-    def stream(self, video_path: str) -> Iterator[np.ndarray]:
+    def stream(
+        self,
+        video_path: str,
+        chunk_sec: int = CHUNK_SECONDS,
+    ) -> Iterator[np.ndarray]:
         process = None
+        chunk_bytes = (
+            chunk_sec
+            * self.sample_rate
+            * self.channels
+            * SAMPLE_WIDTH
+        )
+        audio_buffer = bytearray()
 
         try:
             process = subprocess.Popen(
@@ -97,7 +110,16 @@ class AudioExtractor:
                 if not audio_bytes:
                     break
 
-                yield self._normalize_audio(audio_bytes)
+                audio_buffer.extend(audio_bytes)
+
+                while len(audio_buffer) >= chunk_bytes:
+                    yield self._normalize_audio(
+                        bytes(audio_buffer[:chunk_bytes])
+                    )
+                    del audio_buffer[:chunk_bytes]
+
+            if audio_buffer:
+                yield self._normalize_audio(bytes(audio_buffer))
 
             return_code = process.wait()
             if isinstance(return_code, int) and return_code != 0:

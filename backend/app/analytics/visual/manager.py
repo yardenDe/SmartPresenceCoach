@@ -1,14 +1,14 @@
 from typing import Any
 
-from analytics.visual.metrics.composure_analyzer import ComposureAnalyzer
-from analytics.visual.metrics.engagement_analyzer import EngagementAnalyzer
-from analytics.visual.metrics.focus_analyzer import FocusAnalyzer
-from analytics.visual.metrics.posture_analyzer import PostureAnalyzer
-from analytics.visual.metrics.presence_analyzer import PresenceAnalyzer
-from analytics.math_utils import average
+from analytics.visual.metrics.gaze_direction_analyzer import GazeDirectionAnalyzer
+from analytics.visual.metrics.hand_movement_analyzer import HandMovementAnalyzer
+from analytics.visual.metrics.head_movement_analyzer import HeadMovementAnalyzer
+from analytics.visual.metrics.movement_amount_analyzer import MovementAmountAnalyzer
+from analytics.visual.metrics.movement_variation_analyzer import MovementVariationAnalyzer
+from analytics.visual.metrics.shoulder_tilt_analyzer import ShoulderTiltAnalyzer
 from core.exceptions import AnalyticsProcessingError
 from core.logger import get_logger
-from schemas.analysis import VisualAnalysis
+from schemas.analysis import VisualMetrics
 
 logger = get_logger("app.analytics.visual.manager")
 
@@ -16,14 +16,15 @@ logger = get_logger("app.analytics.visual.manager")
 class VisualAnalyticsManager:
     def __init__(self):
         self.analyzers = {
-            "focus": FocusAnalyzer(),
-            "posture": PostureAnalyzer(),
-            "engagement": EngagementAnalyzer(),
-            "presence": PresenceAnalyzer(),
-            "composure": ComposureAnalyzer(),
+            "gaze_direction": GazeDirectionAnalyzer(),
+            "movement_amount": MovementAmountAnalyzer(),
+            "movement_variation": MovementVariationAnalyzer(),
+            "head_movement": HeadMovementAnalyzer(),
+            "shoulder_tilt": ShoulderTiltAnalyzer(),
+            "hand_movement": HandMovementAnalyzer(),
         }
 
-    def run_full_analysis(self, landmarks: list[dict[str, Any]]) -> VisualAnalysis:
+    def analyze(self, landmarks: list[dict[str, Any]]) -> VisualMetrics:
         logger.debug("event=analytics.run.start frames=%s", len(landmarks))
 
         if not landmarks:
@@ -44,7 +45,6 @@ class VisualAnalyticsManager:
             logger.warning("event=analytics.run.no_available_metrics")
             raise AnalyticsProcessingError()
 
-        results["overall"] = average(list(results.values()))
-        logger.debug("event=analytics.run.done frames=%s overall=%.2f", len(landmarks), results["overall"])
+        logger.debug("event=analytics.run.done frames=%s", len(landmarks))
 
-        return VisualAnalysis(**results)
+        return VisualMetrics(**results)

@@ -1,10 +1,3 @@
-from enum import Enum
-
-class AnalysisLevel(Enum):
-    LEVEL1 = 1
-    LEVEL2 = 2
-
-
 class PointNames:
     NOSE: str = "nose"
     LEFT_EYE_BASIC: str = "left_eye_basic"

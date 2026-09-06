@@ -42,13 +42,3 @@ class AuthService:
         token = self.security_service.create_token(user.id)
         self.logger.info("event=auth.login.done user_id=%s username=%s", user.id, username)
         return token
-
-    def me_user(self, token: str) -> int:
-        payload = self.security_service.decode_token(token)
-        user_id = payload.get("sub")
-        
-        if not user_id:
-            self.logger.warning("event=auth.token.missing_sub")
-            raise InvalidCredentialsError()
-            
-        return int(user_id)

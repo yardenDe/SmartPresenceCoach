@@ -59,9 +59,9 @@ class LiveService:
                 audio=audio,
             )
 
-            visual = analysis.visual
+            scores = self.analysis_service.generate_scores(analysis)
 
-            if visual is None:
+            if analysis.visual is None or scores is None:
                 raise NoLandmarksError()
 
             self.session_service.add_analysis(
@@ -73,13 +73,13 @@ class LiveService:
             self.logger.info(
                 "event=live.process.done session_id=%s overall=%.2f",
                 session_id,
-                visual.overall,
+                scores.overall,
             )
 
             return LiveResponse(
                 session_id=session_id,
                 timestamp=timestamp,
-                analysis=analysis,
+                scores=scores,
             )
 
         except AppError:

@@ -1,13 +1,7 @@
-import type { MetricKey } from "../../../domain/sessionAnalysis";
+import { METRIC_KEYS, type MetricKey } from "../../../domain/sessionAnalysis";
 import type { MetricTone } from "../dashboard.types";
 
-export const METRIC_ORDER: MetricKey[] = [
-  "focus",
-  "posture",
-  "presence",
-  "engagement",
-  "composure",
-];
+export const METRIC_ORDER = METRIC_KEYS;
 
 export const METRIC_CONFIG: Record<MetricKey, { label: string; tone: MetricTone }> = {
   focus: {

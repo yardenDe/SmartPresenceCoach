@@ -1,31 +1,38 @@
 import numpy as np
 
-from schemas.analysis import AudioAnalysis, AudioFeatures
+from schemas.analysis import AudioFeatures, AudioMetrics
 
 
 class AudioAnalyticsManager:
     def analyze(
         self,
         features: AudioFeatures,
-    ) -> AudioAnalysis:
+    ) -> AudioMetrics:
+        valid_rms = features.rms[features.rms > 0]
         valid_pitch = features.pitch[
-            ~np.isnan(features.pitch)
+            ~np.isnan(features.pitch) & (features.pitch > 0)
         ]
+        volume_db = 20 * np.log10(valid_rms) if valid_rms.size else valid_rms
+        pitch_semitones = (
+            12 * np.log2(valid_pitch / 440.0)
+            if valid_pitch.size
+            else valid_pitch
+        )
 
-        return AudioAnalysis(
+        return AudioMetrics(
             transcript=features.transcript,
             pause_ratio=self._calculate_pause_ratio(
                 features.non_silent_intervals,
                 features.total_samples,
             ),
             average_volume=self._calculate_average_volume(
-                features.rms
+                volume_db
             ),
             volume_variation=self._calculate_volume_variation(
-                features.rms
+                volume_db
             ),
             pitch_variation=self._calculate_pitch_variation(
-                valid_pitch
+                pitch_semitones
             ),
         )
 

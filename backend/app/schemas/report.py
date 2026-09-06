@@ -4,36 +4,41 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 
-class ReportMetricSummary(BaseModel):
-    avg: float | None
-    min: float | None
-    max: float | None
+class ScoreSummary(BaseModel):
+    avg: float | None = None
+    min: float | None = None
+    max: float | None = None
+    trend: str | None = None
 
 
-class ReportOverallSummary(BaseModel):
-    avg: float
-    min: float
-    max: float
-    trend: str
+class MetricSummary(BaseModel):
+    avg: float | None = None
+    min: float | None = None
+    max: float | None = None
+    unit: str
+    target_min: float
+    target_max: float
 
 
-class ReportMetricTimeline(BaseModel):
-    timestampsSec: list[float]
+class TimeSeries(BaseModel):
+    timestamps_sec: list[float]
     series: dict[str, list[float | None]]
-    transcripts: list[str | None] = Field(default_factory=list)
 
 
 class ShortReportResponse(BaseModel):
     session_id: int
     overall_score: float
-    overall_state: ReportOverallSummary | None = None
-    timeline: ReportMetricTimeline | None = None
-    metrics: dict[str, ReportMetricSummary] = Field(default_factory=dict)
+    scores: dict[str, ScoreSummary] = Field(default_factory=dict)
+    score_series: TimeSeries
 
 
 class FullReportResponse(ShortReportResponse):
+    visual_metrics: dict[str, MetricSummary]
+    audio_metrics: dict[str, MetricSummary]
+    metric_series: TimeSeries
     summary: str
     recommendations: str
+    transcript: str | None = None
 
 
 class LLMReportText(BaseModel):

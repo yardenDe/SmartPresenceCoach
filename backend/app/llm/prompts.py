@@ -19,8 +19,7 @@ Be direct, practical, and supportive.
 
 def session_report_prompt(
     timestamps: list[float],
-    visual_metric_vectors: dict[str, list[float | None]],
-    audio_metric_vectors: dict[str, list[float | None]],
+    metric_vectors: dict[str, list[float | None]],
     transcript_vector: list[str | None],
     mode: str,
 ) -> str:
@@ -32,11 +31,8 @@ Create a concise report for this speaking session.
 mode:
 {mode}
 
-Visual metric vectors:
-{visual_metric_vectors}
-
-Audio metric vectors:
-{audio_metric_vectors}
+Metric vectors:
+{metric_vectors}
 
 Transcript vector:
 {transcript_vector}
@@ -45,10 +41,9 @@ Time vector:
 {timestamps}
 
 Vector meaning:
-- Every visual, audio, and transcript vector is aligned with the time vector by index.
+- Every metric and transcript vector is aligned with the time vector by index.
 - Each timestamp is the start time, in seconds, of one analyzed time window.
 - A null value means that signal or transcript was unavailable for that time window.
-- Visual scores are from 0 to 100 and higher is better.
 - pause_ratio is the fraction of the window detected as silence.
 - average_volume and volume_variation are based on RMS amplitude.
 - pitch_variation describes variation in detected vocal pitch.

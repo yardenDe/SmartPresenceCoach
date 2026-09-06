@@ -72,6 +72,7 @@ export type DashboardRuntime = {
   isStarting: boolean;
   isStopping: boolean;
   isCameraReady: boolean;
+  isMicReady: boolean;
   isOfflineVideoReady: boolean;
   offlineVideoName: string;
   error: string | null;

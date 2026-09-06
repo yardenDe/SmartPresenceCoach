@@ -1,9 +1,9 @@
 from pydantic import BaseModel
 
-from schemas.analysis import Analysis
+from schemas.analysis import Scores
 
 
 class LiveResponse(BaseModel):
     session_id: int
     timestamp: float
-    analysis: Analysis
+    scores: Scores

@@ -87,7 +87,3 @@ class VisionPipeline:
         )
 
         return chunk_results
-
-
-    def close(self) -> None:
-        logger.debug("event=vision.pipeline.close")

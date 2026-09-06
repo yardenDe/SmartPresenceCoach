@@ -46,7 +46,6 @@ class Settings(BaseSettings):
     MAIL_PASSWORD: str | None = None
     MAIL_FROM: str | None = None
     MAIL_USE_TLS: bool = True
-    MAIL_USE_SSL: bool = False
     MAIL_TIMEOUT: float = 10.0
 
 

@@ -60,9 +60,8 @@ class OfflineService:
                     frames=frames,
                     audio=audio,
                 )
-                visual = analysis.visual
 
-                if visual is None:
+                if analysis.visual is None and analysis.audio is None:
                     continue
 
                 self.session_service.add_analysis(

@@ -21,8 +21,6 @@ type AuthContextValue = {
   logout: () => void;
 };
 
-const TOKEN_STORAGE_KEY = "smart-presence-token";
-
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
@@ -33,44 +31,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isAuthenticated = Boolean(token);
 
   useEffect(() => {
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
-  }, []);
-
-  useEffect(() => {
     setAuthToken(token);
   }, [token]);
 
-  const getTokenFromResponse = (data: unknown) => {
-    if (typeof data === "string") {
-      return data;
-    }
-
-    if (Array.isArray(data) && typeof data[1] === "string") {
-      return data[1];
-    }
-
-    if (typeof data === "object" && data !== null) {
-      const response = data as { access_token?: unknown };
-
-      if (typeof response.access_token === "string") {
-        return response.access_token;
-      }
-
-      if (Array.isArray(response.access_token) && typeof response.access_token[1] === "string") {
-        return response.access_token[1];
-      }
-    }
-
-    return null;
-  };
-
-  const login = async (username: string, password: string) => {
+  const authenticate = async (
+    request: typeof loginRequest,
+    username: string,
+    password: string,
+  ) => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const response = await loginRequest(username, password);
-      const nextToken = getTokenFromResponse(response.data);
+      const response = await request(username, password);
+      const nextToken = response.data.access_token;
 
       if (!nextToken) {
         throw new Error("Login succeeded but no access token was returned.");
@@ -87,32 +61,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const register = async (username: string, password: string) => {
-    setIsLoading(true);
-    setError(null);
+  const login = (username: string, password: string) =>
+    authenticate(loginRequest, username, password);
 
-    try {
-      const response = await registerRequest(username, password);
-      const nextToken = getTokenFromResponse(response.data);
-
-      if (nextToken) {
-        setToken(nextToken);
-        setUsername(username);
-        return;
-      }
-
-      await login(username, password);
-    } catch (requestError) {
-      const message = getApiErrorMessage(requestError);
-      setError(message);
-      throw new Error(message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const register = (username: string, password: string) =>
+    authenticate(registerRequest, username, password);
 
   const logout = () => {
-    localStorage.removeItem(TOKEN_STORAGE_KEY);
     setToken(null);
     setUsername(null);
     setError(null);

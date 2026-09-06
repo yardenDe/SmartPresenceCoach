@@ -2,10 +2,14 @@
 
 from html import escape
 
-from analytics.config import VISUAL_METRICS
+from schemas.analysis import Scores
 
 
-METRICS = VISUAL_METRICS
+METRICS = tuple(
+    name
+    for name in Scores.model_fields
+    if name != "overall"
+)
 COLORS = {
     "overall": "#111827",
     "focus": "#2563eb",
@@ -25,8 +29,8 @@ LABELS = {
 
 
 def build_email_html(report: dict) -> str:
-    overall = report.get("overall_state") or {}
-    metrics = report.get("metrics") or {}
+    scores = report.get("scores") or {}
+    overall = scores.get("overall") or {}
 
     return page(
         title="Your Presence Report",
@@ -39,13 +43,12 @@ def build_email_html(report: dict) -> str:
           <section class="card">
             <table class="wide"><tr>
               {stat("Overall", report.get("overall_score"), "#16a34a")}
-              {stat("Average", overall.get("avg"), "#2563eb")}
               {stat("Trend", overall.get("trend"), "#111827")}
             </tr></table>
           </section>
           <section class="card">
             <h2>Metric Snapshot</h2>
-            <table class="wide">{email_metric_rows(metrics)}</table>
+            <table class="wide">{email_metric_rows(scores)}</table>
           </section>
           <p class="muted small">Open the attached PDF for detailed charts, insights, and recommendations.</p>
         </main>
@@ -54,11 +57,11 @@ def build_email_html(report: dict) -> str:
 
 
 def build_pdf_html(report: dict) -> str:
-    overall = report.get("overall_state") or {}
-    metrics = report.get("metrics") or {}
-    timeline = report.get("timeline") or {}
-    series = timeline.get("series") or {}
-    times = timeline.get("timestampsSec") or []
+    scores = report.get("scores") or {}
+    overall = scores.get("overall") or {}
+    score_series = report.get("score_series") or {}
+    series = score_series.get("series") or {}
+    times = score_series.get("timestamps_sec") or []
 
     return page(
         title="Session Report",
@@ -71,8 +74,8 @@ def build_pdf_html(report: dict) -> str:
         <section class="card">{kpis(report, overall)}</section>
 
         {section("1. Overall Score Over Time", chart({"Overall Score": series.get("overall") or []}, times, 160))}
-        {section("2. Metrics Summary", metrics_summary(metrics, series), padded=False)}
-        {section("3. Detailed Metrics Over Time", detailed_charts(metrics, series, times), "Below are detailed graphs for each metric throughout the session.")}
+        {section("2. Metrics Summary", metrics_summary(scores), padded=False)}
+        {section("3. Detailed Metrics Over Time", detailed_charts(scores, series, times), "Below are detailed graphs for each metric throughout the session.")}
         {section("4. All Metrics Over Time", chart(all_series(series), times, 180, legend=True), "Comparison of all metrics and overall score throughout the session.")}
 
         <table class="two"><tr>
@@ -139,7 +142,6 @@ def section(title: str, content: str, note: str = "", padded: bool = True) -> st
 def kpis(report: dict, overall: dict) -> str:
     items = [
         ("Overall Score", report.get("overall_score"), "/100", "#16a34a"),
-        ("Average", overall.get("avg"), "", "#16a34a"),
         ("Max", overall.get("max"), "", "#2563eb"),
         ("Min", overall.get("min"), "", "#dc2626"),
         ("Trend", overall.get("trend"), "", "#111827"),
@@ -157,23 +159,23 @@ def stat(label: str, value: object, color: str, suffix: str = "") -> str:
     """
 
 
-def metrics_summary(metrics: dict, series: dict) -> str:
+def metrics_summary(metrics: dict) -> str:
     return f"""
     <table class="wide"><tr>
       <td style="width:78%;padding:0">
         <table class="wide metrics">
           <thead><tr><th>Metric</th><th>Average</th><th>Max</th><th>Min</th><th>Trend</th></tr></thead>
-          <tbody>{metric_rows(metrics, series)}</tbody>
+          <tbody>{metric_rows(metrics)}</tbody>
         </table>
       </td>
       <td style="width:22%;padding:12px">
-        <div class="insight"><h2 style="color:#059669">Key Insight</h2><p style="line-height:1.55">{insight(metrics, series)}</p></div>
+        <div class="insight"><h2 style="color:#059669">Key Insight</h2><p style="line-height:1.55">{insight(metrics)}</p></div>
       </td>
     </tr></table>
     """
 
 
-def metric_rows(metrics: dict, series: dict) -> str:
+def metric_rows(metrics: dict) -> str:
     if not metrics:
         return '<tr><td colspan="5" style="text-align:center;color:#64748b">N/A</td></tr>'
 
@@ -183,7 +185,7 @@ def metric_rows(metrics: dict, series: dict) -> str:
             continue
         values = metrics[name] or {}
         avg = values.get("avg")
-        trend = trend_for(series.get(name) or [])
+        trend = values.get("trend") or "stable"
         rows.append(
             f"""
             <tr>
@@ -211,7 +213,8 @@ def email_metric_rows(metrics: dict) -> str:
           </td>
         </tr>
         """
-        for name, values in metrics.items()
+        for name in METRICS
+        if (values := metrics.get(name)) is not None
     )
 
 
@@ -278,28 +281,26 @@ def all_series(series: dict) -> dict[str, list]:
     return {label(name): series[name] for name in [*METRICS, "overall"] if series.get(name)}
 
 
-def insight(metrics: dict, series: dict) -> str:
-    scored = [(name, values.get("avg")) for name, values in metrics.items() if isinstance(values.get("avg"), (int, float))]
+def insight(metrics: dict) -> str:
+    scored = [
+        (name, values.get("avg"))
+        for name in METRICS
+        if (values := metrics.get(name)) is not None
+        and isinstance(values.get("avg"), (int, float))
+    ]
     if not scored:
         return "Not enough metric data is available for a reliable insight."
 
     best = max(scored, key=lambda item: item[1])
     low = min(scored, key=lambda item: item[1])
-    declining = [label(name) for name, _ in scored if trend_for(series.get(name) or []) == "down"]
+    declining = [
+        label(name)
+        for name, _ in scored
+        if (metrics[name] or {}).get("trend") == "down"
+    ]
     if declining:
         return f"{label(best[0])} is strongest at {value_text(best[1])}. Watch {', '.join(declining[:2])}, which declined toward the end."
     return f"{label(best[0])} is strongest at {value_text(best[1])}. {label(low[0])} has the most room to improve at {value_text(low[1])}."
-
-
-def trend_for(values: list) -> str:
-    nums = [value for value in values if isinstance(value, (int, float))]
-    if len(nums) < 2:
-        return "stable"
-    if nums[-1] - nums[0] > 2:
-        return "up"
-    if nums[-1] - nums[0] < -2:
-        return "down"
-    return "stable"
 
 
 def value_text(value: object) -> str:

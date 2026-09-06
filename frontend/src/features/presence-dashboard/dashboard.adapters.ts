@@ -76,6 +76,7 @@ export const buildSessionInfo = ({
   elapsedSeconds,
   liveData,
   isCameraReady,
+  isMicReady,
   isAnalyzing,
 }: {
   source: SessionSource;
@@ -84,6 +85,7 @@ export const buildSessionInfo = ({
   elapsedSeconds: number;
   liveData: LiveSnapshot | null;
   isCameraReady: boolean;
+  isMicReady: boolean;
   isAnalyzing: boolean;
 }): SessionInfo => ({
   overallScore: liveData?.overallScore ?? null,
@@ -94,5 +96,5 @@ export const buildSessionInfo = ({
   elapsedSeconds,
   trackingStatus: isAnalyzing ? "Tracking" : "Idle",
   cameraStatus: source === "live_camera" ? (isCameraReady ? "Ready" : "Waiting") : "Not used",
-  micStatus: "Off",
+  micStatus: source === "live_camera" ? (isMicReady ? "Ready" : "Waiting") : "Not used",
 });

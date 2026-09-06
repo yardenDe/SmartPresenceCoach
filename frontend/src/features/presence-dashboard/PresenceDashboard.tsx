@@ -40,6 +40,7 @@ export const PresenceDashboard = () => {
     elapsedSeconds: lifecycle.sessionSeconds,
     liveData: lifecycle.liveData,
     isCameraReady: lifecycle.isCameraReady,
+    isMicReady: lifecycle.isMicReady,
     isAnalyzing: lifecycle.isAnalyzing,
   });
 

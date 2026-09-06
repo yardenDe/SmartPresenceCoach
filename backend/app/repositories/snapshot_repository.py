@@ -1,5 +1,5 @@
 from typing import Any
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.orm import Session as DBSession
 
 from core.exceptions import DatabaseError
@@ -73,46 +73,6 @@ class SnapshotRepository:
         )
         return snapshot_models
 
-    def get_by_id(self, snapshot_id: int) -> Snapshot | None:
-        try:
-            snapshot = self.db.get(Snapshot, snapshot_id)
-        except Exception:
-            logger.exception(
-                "event=snapshot.lookup.failed snapshot_id=%s",
-                snapshot_id,
-            )
-            raise DatabaseError()
-
-        logger.debug(
-            "event=snapshot.lookup.done snapshot_id=%s found=%s",
-            snapshot_id,
-            snapshot is not None,
-        )
-        return snapshot
-
-    def list_by_session(self, session_id: int) -> list[Snapshot]:
-        try:
-            query = (
-                select(Snapshot)
-                .where(Snapshot.session_id == session_id)
-                .order_by(Snapshot.timestamp.asc(), Snapshot.id.asc())
-            )
-            result = self.db.execute(query)
-            snapshots = result.scalars().all()
-        except Exception:
-            logger.exception(
-                "event=snapshot.list.failed session_id=%s",
-                session_id,
-            )
-            raise DatabaseError()
-
-        logger.debug(
-            "event=snapshot.list.done session_id=%s count=%s",
-            session_id,
-            len(snapshots),
-        )
-        return snapshots
-
     def get_metric_values(
         self,
         metrics: list[str],
@@ -144,31 +104,3 @@ class SnapshotRepository:
             metrics,
         )
         return result
-
-    def get_metrics_stats(
-        self,
-        metrics: list[str],
-        session_id: int,
-    ) -> dict[str, Any]:
-        select_fields = []
-
-        for metric in metrics:
-            column = getattr(Snapshot, metric)
-            select_fields.extend([
-                func.avg(column).label(f"{metric}_avg"),
-                func.min(column).label(f"{metric}_min"),
-                func.max(column).label(f"{metric}_max"),
-            ])
-
-        try:
-            query = select(*select_fields).where(
-                Snapshot.session_id == session_id
-            )
-            row_map = self.db.execute(query).mappings().one_or_none()
-            return dict(row_map) if row_map else {}
-        except Exception:
-            logger.exception(
-                "event=snapshot.all_metrics_stats.failed session_id=%s",
-                session_id,
-            )
-            raise DatabaseError()

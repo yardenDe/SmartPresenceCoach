@@ -63,20 +63,6 @@ class SnapshotsNotFoundError(ResourceNotFoundError):
     code = "SNAPSHOTS_NOT_FOUND"
     message = "No snapshots found for this session"
 
-class ValidationError(AppError):
-    status_code = status.HTTP_400_BAD_REQUEST
-    code = "VALIDATION_ERROR"
-    message = "The request data is invalid"
-
-class InvalidFrameError(ValidationError):
-    code = "INVALID_FRAME_DATA"
-    message = "The provided frame data is invalid for analysis"
-
-class MissingFieldsError(ValidationError):
-    code = "MISSING_FIELDS"
-    message = "Mandatory fields are missing from the request"
-
-
 class VideoProcessingError(AppError):
     status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
     code = "VIDEO_PROCESSING_ERROR"
