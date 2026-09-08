@@ -5,13 +5,13 @@ from fastapi import UploadFile
 from core.exceptions import AppError, NoLandmarksError, VisionProcessingError
 from core.logger import get_logger
 from media.audio_extractor import AudioExtractor
-from media.config import CHUNK_SECONDS
 from media.frame_extractor import FrameExtractor
 from media.storage import storage
 from schemas.offline import OfflineResponse
 from services.analysis_service import AnalysisService
 from services.session_service import SessionService
 
+CHUNK_SECONDS = 3
 
 class OfflineService:
     def __init__(
@@ -47,8 +47,8 @@ class OfflineService:
             self.session_service.require_owned_session(user_id, session_id)
             video_path = await self.storage.save_temp(video)
 
-            video_chunks = self.frame_extractor.get_chunks(video_path)
-            audio_chunks = self.audio_extractor.stream(video_path)
+            video_chunks = self.frame_extractor.get_chunks(video_path, CHUNK_SECONDS)
+            audio_chunks = self.audio_extractor.stream(video_path, CHUNK_SECONDS)
 
             analyzed_count = 0
 
@@ -56,19 +56,17 @@ class OfflineService:
                 zip_longest(video_chunks, audio_chunks),
                 start=1,
             ):
-                analysis = self.analysis_service.process(
+                snapshot = self.analysis_service.process(
+                    session_id=session_id,
+                    timestamp=float((chunk_index - 1) * CHUNK_SECONDS),
                     frames=frames,
                     audio=audio,
                 )
 
-                if analysis.visual is None and analysis.audio is None:
+                if snapshot is None:
                     continue
 
-                self.session_service.add_analysis(
-                    session_id=session_id,
-                    timestamp=float((chunk_index - 1) * CHUNK_SECONDS),
-                    analysis=analysis,
-                )
+                self.session_service.add_snapshot(snapshot)
                 analyzed_count += 1
 
             if analyzed_count == 0:

@@ -11,10 +11,10 @@ class AppError(Exception):
     code = "INTERNAL_SERVER_ERROR"
     message = "An unexpected error occurred"
 
-    def __init__(self, message: str | None = None, details: dict | None = None):
+    def __init__(self, message: str | None = None):
         if message:
             self.message = message
-        self.details = details or {}
+
 
 class AuthError(AppError):
     status_code = status.HTTP_401_UNAUTHORIZED
@@ -135,7 +135,6 @@ async def app_exceptions_handler(request: Request, exc: AppError) -> JSONRespons
             "error": {
                 "code": exc.code,
                 "message": exc.message,
-                "details": exc.details
             }
         }
     )
@@ -151,7 +150,6 @@ async def unhandled_exceptions_handler(request: Request, exc: Exception) -> JSON
             "error": {
                 "code": error.code,
                 "message": error.message,
-                "details": error.details,
             }
         },
     )

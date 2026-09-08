@@ -1,32 +1,26 @@
 """In-memory buffering for analysis snapshots awaiting persistence."""
 
-from typing import Any
-
 from core.logger import get_logger
-from schemas.analysis import Analysis
+from models.snapshot import Snapshot
 
 logger = get_logger("app.infrastructure.session_buffer")
 
 
 class SessionBuffer:
     def __init__(self, flush_size: int = 2):
-        self.buffers: dict[int, list[dict[str, Any]]] = {}
+        self.buffers: dict[int, list[Snapshot]] = {}
         self.flush_size = flush_size
 
     def add(
         self,
-        session_id: int,
-        timestamp: float,
-        analysis: Analysis,
-    ) -> list[dict[str, Any]] | None:
+        snapshot: Snapshot,
+    ) -> list[Snapshot] | None:
+        session_id = snapshot.session_id
         if session_id not in self.buffers:
             self.buffers[session_id] = []
             logger.debug("event=session_buffer.create session_id=%s", session_id)
 
-        self.buffers[session_id].append({
-            "timestamp": timestamp,
-            "analysis": analysis,
-        })
+        self.buffers[session_id].append(snapshot)
 
         logger.debug(
             "event=session_buffer.add session_id=%s size=%s",
@@ -38,7 +32,7 @@ class SessionBuffer:
             return self.flush(session_id)
         return None
 
-    def flush(self, session_id: int) -> list[dict[str, Any]] | None:
+    def flush(self, session_id: int) -> list[Snapshot] | None:
         buffer = self.buffers.get(session_id, [])
 
         if not buffer:
@@ -55,7 +49,7 @@ class SessionBuffer:
 
         return buffer
 
-    def close_session(self, session_id: int) -> list[dict[str, Any]] | None:
+    def close_session(self, session_id: int) -> list[Snapshot] | None:
         buffer = self.flush(session_id)
 
         if session_id in self.buffers:

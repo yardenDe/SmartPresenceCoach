@@ -129,6 +129,7 @@ export const PresenceDashboard = () => {
 
   const workspace = (
     <MainWorkspace
+      report={report}
       state={dashboard.dashboardState}
       selectedMode={dashboard.coachingMode}
       customScenario={dashboard.customScenario}

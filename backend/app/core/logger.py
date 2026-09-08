@@ -29,7 +29,9 @@ def setup_logging() -> None:
             },
         }
     )
-
+     
+    logging.getLogger("groq").setLevel(logging.WARNING)
+    logging.getLogger("numba").setLevel(logging.WARNING)
 
 def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(name)

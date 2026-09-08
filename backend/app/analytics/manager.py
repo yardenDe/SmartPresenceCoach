@@ -1,9 +1,8 @@
 from typing import Any
 
 from analytics.audio.manager import AudioAnalyticsManager
-from analytics.score_calculator import ScoreCalculator
 from analytics.visual.manager import VisualAnalyticsManager
-from schemas.analysis import Analysis, AudioFeatures, Scores
+from schemas.analysis import Analysis, AudioFeatures
 
 
 class AnalyticsManager:
@@ -11,11 +10,9 @@ class AnalyticsManager:
         self,
         visual: VisualAnalyticsManager,
         audio: AudioAnalyticsManager,
-        score_calculator: ScoreCalculator,
     ):
         self.visual = visual
         self.audio = audio
-        self.score_calculator = score_calculator
 
     def analyze(
         self,
@@ -33,10 +30,4 @@ class AnalyticsManager:
                 if audio_features is not None
                 else None
             ),
-        )
-
-    def generate_scores(self, analysis: Analysis) -> Scores | None:
-        return self.score_calculator.calculate(
-            visual=analysis.visual,
-            audio=analysis.audio,
         )

@@ -8,6 +8,7 @@ from core.exceptions import (
 )
 from core.logger import get_logger
 from llm.prompts import session_report_prompt, session_report_system_instruction
+from models.snapshot import Snapshot
 from repositories.report_repository import ReportRepository
 from repositories.snapshot_repository import SnapshotRepository
 from schemas.analysis import AudioMetrics, Scores, VisualMetrics
@@ -60,8 +61,8 @@ class ReportService:
             if require_saved_coaching and saved_report is None:
                 raise ReportNotFoundError()
 
-        rows = self._load_rows(session_id)
-        score_series = self._build_score_series(rows)
+        snapshots = self._load_snapshots(session_id)
+        score_series = self._build_score_series(snapshots)
         short_report = self._build_short_report(session_id, score_series)
 
         if not full:
@@ -69,7 +70,7 @@ class ReportService:
 
         return self._build_full_report(
             short_report=short_report,
-            rows=rows,
+            snapshots=snapshots,
             mode=session.mode,
             llm_service=llm_service,
             saved_coaching=(
@@ -112,20 +113,17 @@ class ReportService:
         )
         return report.model_dump()
 
-    def _load_rows(self, session_id: int) -> list[dict]:
-        rows = self.snapshot_repository.get_metric_values(
-            [*METRIC_NAMES, "transcript"],
-            session_id,
-        )
-        if not rows:
+    def _load_snapshots(self, session_id: int) -> list[Snapshot]:
+        snapshots = self.snapshot_repository.get_by_session(session_id)
+        if not snapshots:
             raise SnapshotsNotFoundError()
-        return rows
+        return snapshots
 
-    def _build_score_series(self, rows: list[dict]) -> TimeSeries:
+    def _build_score_series(self, snapshots: list[Snapshot]) -> TimeSeries:
         series = {name: [] for name in SCORE_NAMES}
 
-        for row in rows:
-            scores = self._calculate_scores(row)
+        for snapshot in snapshots:
+            scores = self._calculate_scores(snapshot)
             for name in SCORE_NAMES:
                 series[name].append(getattr(scores, name) if scores else None)
 
@@ -133,15 +131,12 @@ class ReportService:
             raise SnapshotsNotFoundError()
 
         return TimeSeries(
-            timestamps_sec=[row["timestamp"] for row in rows],
+            timestamps_sec=[snapshot.timestamp for snapshot in snapshots],
             series=series,
         )
 
-    def _calculate_scores(self, row: dict) -> Scores | None:
-        return self.score_calculator.calculate(
-            visual=VisualMetrics.model_validate(row),
-            audio=AudioMetrics.model_validate(row),
-        )
+    def _calculate_scores(self, snapshot: Snapshot) -> Scores | None:
+        return self.score_calculator.calculate(snapshot)
 
     def _build_short_report(
         self,
@@ -172,13 +167,13 @@ class ReportService:
     def _build_full_report(
         self,
         short_report: ShortReportResponse,
-        rows: list[dict],
+        snapshots: list[Snapshot],
         mode: str | None,
         llm_service: LLMService | None,
         saved_coaching: LLMReportText | None,
     ) -> FullReportResponse:
-        metric_series = self._build_metric_series(rows)
-        transcripts = [row.get("transcript") for row in rows]
+        metric_series = self._build_metric_series(snapshots)
+        transcripts = [snapshot.transcript for snapshot in snapshots]
         coaching = self._get_coaching(
             session_id=short_report.session_id,
             overall_score=short_report.overall_score,
@@ -206,11 +201,11 @@ class ReportService:
         )
 
     @staticmethod
-    def _build_metric_series(rows: list[dict]) -> TimeSeries:
+    def _build_metric_series(snapshots: list[Snapshot]) -> TimeSeries:
         return TimeSeries(
-            timestamps_sec=[row["timestamp"] for row in rows],
+            timestamps_sec=[snapshot.timestamp for snapshot in snapshots],
             series={
-                name: [row.get(name) for row in rows]
+                name: [getattr(snapshot, name) for snapshot in snapshots]
                 for name in METRIC_NAMES
             },
         )
@@ -230,8 +225,6 @@ class ReportService:
 
             summaries[name] = MetricSummary(
                 avg=average_available(values),
-                min=min(values) if values else None,
-                max=max(values) if values else None,
                 unit=definition.unit,
                 target_min=definition.target_min,
                 target_max=definition.target_max,

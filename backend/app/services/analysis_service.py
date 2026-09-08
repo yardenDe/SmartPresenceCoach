@@ -1,11 +1,12 @@
 from typing import Any
-
 import numpy as np
 
 from analytics.manager import AnalyticsManager
+from analytics.score_calculator import ScoreCalculator
 from audio.audio_pipeline import AudioPipeline
 from core.logger import get_logger
-from schemas.analysis import Analysis, Scores
+from models.snapshot import Snapshot
+from schemas.analysis import Scores
 from vision.vision_pipeline import VisionPipeline
 
 logger = get_logger("app.services.analysis")
@@ -16,17 +17,21 @@ class AnalysisService:
         self,
         analytics: AnalyticsManager,
         vision_pipeline: VisionPipeline,
+        score_calculator: ScoreCalculator,
         audio_pipeline: AudioPipeline | None = None,
     ):
         self.analytics = analytics
         self.vision_pipeline = vision_pipeline
         self.audio_pipeline = audio_pipeline
+        self.score_calculator = score_calculator
 
     def process(
         self,
+        session_id: int,
+        timestamp: float,
         frames: list[Any] | None = None,
         audio: np.ndarray | None = None,
-    ) -> Analysis:
+    ) -> Snapshot | None:
         landmarks = None
         audio_features = None
 
@@ -51,7 +56,15 @@ class AnalysisService:
             result.audio is not None,
         )
 
-        return result
+        if result.visual is None and result.audio is None:
+            return None
 
-    def generate_scores(self, analysis: Analysis) -> Scores | None:
-        return self.analytics.generate_scores(analysis)
+        return Snapshot(
+            session_id=session_id,
+            timestamp=timestamp,
+            **(result.visual.model_dump() if result.visual else {}),
+            **(result.audio.model_dump() if result.audio else {}),
+        )
+
+    def generate_scores(self, snapshot: Snapshot) -> Scores | None:
+        return self.score_calculator.calculate(snapshot)

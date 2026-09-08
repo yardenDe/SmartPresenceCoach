@@ -21,8 +21,11 @@ class Settings(BaseSettings):
     APP_PORT: int = 8000
     RELOAD: bool = False
 
-    FRONTEND_ORIGIN: str = "http://localhost:5173"
-    LOG_LEVEL: str = "INFO"
+    FRONTEND_ORIGINS: list[str] = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ]
+    LOG_LEVEL: str = "DEBUG"
 
     LLM_API_KEY: str | None = None
     LLM_MODEL: str = "gemini-3.1-flash-lite"
@@ -36,9 +39,7 @@ class Settings(BaseSettings):
         Path(__file__).resolve().parents[2] / "assets" / "mediapipe"
     )
     MEDIAPIPE_RUNNING_MODE: RunningMode = RunningMode.IMAGE
-    FACE_LANDMARKER_MODEL: str = "face_landmarker.task"
     POSE_LANDMARKER_MODEL: str = "pose_landmarker.task"
-    HAND_LANDMARKER_MODEL: str = "hand_landmarker.task"
 
     MAIL_HOST: str | None = None
     MAIL_PORT: int = 587

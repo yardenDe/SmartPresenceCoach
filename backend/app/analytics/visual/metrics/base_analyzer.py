@@ -19,11 +19,7 @@ class BaseAnalyzer(ABC):
         cls,
         frames: list[dict[str, Any]],
     ) -> list[dict[str, Any]]:
-        return [
-            pose_data
-            for frame_data in frames
-            if (pose_data := frame_data.get("pose")) is not None
-        ]
+        return [frame for frame in frames if frame]
 
     @classmethod
     def _reference_scale(

@@ -13,8 +13,6 @@ class ScoreSummary(BaseModel):
 
 class MetricSummary(BaseModel):
     avg: float | None = None
-    min: float | None = None
-    max: float | None = None
     unit: str
     target_min: float
     target_max: float

@@ -5,26 +5,22 @@ def test_process_frame_uses_detector_and_landmark_extractor():
     from vision.vision_pipeline import VisionPipeline
 
     detector = Mock()
-    detector.detect.return_value = {"raw": "data"}
+    pose_result = object()
+    detector.detect.return_value = pose_result
 
     pipeline = VisionPipeline(detector=detector)
     pipeline.landmark_extractor = Mock()
     pipeline.landmark_extractor.filter_landmarks.return_value = {
         "pose": {"nose": {"x": 0.5, "y": 0.2}},
-        "face": None,
-        "hands": [],
     }
 
     result = pipeline.process_frame("frame-1")
 
     detector.detect.assert_called_once_with(
         "frame-1",
-        pose_mode=True,
-        face_mode=False,
-        hand_mode=False,
     )
     pipeline.landmark_extractor.filter_landmarks.assert_called_once_with(
-        {"raw": "data"}
+        pose_result
     )
 
     assert result["pose"]["nose"]["x"] == 0.5

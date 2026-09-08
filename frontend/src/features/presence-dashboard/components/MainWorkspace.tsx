@@ -1,4 +1,5 @@
 import type { RefCallback } from "react";
+import type { ReportView } from "../../../domain/sessionAnalysis";
 
 import type {
   CoachingMode,
@@ -16,6 +17,7 @@ import { SetupView } from "./SetupView";
 import { SummaryView } from "./SummaryView";
 
 type MainWorkspaceProps = {
+  report: ReportView | null;
   state: DashboardState;
   selectedMode: CoachingMode | null;
   customScenario: string;
@@ -63,7 +65,7 @@ export const MainWorkspace = (props: MainWorkspaceProps) => {
         : "grid min-h-0 gap-[1vh] xl:h-full xl:grid-cols-[minmax(0,76fr)_minmax(180px,14fr)] xl:grid-rows-[minmax(0,72fr)_minmax(150px,28fr)]";
 
   return (
-    <main className={commonClass}>
+    <main className={`${commonClass} min-w-0`}>
       {props.state === "setup" ? (
         <SetupView
           selectedMode={props.selectedMode}
@@ -106,6 +108,7 @@ export const MainWorkspace = (props: MainWorkspaceProps) => {
       ) : null}
       {props.state === "detailed" ? (
         <DetailedReportView
+          report={props.report}
           timeline={props.multiMetricTimeline}
           metrics={props.summaryMetrics}
           summary={props.summary}

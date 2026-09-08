@@ -6,6 +6,7 @@ from media.audio_extractor import AudioExtractor
 from media.frame_extractor import FrameExtractor
 from media.storage import storage
 from schemas.live import LiveResponse
+from schemas.analysis import VisualMetrics
 from services.analysis_service import AnalysisService
 from services.session_service import SessionService
 
@@ -54,21 +55,24 @@ class LiveService:
             frames = self.frame_extractor.extract(video_path)
             audio = self.audio_extractor.extract(video_path)
 
-            analysis = self.analysis_service.process(
+            snapshot = self.analysis_service.process(
+                session_id=session_id,
+                timestamp=timestamp,
                 frames=frames,
                 audio=audio,
             )
 
-            scores = self.analysis_service.generate_scores(analysis)
-
-            if analysis.visual is None or scores is None:
+            if snapshot is None or not any(
+                getattr(snapshot, name) is not None for name in VisualMetrics.model_fields
+            ):
                 raise NoLandmarksError()
 
-            self.session_service.add_analysis(
-                session_id=session_id,
-                timestamp=timestamp,
-                analysis=analysis,
-            )
+            scores = self.analysis_service.generate_scores(snapshot)
+
+            if scores is None:
+                raise NoLandmarksError()
+
+            self.session_service.add_snapshot(snapshot)
 
             self.logger.info(
                 "event=live.process.done session_id=%s overall=%.2f",

@@ -8,7 +8,6 @@ from core.logger import get_logger
 from media.config import (
     BUFFER_SIZE,
     CHANNELS,
-    CHUNK_SECONDS,
     PCM_SCALE,
     SAMPLE_RATE,
     SAMPLE_WIDTH,
@@ -81,7 +80,7 @@ class AudioExtractor:
     def stream(
         self,
         video_path: str,
-        chunk_sec: int = CHUNK_SECONDS,
+        chunk_sec: int,
     ) -> Iterator[np.ndarray]:
         process = None
         chunk_bytes = (

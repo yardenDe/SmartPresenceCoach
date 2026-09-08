@@ -174,3 +174,13 @@ input {
     box-shadow: 0 0 0 3px rgba(0, 210, 255, 0.1);
   }
 }
+
+.detailed-analysis-scroll {
+  scrollbar-gutter: stable;
+  scrollbar-width: auto;
+  scrollbar-color: #39bcd6 #10212d;
+}
+.detailed-analysis-scroll::-webkit-scrollbar { width: 12px; }
+.detailed-analysis-scroll::-webkit-scrollbar-track { background: #10212d; border-radius: 8px; }
+.detailed-analysis-scroll::-webkit-scrollbar-thumb { background: #39bcd6; border: 3px solid #10212d; border-radius: 8px; }
+.detailed-analysis-scroll::-webkit-scrollbar-thumb:hover { background: #8beaff; }

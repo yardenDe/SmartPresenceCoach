@@ -35,7 +35,7 @@ app.add_exception_handler(Exception, unhandled_exceptions_handler)
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=[settings.FRONTEND_ORIGIN],          
+    allow_origins=settings.FRONTEND_ORIGINS,
     allow_methods=["*"],              
     allow_headers=["*"],
 )

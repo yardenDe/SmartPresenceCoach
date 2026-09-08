@@ -9,21 +9,8 @@ type BackendErrorResponse = {
   detail?: string | Array<{ msg?: string }>;
 };
 
-const resolveApiBaseUrl = () => {
-  const configuredUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
-
-  if (
-    window.location.hostname === "127.0.0.1" &&
-    configuredUrl.includes("localhost")
-  ) {
-    return configuredUrl.replace("localhost", "127.0.0.1");
-  }
-
-  return configuredUrl;
-};
-
 export const api = axios.create({
-  baseURL: resolveApiBaseUrl(),
+  baseURL: import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000",
   timeout: 15000,
 });
 

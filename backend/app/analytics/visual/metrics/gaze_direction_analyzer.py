@@ -28,9 +28,8 @@ class GazeDirectionAnalyzer(BaseAnalyzer):
     def analyze(self, frames: list[dict[str, Any]]) -> float | None:
         directions = [
             direction
-            for frame_data in frames
-            if (pose_data := frame_data.get("pose")) is not None
-            and (direction := self._calculate_direction(pose_data)) is not None
+            for pose_data in frames
+            if (direction := self._calculate_direction(pose_data)) is not None
         ]
 
         return average_available(directions)

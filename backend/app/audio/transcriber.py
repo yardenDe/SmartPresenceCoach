@@ -3,6 +3,7 @@ import wave
 
 import numpy as np
 
+from core.dependencies import get_logger
 from media.config import (
     CHANNELS,
     PCM_MAX,
@@ -10,6 +11,7 @@ from media.config import (
     SAMPLE_WIDTH,
 )
 
+logger = get_logger("app.audio.transcriber")
 
 class Transcriber:
     def __init__(

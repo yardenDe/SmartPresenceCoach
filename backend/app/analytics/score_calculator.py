@@ -1,18 +1,17 @@
 from analytics.config import METRIC_DEFINITIONS
 from analytics.math_utils import average_scores, normalize_metric
-from schemas.analysis import AudioMetrics, Scores, VisualMetrics
+from models.snapshot import Snapshot
+from schemas.analysis import Scores
 
 
 class ScoreCalculator:
     def calculate(
         self,
-        visual: VisualMetrics | None,
-        audio: AudioMetrics | None,
+        snapshot: Snapshot,
     ) -> Scores | None:
-        if visual is None and audio is None:
+        normalized = self._normalize_metrics(snapshot)
+        if all(value is None for value in normalized.values()):
             return None
-
-        normalized = self._normalize_metrics(visual, audio)
 
         focus = average_scores(
             normalized.get("gaze_direction"),
@@ -56,21 +55,12 @@ class ScoreCalculator:
 
     @staticmethod
     def _normalize_metrics(
-        visual: VisualMetrics | None,
-        audio: AudioMetrics | None,
+        snapshot: Snapshot,
     ) -> dict[str, float | None]:
-        metrics = {}
-
-        if visual is not None:
-            metrics.update(visual.model_dump())
-
-        if audio is not None:
-            metrics.update(audio.model_dump(exclude={"transcript"}))
-
         return {
             metric_name: normalize_metric(
-                metric_value,
-                METRIC_DEFINITIONS[metric_name],
+                getattr(snapshot, metric_name),
+                definition,
             )
-            for metric_name, metric_value in metrics.items()
+            for metric_name, definition in METRIC_DEFINITIONS.items()
         }

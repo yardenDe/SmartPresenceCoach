@@ -1,11 +1,11 @@
 from models.session import Session as SessionModel
+from models.snapshot import Snapshot
 
 from core.exceptions import SessionNotFoundError, UnauthorizedError
 from core.logger import get_logger
 from infrastructure.session_buffer import SessionBuffer
 from repositories.session_repository import SessionRepository
 from repositories.snapshot_repository import SnapshotRepository
-from schemas.analysis import Analysis
 
 
 class SessionService:
@@ -55,7 +55,7 @@ class SessionService:
 
     def end(self, user_id: int, session_id: int) -> int:
         self.require_owned_session(user_id, session_id)
-        self.flush_analysis(session_id)
+        self.flush_snapshots(session_id)
         session = self.session_repository.end_session(session_id=session_id)
         if not session:
             self.logger.warning("event=session.end.missing session_id=%s user_id=%s", session_id, user_id)
@@ -64,30 +64,19 @@ class SessionService:
         self.logger.info("event=session.end.done session_id=%s user_id=%s", session.id, user_id)
         return session.id
 
-    def add_analysis(
-        self,
-        session_id: int,
-        timestamp: float,
-        analysis: Analysis,
-    ) -> None:
-        snapshots = self.session_buffer.add(
-            session_id=session_id,
-            timestamp=timestamp,
-            analysis=analysis,
-        )
+    def add_snapshot(self, snapshot: Snapshot) -> None:
+        snapshots = self.session_buffer.add(snapshot)
 
         if snapshots:
             self.snapshot_repository.create_snapshots(
-                session_id=session_id,
                 snapshots=snapshots,
             )
 
-    def flush_analysis(self, session_id: int) -> None:
+    def flush_snapshots(self, session_id: int) -> None:
         snapshots = self.session_buffer.close_session(session_id)
 
         if snapshots:
             self.snapshot_repository.create_snapshots(
-                session_id=session_id,
                 snapshots=snapshots,
             )
             self.logger.info(

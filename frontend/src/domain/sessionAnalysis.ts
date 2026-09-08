@@ -41,6 +41,13 @@ export type BackendOverallSummary = {
   trend: string;
 };
 
+export type BackendRawMetricSummary = {
+  avg: number | null;
+  unit: string;
+  target_min: number;
+  target_max: number;
+};
+
 export type BackendTimeSeries = {
   timestamps_sec: number[];
   series: Record<string, Array<number | null>>;
@@ -51,8 +58,8 @@ export type BackendReportResponse = {
   overall_score: number;
   scores: Record<string, BackendMetricSummary>;
   score_series: BackendTimeSeries;
-  visual_metrics?: Record<string, BackendMetricSummary>;
-  audio_metrics?: Record<string, BackendMetricSummary>;
+  visual_metrics?: Record<string, BackendRawMetricSummary>;
+  audio_metrics?: Record<string, BackendRawMetricSummary>;
   metric_series?: BackendTimeSeries;
   transcript?: string | null;
   summary?: string;
@@ -91,6 +98,9 @@ export type TimelinePoint = {
 };
 
 export type ReportView = {
+  visualMetrics?: Record<string, BackendRawMetricSummary>;
+  audioMetrics?: Record<string, BackendRawMetricSummary>;
+  metricSeries?: BackendTimeSeries;
   kind: "short" | "full" | "progress";
   sessionId?: number;
   overallScore: number;
@@ -129,6 +139,9 @@ export const toReportView = (response: BackendReportResponse): ReportView => {
     overallScore: clampScore(response.overall_score),
     overall: (overall as BackendOverallSummary | undefined) ?? null,
     metrics: scores,
+    visualMetrics: response.visual_metrics,
+    audioMetrics: response.audio_metrics,
+    metricSeries: response.metric_series,
     series: response.score_series.series,
     timeline: response.score_series.timestamps_sec.map((time, index) => ({
       id: `report-${index + 1}`,

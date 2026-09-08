@@ -96,12 +96,10 @@ def get_score_calculator() -> ScoreCalculator:
 def get_analytics_manager(
     visual: VisualAnalyticsManager = Depends(get_visual_analytics_manager),
     audio: AudioAnalyticsManager = Depends(get_audio_analytics_manager),
-    score_calculator: ScoreCalculator = Depends(get_score_calculator),
 ) -> AnalyticsManager:
     return AnalyticsManager(
         visual=visual,
         audio=audio,
-        score_calculator=score_calculator,
     )
 
 
@@ -153,7 +151,12 @@ def get_mp_detector() -> MediaPipeDetector:
     global _detector_instance 
     if _detector_instance is None: 
         logger.info("event=mediapipe.load.start") 
-        _detector_instance = MediaPipeDetector() 
+        settings = get_settings()
+        _detector_instance = MediaPipeDetector(
+            model_path=settings.MEDIAPIPE_MODEL_PATH,
+            model_name=settings.POSE_LANDMARKER_MODEL,
+            running_mode=settings.MEDIAPIPE_RUNNING_MODE,
+        )
         logger.info("event=mediapipe.load.done") 
     return _detector_instance 
 
@@ -287,11 +290,13 @@ def get_audio_pipeline(
 
 
 def get_analysis_service(
+    score_calculator: ScoreCalculator = Depends(get_score_calculator),
     analytics: AnalyticsManager = Depends(get_analytics_manager), 
     vision_pipeline: VisionPipeline = Depends(get_vision_pipeline),
     audio_pipeline: AudioPipeline = Depends(get_audio_pipeline),
 ) -> AnalysisService:
     return AnalysisService(
+        score_calculator=score_calculator,
         analytics=analytics, 
         vision_pipeline=vision_pipeline,
         audio_pipeline=audio_pipeline,
@@ -326,6 +331,4 @@ def get_offline_service(
         audio_extractor=audio_extractor,
         analysis_service=analysis_service,
         session_service=session_service,
-    ) 
-
-
+    )
