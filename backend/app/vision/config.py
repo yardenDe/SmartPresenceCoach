@@ -17,7 +17,7 @@ class PointNames:
     LEFT_ANKLE: str = "left_ankle"
     RIGHT_ANKLE: str = "right_ankle"
 
-MEDIAPIPE_POSE_MAP: dict[int, str] = {
+MEDIAPIPE_LANDMARKS: dict[int, str] = {
     0: PointNames.NOSE,
     1: PointNames.LEFT_EYE_BASIC,
     4: PointNames.RIGHT_EYE_BASIC,

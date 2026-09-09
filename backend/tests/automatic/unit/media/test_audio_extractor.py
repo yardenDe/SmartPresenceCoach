@@ -28,17 +28,18 @@ def test_extract(monkeypatch):
         run_mock,
     )
 
-    extractor = AudioExtractor("video.mp4")
-    result = extractor.extract()
+    extractor = AudioExtractor()
+    result = extractor.extract("video.mp4")
 
     expected = samples.astype(np.float32) / audio_extractor_module.PCM_SCALE
     np.testing.assert_allclose(result, expected)
 
     run_mock.assert_called_once_with(
-        extractor.command,
+        extractor._command("video.mp4"),
         stdout=audio_extractor_module.subprocess.PIPE,
-        stderr=audio_extractor_module.subprocess.DEVNULL,
+        stderr=audio_extractor_module.subprocess.PIPE,
         check=True,
+        text=False,
     )
 
 
@@ -64,8 +65,8 @@ def test_stream(monkeypatch):
         popen_mock,
     )
 
-    extractor = AudioExtractor("video.mp4")
-    chunks = list(extractor.stream())
+    extractor = AudioExtractor(sample_rate=2)
+    chunks = list(extractor.stream("video.mp4", 1))
 
     assert len(chunks) == 2
 
@@ -85,7 +86,6 @@ def test_stream(monkeypatch):
 
 def test_custom_audio_settings_are_used():
     extractor = AudioExtractor(
-        "video.mp4",
         sample_rate=44100,
         channels=2,
     )
@@ -93,10 +93,10 @@ def test_custom_audio_settings_are_used():
     assert extractor.sample_rate == 44100
     assert extractor.channels == 2
 
-    assert extractor.command[
-        extractor.command.index("-ar") + 1
+    assert extractor._command("video.mp4")[
+        extractor._command("video.mp4").index("-ar") + 1
     ] == "44100"
 
-    assert extractor.command[
-        extractor.command.index("-ac") + 1
+    assert extractor._command("video.mp4")[
+        extractor._command("video.mp4").index("-ac") + 1
     ] == "2"

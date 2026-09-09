@@ -8,7 +8,7 @@ class Snapshot(Base):
     session_id = Column(Integer, ForeignKey("sessions.id"), nullable=False)
     timestamp = Column(Float, nullable=False)
 
-    gaze_direction = Column(Float, nullable=True)
+    face_direction = Column("gaze_direction", Float, nullable=True)
     movement_amount = Column(Float, nullable=True)
     movement_variation = Column(Float, nullable=True)
     head_movement = Column(Float, nullable=True)
@@ -20,4 +20,3 @@ class Snapshot(Base):
     average_volume = Column(Float, nullable=True)
     volume_variation = Column(Float, nullable=True)
     pitch_variation = Column(Float, nullable=True)
-

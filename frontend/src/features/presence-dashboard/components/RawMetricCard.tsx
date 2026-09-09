@@ -1,7 +1,7 @@
 import type { BackendRawMetricSummary, BackendTimeSeries } from "../../../domain/sessionAnalysis";
 
 export const VISUAL_METRICS = [
-  ["gaze_direction", "Gaze Direction", "How directly you looked forward"],
+  ["face_direction", "Face Direction", "How directly you looked forward"],
   ["movement_amount", "Movement Amount", "How much you moved overall"],
   ["movement_variation", "Movement Variation", "How stable your movement was"],
   ["head_movement", "Head Movement", "How much your head moved"],

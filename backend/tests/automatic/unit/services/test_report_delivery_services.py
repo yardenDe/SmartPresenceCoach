@@ -6,27 +6,30 @@ import pytest
 
 def build_report_service(report):
     from services.report_service import ReportService
+    from analytics.score_calculator import ScoreCalculator
+    from models.snapshot import Snapshot
 
-    session_service = Mock()
+    session_service = Mock(require_owned_session=Mock(return_value=SimpleNamespace(mode="speech")))
     report_repository = Mock()
     report_repository.get_by_session.return_value = report
     service = ReportService(
         session_service=session_service,
-        snapshot_repository=Mock(),
+        snapshot_repository=Mock(get_by_session=Mock(return_value=[Snapshot(session_id=25, timestamp=0.0, face_direction=5.0)])),
         report_repository=report_repository,
+        score_calculator=ScoreCalculator(),
     )
     return service, session_service, report_repository
 
 
 def test_get_full_report_data_validates_owner_and_returns_saved_data():
-    report_data = {"session_id": 25, "summary": "Ready"}
+
     service, session_service, repository = build_report_service(
-        SimpleNamespace(report_data=report_data)
+        SimpleNamespace(summary="Ready", recommendations="Practice")
     )
 
     result = service.get_full_report_data(user_id=7, session_id=25)
 
-    assert result is report_data
+    assert result["session_id"] == 25 and result["summary"] == "Ready"
     session_service.require_owned_session.assert_called_once_with(7, 25)
     repository.get_by_session.assert_called_once_with(25)
 

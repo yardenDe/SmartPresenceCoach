@@ -36,6 +36,7 @@ from services.analysis_service import AnalysisService
 from services.session_service import SessionService 
 from vision.mediapipe_detector import MediaPipeDetector 
 from vision.vision_pipeline import VisionPipeline 
+from vision.landmark_extractor import LandmarkExtractor
 from media.audio_extractor import AudioExtractor
 from media.storage import storage 
 from audio.transcriber import Transcriber 
@@ -177,10 +178,18 @@ def close_mp_detector() -> None:
         logger.info("event=mediapipe.close.done") 
 
 
+def get_landmark_extractor() -> LandmarkExtractor:
+    return LandmarkExtractor()
+
+
 def get_vision_pipeline( 
     detector: MediaPipeDetector = Depends(get_mp_detector), 
+    landmark_extractor: LandmarkExtractor = Depends(get_landmark_extractor),
 ) -> VisionPipeline: 
-    return VisionPipeline(detector=detector) 
+    return VisionPipeline(
+        detector=detector,
+        landmark_extractor=landmark_extractor,
+    )
 
 
 def get_current_user_id( 

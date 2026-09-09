@@ -9,18 +9,18 @@ class ShoulderTiltAnalyzer(BaseAnalyzer):
 
     def _calculate_tilt(
         self,
-        pose_data: dict[str, Any],
+        landmarks: dict[str, Any],
     ) -> float | None:
         if not self._has_points(
-            pose_data,
+            landmarks,
             "left_shoulder",
             "right_shoulder",
         ):
             return None
 
         angle = line_angle_degrees(
-            pose_data["left_shoulder"],
-            pose_data["right_shoulder"],
+            landmarks["left_shoulder"],
+            landmarks["right_shoulder"],
         )
 
         return min(angle, abs(self.HORIZONTAL_ANGLE - angle))
@@ -28,8 +28,8 @@ class ShoulderTiltAnalyzer(BaseAnalyzer):
     def analyze(self, frames: list[dict[str, Any]]) -> float | None:
         tilts = [
             tilt
-            for pose_data in frames
-            if (tilt := self._calculate_tilt(pose_data)) is not None
+            for landmarks in frames
+            if (tilt := self._calculate_tilt(landmarks)) is not None
         ]
 
         return average_available(tilts)

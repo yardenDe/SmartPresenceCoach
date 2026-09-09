@@ -12,9 +12,6 @@ class storage:
 
     async def save_temp(self, video: UploadFile) -> str:
         try:
-            if not video:
-                raise VideoSaveError()
-
             prefix = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
             suffix = os.path.splitext(video.filename or "")[1] or ".mp4"
             with tempfile.NamedTemporaryFile(delete=False, prefix=prefix, suffix=suffix) as temp_file:
@@ -25,10 +22,6 @@ class storage:
                         break
                     size_bytes += len(chunk)
                     temp_file.write(chunk)
-                temp_file.flush()
-
-                if not os.path.exists(temp_file.name):
-                    raise VideoSaveError()
 
                 if size_bytes == 0:
                     raise VideoSaveError()

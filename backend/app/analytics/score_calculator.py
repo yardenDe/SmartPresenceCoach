@@ -14,7 +14,7 @@ class ScoreCalculator:
             return None
 
         focus = average_scores(
-            normalized.get("gaze_direction"),
+            normalized.get("face_direction"),
             normalized.get("head_movement"),
         )
         engagement = average_scores(
@@ -30,7 +30,7 @@ class ScoreCalculator:
             normalized.get("pause_ratio"),
         )
         presence = average_scores(
-            normalized.get("gaze_direction"),
+            normalized.get("face_direction"),
             normalized.get("movement_amount"),
             normalized.get("hand_movement"),
             normalized.get("average_volume"),

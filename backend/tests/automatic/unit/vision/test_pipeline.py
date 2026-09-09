@@ -8,10 +8,10 @@ def test_process_frame_uses_detector_and_landmark_extractor():
     pose_result = object()
     detector.detect.return_value = pose_result
 
-    pipeline = VisionPipeline(detector=detector)
-    pipeline.landmark_extractor = Mock()
+    extractor = Mock()
+    pipeline = VisionPipeline(detector=detector, landmark_extractor=extractor)
     pipeline.landmark_extractor.filter_landmarks.return_value = {
-        "pose": {"nose": {"x": 0.5, "y": 0.2}},
+        "nose": {"x": 0.5, "y": 0.2},
     }
 
     result = pipeline.process_frame("frame-1")
@@ -23,18 +23,18 @@ def test_process_frame_uses_detector_and_landmark_extractor():
         pose_result
     )
 
-    assert result["pose"]["nose"]["x"] == 0.5
+    assert result["nose"]["x"] == 0.5
 
 
 def test_process_returns_only_frames_with_landmarks():
     from vision.vision_pipeline import VisionPipeline
 
-    pipeline = VisionPipeline(detector=Mock())
+    pipeline = VisionPipeline(detector=Mock(), landmark_extractor=Mock())
 
     frame_results = {
-        "a": {"pose": {"nose": {"x": 0.1, "y": 0.2}}},
+        "a": {"nose": {"x": 0.1, "y": 0.2}},
         "b": {},
-        "c": {"pose": {"nose": {"x": 0.2, "y": 0.2}}},
+        "c": {"nose": {"x": 0.2, "y": 0.2}},
     }
 
     pipeline.process_frame = Mock(
@@ -44,8 +44,8 @@ def test_process_returns_only_frames_with_landmarks():
     result = pipeline.process(["a", "b", "c"])
 
     assert result == [
-        {"pose": {"nose": {"x": 0.1, "y": 0.2}}},
-        {"pose": {"nose": {"x": 0.2, "y": 0.2}}},
+        {"nose": {"x": 0.1, "y": 0.2}},
+        {"nose": {"x": 0.2, "y": 0.2}},
     ]
     assert pipeline.process_frame.call_count == 3
 
@@ -53,7 +53,7 @@ def test_process_returns_only_frames_with_landmarks():
 def test_process_returns_empty_list_when_no_frames_have_landmarks():
     from vision.vision_pipeline import VisionPipeline
 
-    pipeline = VisionPipeline(detector=Mock())
+    pipeline = VisionPipeline(detector=Mock(), landmark_extractor=Mock())
     pipeline.process_frame = Mock(return_value={})
 
     result = pipeline.process(["a", "b"])

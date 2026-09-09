@@ -53,7 +53,7 @@ def test_add_snapshot_preserves_objects_through_buffer_and_repository():
     repository = Mock()
     buffer = SessionBuffer(flush_size=2)
     service = SessionService(Mock(), buffer, repository)
-    first = Snapshot(session_id=25, timestamp=0.0, gaze_direction=0.0)
+    first = Snapshot(session_id=25, timestamp=0.0, face_direction=0.0)
     second = Snapshot(session_id=25, timestamp=3.0, average_volume=-19.0)
 
     service.add_snapshot(first)
@@ -70,7 +70,7 @@ def test_flush_snapshots_persists_pending_snapshot():
     buffer = SessionBuffer(flush_size=2)
     repository = Mock()
     service = SessionService(Mock(), buffer, repository)
-    snapshot = Snapshot(session_id=25, timestamp=3.0, gaze_direction=4.0)
+    snapshot = Snapshot(session_id=25, timestamp=3.0, face_direction=4.0)
     service.add_snapshot(snapshot)
     service.flush_snapshots(25)
     repository.create_snapshots.assert_called_once_with(snapshots=[snapshot])

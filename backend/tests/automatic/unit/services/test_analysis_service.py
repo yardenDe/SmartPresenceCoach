@@ -13,11 +13,11 @@ from services.analysis_service import AnalysisService
 def test_process_returns_complete_snapshot_without_persisting(kind):
     analytics = Mock()
     analytics.analyze.return_value = Analysis(
-        visual=VisualMetrics(gaze_direction=0.0) if kind in {"visual", "both"} else None,
+        visual=VisualMetrics(face_direction=0.0) if kind in {"visual", "both"} else None,
         audio=AudioMetrics(average_volume=-19.0, transcript="Hello") if kind in {"audio", "both"} else None,
     )
     vision = Mock()
-    vision.process.return_value = [{"pose": {"nose": {"x": 0.5, "y": 0.2}}}]
+    vision.process.return_value = [{"nose": {"x": 0.5, "y": 0.2}}]
     audio_pipeline = Mock()
     service = AnalysisService(analytics, vision, ScoreCalculator(), audio_pipeline)
     frames = [object()]
@@ -38,7 +38,7 @@ def test_process_returns_complete_snapshot_without_persisting(kind):
     assert snapshot.id is None
     assert snapshot.session_id == 25
     assert snapshot.timestamp == 3.0
-    assert snapshot.gaze_direction == (0.0 if kind in {"visual", "both"} else None)
+    assert snapshot.face_direction == (0.0 if kind in {"visual", "both"} else None)
     assert snapshot.average_volume == (-19.0 if kind in {"audio", "both"} else None)
     assert snapshot.transcript == ("Hello" if kind in {"audio", "both"} else None)
     assert service.generate_scores(snapshot).overall is not None

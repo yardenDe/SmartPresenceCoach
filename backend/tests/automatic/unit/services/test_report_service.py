@@ -12,8 +12,8 @@ from services.report_service import ReportService
 def test_full_report_reads_snapshot_objects_and_preserves_missing_metrics():
     repository = Mock()
     repository.get_by_session.return_value = [
-        Snapshot(session_id=25, timestamp=0.0, gaze_direction=0.0, transcript="Hello"),
-        Snapshot(session_id=25, timestamp=3.0, gaze_direction=10.0, average_volume=-19.0, transcript="world"),
+        Snapshot(session_id=25, timestamp=0.0, face_direction=0.0, transcript="Hello"),
+        Snapshot(session_id=25, timestamp=3.0, face_direction=10.0, average_volume=-19.0, transcript="world"),
     ]
     sessions = Mock()
     sessions.require_owned_session.return_value = SimpleNamespace(mode="speech")
@@ -26,7 +26,7 @@ def test_full_report_reads_snapshot_objects_and_preserves_missing_metrics():
     repository.get_by_session.assert_called_once_with(25)
     assert report.score_series.timestamps_sec == [0.0, 3.0]
     assert report.metric_series.series["average_volume"] == [None, -19.0]
-    assert report.visual_metrics["gaze_direction"].avg == 5.0
+    assert report.visual_metrics["face_direction"].avg == 5.0
     assert report.audio_metrics["average_volume"].avg == -19.0
     assert report.transcript == "Hello world"
     assert report.scores["overall"].avg is not None

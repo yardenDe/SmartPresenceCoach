@@ -16,7 +16,7 @@ class MetricDefinition(BaseModel):
 
 
 METRIC_DEFINITIONS = {
-    "gaze_direction": MetricDefinition(
+    "face_direction": MetricDefinition(
         unit="deg",
         min_value=0.0, max_value=90.0, target_min=0.0, target_max=15.0,
     ),

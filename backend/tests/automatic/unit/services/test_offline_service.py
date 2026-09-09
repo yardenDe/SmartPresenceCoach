@@ -22,7 +22,7 @@ async def test_process_success():
     audio_extractor = Mock()
     audio_extractor.stream.return_value = [[0.1], [0.2]]
     analysis_service = Mock()
-    snapshot = Snapshot(session_id=25, timestamp=0.0, gaze_direction=5.0)
+    snapshot = Snapshot(session_id=25, timestamp=0.0, face_direction=5.0)
     analysis_service.process.side_effect = [snapshot, None]
     session_service = Mock()
     service = OfflineService(

@@ -15,37 +15,30 @@ class BaseAnalyzer(ABC):
         return all(cls._has_point(data, point_name) for point_name in point_names)
 
     @classmethod
-    def _collect_pose_frames(
-        cls,
-        frames: list[dict[str, Any]],
-    ) -> list[dict[str, Any]]:
-        return [frame for frame in frames if frame]
-
-    @classmethod
     def _reference_scale(
         cls,
-        pose_data: dict[str, Any],
+        landmarks: dict[str, Any],
     ) -> float | None:
-        if cls._has_points(pose_data, "left_shoulder", "right_shoulder"):
+        if cls._has_points(landmarks, "left_shoulder", "right_shoulder"):
             scale = point_distance(
-                pose_data["left_shoulder"],
-                pose_data["right_shoulder"],
+                landmarks["left_shoulder"],
+                landmarks["right_shoulder"],
             )
             if scale > 0:
                 return scale
 
-        if cls._has_points(pose_data, "left_ear", "right_ear"):
+        if cls._has_points(landmarks, "left_ear", "right_ear"):
             scale = point_distance(
-                pose_data["left_ear"],
-                pose_data["right_ear"],
+                landmarks["left_ear"],
+                landmarks["right_ear"],
             )
             if scale > 0:
                 return scale
 
-        if cls._has_points(pose_data, "left_eye_basic", "right_eye_basic"):
+        if cls._has_points(landmarks, "left_eye_basic", "right_eye_basic"):
             scale = point_distance(
-                pose_data["left_eye_basic"],
-                pose_data["right_eye_basic"],
+                landmarks["left_eye_basic"],
+                landmarks["right_eye_basic"],
             )
             if scale > 0:
                 return scale
@@ -55,12 +48,12 @@ class BaseAnalyzer(ABC):
     @classmethod
     def _normalized_point_motion(
         cls,
-        previous_pose: dict[str, Any],
-        current_pose: dict[str, Any],
+        previous_landmarks: dict[str, Any],
+        current_landmarks: dict[str, Any],
         point_names: list[str],
     ) -> float | None:
-        previous_scale = cls._reference_scale(previous_pose)
-        current_scale = cls._reference_scale(current_pose)
+        previous_scale = cls._reference_scale(previous_landmarks)
+        current_scale = cls._reference_scale(current_landmarks)
 
         scales = [
             scale
@@ -74,12 +67,12 @@ class BaseAnalyzer(ABC):
 
         distances = [
             point_distance(
-                previous_pose[point_name],
-                current_pose[point_name],
+                previous_landmarks[point_name],
+                current_landmarks[point_name],
             ) / scale
             for point_name in point_names
-            if cls._has_point(previous_pose, point_name)
-            and cls._has_point(current_pose, point_name)
+            if cls._has_point(previous_landmarks, point_name)
+            and cls._has_point(current_landmarks, point_name)
         ]
 
         normalized_motion = average_available(distances)
@@ -94,13 +87,12 @@ class BaseAnalyzer(ABC):
         frames: list[dict[str, Any]],
         point_names: list[str],
     ) -> list[float]:
-        poses = cls._collect_pose_frames(frames)
         motions = []
 
-        for index in range(1, len(poses)):
+        for index in range(1, len(frames)):
             motion = cls._normalized_point_motion(
-                poses[index - 1],
-                poses[index],
+                frames[index - 1],
+                frames[index],
                 point_names,
             )
             if motion is not None:
@@ -111,18 +103,18 @@ class BaseAnalyzer(ABC):
     @classmethod
     def _face_center(
         cls,
-        pose_data: dict[str, Any],
+        landmarks: dict[str, Any],
     ) -> dict[str, float] | None:
-        if cls._has_points(pose_data, "left_ear", "right_ear"):
+        if cls._has_points(landmarks, "left_ear", "right_ear"):
             return midpoint(
-                pose_data["left_ear"],
-                pose_data["right_ear"],
+                landmarks["left_ear"],
+                landmarks["right_ear"],
             )
 
-        if cls._has_points(pose_data, "left_eye_basic", "right_eye_basic"):
+        if cls._has_points(landmarks, "left_eye_basic", "right_eye_basic"):
             return midpoint(
-                pose_data["left_eye_basic"],
-                pose_data["right_eye_basic"],
+                landmarks["left_eye_basic"],
+                landmarks["right_eye_basic"],
             )
 
         return None
@@ -130,19 +122,19 @@ class BaseAnalyzer(ABC):
     @classmethod
     def _face_width(
         cls,
-        pose_data: dict[str, Any],
+        landmarks: dict[str, Any],
     ) -> float | None:
-        if cls._has_points(pose_data, "left_ear", "right_ear"):
+        if cls._has_points(landmarks, "left_ear", "right_ear"):
             return axis_distance(
-                pose_data["left_ear"],
-                pose_data["right_ear"],
+                landmarks["left_ear"],
+                landmarks["right_ear"],
                 "x",
             )
 
-        if cls._has_points(pose_data, "left_eye_basic", "right_eye_basic"):
+        if cls._has_points(landmarks, "left_eye_basic", "right_eye_basic"):
             return axis_distance(
-                pose_data["left_eye_basic"],
-                pose_data["right_eye_basic"],
+                landmarks["left_eye_basic"],
+                landmarks["right_eye_basic"],
                 "x",
             )
 

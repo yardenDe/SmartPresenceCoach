@@ -39,19 +39,18 @@ sys.modules["vision.mediapipe_detector"] = types.SimpleNamespace(
 
 def build_sample_frame(offset: float = 0.0) -> dict:
     return {
-        "pose": {
-            "nose": {"x": 0.50 + offset, "y": 0.20},
-            "left_ear": {"x": 0.38 + offset, "y": 0.22},
-            "right_ear": {"x": 0.62 + offset, "y": 0.22},
-            "left_shoulder": {"x": 0.35 + offset, "y": 0.40},
-            "right_shoulder": {"x": 0.65 + offset, "y": 0.40},
-            "left_elbow": {"x": 0.25 + offset, "y": 0.55},
-            "right_elbow": {"x": 0.75 + offset, "y": 0.55},
-            "left_wrist_basic": {"x": 0.22 + offset, "y": 0.66},
-            "right_wrist_basic": {"x": 0.78 + offset, "y": 0.66},
-            "left_hip": {"x": 0.42 + offset, "y": 0.72},
-            "right_hip": {"x": 0.58 + offset, "y": 0.72},
-        },
+
+        "nose": {"x": 0.50 + offset, "y": 0.20},
+        "left_ear": {"x": 0.38 + offset, "y": 0.22},
+        "right_ear": {"x": 0.62 + offset, "y": 0.22},
+        "left_shoulder": {"x": 0.35 + offset, "y": 0.40},
+        "right_shoulder": {"x": 0.65 + offset, "y": 0.40},
+        "left_elbow": {"x": 0.25 + offset, "y": 0.55},
+        "right_elbow": {"x": 0.75 + offset, "y": 0.55},
+        "left_wrist_basic": {"x": 0.22 + offset, "y": 0.66},
+        "right_wrist_basic": {"x": 0.78 + offset, "y": 0.66},
+        "left_hip": {"x": 0.42 + offset, "y": 0.72},
+        "right_hip": {"x": 0.58 + offset, "y": 0.72},
     }
 
 

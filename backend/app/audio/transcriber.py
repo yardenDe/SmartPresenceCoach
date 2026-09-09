@@ -3,7 +3,7 @@ import wave
 
 import numpy as np
 
-from core.dependencies import get_logger
+from core.logger import get_logger
 from media.config import (
     CHANNELS,
     PCM_MAX,

@@ -3,7 +3,7 @@ from pydantic import BaseModel, ConfigDict
 
 
 class VisualMetrics(BaseModel):
-    gaze_direction: float | None = None
+    face_direction: float | None = None
     movement_amount: float | None = None
     movement_variation: float | None = None
     head_movement: float | None = None
