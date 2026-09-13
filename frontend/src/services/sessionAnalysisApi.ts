@@ -3,7 +3,6 @@ import type {
   BackendOfflineResponse,
   BackendReportResponse,
   RecentSession,
-  ReportEmailResponse,
 } from "../domain/sessionAnalysis";
 import { api } from "./api";
 
@@ -62,12 +61,5 @@ export const sessionAnalysisApi = {
       timeout: REPORT_TIMEOUT_MS,
     }),
 
-  sendReportEmail: (sessionId: number, to: string) =>
-    api.post<ReportEmailResponse>(`/reports/${sessionId}/email`, { to }),
 
-  downloadReportPdf: (sessionId: number) =>
-    api.get<Blob>(`/reports/${sessionId}/pdf`, {
-      responseType: "blob",
-      timeout: REPORT_TIMEOUT_MS,
-    }),
 };

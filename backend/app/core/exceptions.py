@@ -55,10 +55,6 @@ class SessionNotFoundError(ResourceNotFoundError):
     code = "SESSION_NOT_FOUND"
     message = "Session not found"
 
-class ReportNotFoundError(ResourceNotFoundError):
-    code = "REPORT_NOT_FOUND"
-    message = "Report not found"
-
 class SnapshotsNotFoundError(ResourceNotFoundError):
     code = "SNAPSHOTS_NOT_FOUND"
     message = "No snapshots found for this session"
@@ -108,12 +104,6 @@ class EmailUnavailableError(AppError):
     status_code = status.HTTP_503_SERVICE_UNAVAILABLE
     code = "EMAIL_UNAVAILABLE"
     message = "Email delivery is currently unavailable"
-
-class PdfUnavailableError(AppError):
-    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
-    code = "PDF_UNAVAILABLE"
-    message = "PDF generation is currently unavailable"
-
 
 class DatabaseError(AppError):
     status_code = status.HTTP_500_INTERNAL_SERVER_ERROR

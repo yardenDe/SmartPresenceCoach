@@ -6,7 +6,6 @@ import numpy as np
 from core.exceptions import AudioExtractionError
 from core.logger import get_logger
 from media.config import (
-    BUFFER_SIZE,
     CHANNELS,
     PCM_SCALE,
     SAMPLE_RATE,
@@ -89,7 +88,6 @@ class AudioExtractor:
             * self.channels
             * SAMPLE_WIDTH
         )
-        audio_buffer = bytearray()
 
         try:
             process = subprocess.Popen(
@@ -104,21 +102,12 @@ class AudioExtractor:
                 raise AudioExtractionError()
 
             while True:
-                audio_bytes = stdout.read(BUFFER_SIZE)
+                audio_bytes = stdout.read(chunk_bytes)
 
                 if not audio_bytes:
                     break
 
-                audio_buffer.extend(audio_bytes)
-
-                while len(audio_buffer) >= chunk_bytes:
-                    yield self._normalize_audio(
-                        bytes(audio_buffer[:chunk_bytes])
-                    )
-                    del audio_buffer[:chunk_bytes]
-
-            if audio_buffer:
-                yield self._normalize_audio(bytes(audio_buffer))
+                yield self._normalize_audio(audio_bytes)
 
             return_code = process.wait()
             if isinstance(return_code, int) and return_code != 0:

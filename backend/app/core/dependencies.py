@@ -22,15 +22,12 @@ from repositories.session_repository import SessionRepository
 from repositories.snapshot_repository import SnapshotRepository 
 from repositories.report_repository import ReportRepository 
 from repositories.user_repository import UserRepository 
-from reporting.pdf_renderer import ReportPdfRenderer
 from services.auth_service import AuthService 
 from infrastructure.email_engine import EmailEngine
-from services.report_email_service import ReportEmailService
 from services.live_service import LiveService 
 from services.llm_service import LLMService 
 from services.offline_service import OfflineService 
 from services.report_service import ReportService 
-from services.report_pdf_service import ReportPdfService 
 from infrastructure.session_buffer import SessionBuffer
 from services.analysis_service import AnalysisService
 from services.session_service import SessionService 
@@ -246,32 +243,6 @@ def get_report_service(
 
 def get_email_engine() -> EmailEngine:
     return EmailEngine()
-
-
-def get_report_pdf_renderer() -> ReportPdfRenderer:
-    return ReportPdfRenderer()
-
-
-def get_report_pdf_service(
-    report_service: ReportService = Depends(get_report_service),
-    pdf_renderer: ReportPdfRenderer = Depends(get_report_pdf_renderer),
-) -> ReportPdfService:
-    return ReportPdfService(
-        report_service=report_service,
-        pdf_renderer=pdf_renderer,
-    )
-
-
-def get_report_email_service(
-    report_service: ReportService = Depends(get_report_service),
-    pdf_renderer: ReportPdfRenderer = Depends(get_report_pdf_renderer),
-    email_engine: EmailEngine = Depends(get_email_engine),
-) -> ReportEmailService:
-    return ReportEmailService(
-        report_service=report_service,
-        pdf_renderer=pdf_renderer,
-        email_engine=email_engine,
-    ) 
 
 
 def get_transcriber() -> Transcriber | None:

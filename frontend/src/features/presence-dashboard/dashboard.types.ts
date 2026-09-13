@@ -79,8 +79,5 @@ export type DashboardRuntime = {
   reportError: string | null;
   reportMessage: string | null;
   isReportGenerating: boolean;
-  isEmailSending: boolean;
   canGenerateReport: boolean;
-  canSendReportEmail: boolean;
-  canDownloadReportPdf: boolean;
 };

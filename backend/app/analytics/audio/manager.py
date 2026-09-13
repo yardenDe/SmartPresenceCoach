@@ -1,3 +1,4 @@
+import librosa
 import numpy as np
 
 from schemas.analysis import AudioFeatures, AudioMetrics
@@ -9,12 +10,23 @@ class AudioAnalyticsManager:
         features: AudioFeatures,
     ) -> AudioMetrics:
         valid_rms = features.rms[features.rms > 0]
+
         valid_pitch = features.pitch[
             ~np.isnan(features.pitch) & (features.pitch > 0)
         ]
-        volume_db = 20 * np.log10(valid_rms) if valid_rms.size else valid_rms
+
+        volume_db = (
+            librosa.amplitude_to_db(
+                valid_rms,
+                ref=1.0,
+                top_db=None,
+            )
+            if valid_rms.size
+            else valid_rms
+        )
+
         pitch_semitones = (
-            12 * np.log2(valid_pitch / 440.0)
+            librosa.hz_to_midi(valid_pitch)
             if valid_pitch.size
             else valid_pitch
         )
@@ -38,30 +50,30 @@ class AudioAnalyticsManager:
 
     def _calculate_average_volume(
         self,
-        rms: np.ndarray,
+        volume_db: np.ndarray,
     ) -> float | None:
-        if rms.size == 0:
+        if volume_db.size == 0:
             return None
 
-        return float(np.mean(rms))
+        return float(np.mean(volume_db))
 
     def _calculate_volume_variation(
         self,
-        rms: np.ndarray,
+        volume_db: np.ndarray,
     ) -> float | None:
-        if rms.size == 0:
+        if volume_db.size == 0:
             return None
 
-        return float(np.std(rms))
+        return float(np.std(volume_db))
 
     def _calculate_pitch_variation(
         self,
-        pitch: np.ndarray,
+        pitch_semitones: np.ndarray,
     ) -> float | None:
-        if pitch.size == 0:
+        if pitch_semitones.size == 0:
             return None
 
-        return float(np.std(pitch))
+        return float(np.std(pitch_semitones))
 
     def _calculate_pause_ratio(
         self,

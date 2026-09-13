@@ -4,38 +4,28 @@ type SessionControlsProps = {
   state: DashboardState;
   canStart: boolean;
   canGenerateReport: boolean;
-  canSendReportEmail: boolean;
-  canDownloadReportPdf: boolean;
   isStarting: boolean;
   isStopping: boolean;
   isReportGenerating: boolean;
-  isEmailSending: boolean;
   onStart: () => void;
   onEnd: () => void;
   onNewSession: () => void;
   onDetailed: () => void;
   onBackToSummary: () => void;
-  onDownloadPdf: () => void;
-  onSendEmail: (email: string) => void;
 };
 
 export const SessionControls = ({
   state,
   canStart,
   canGenerateReport,
-  canSendReportEmail,
-  canDownloadReportPdf,
   isStarting,
   isStopping,
   isReportGenerating,
-  isEmailSending,
   onStart,
   onEnd,
   onNewSession,
   onDetailed,
   onBackToSummary,
-  onDownloadPdf,
-  onSendEmail,
 }: SessionControlsProps) => (
   <div className="hud-panel grid min-h-fit content-start gap-3 p-[clamp(0.8rem,1.2vw,1rem)]">
     <p className="hud-label text-base">Controls</p>
@@ -81,12 +71,6 @@ export const SessionControls = ({
         </button>
         <button type="button" onClick={onNewSession} className="hud-button hud-button-primary px-5 py-3.5 text-lg">
           New Session
-        </button>
-        <button type="button" onClick={onDownloadPdf} disabled={!canDownloadReportPdf || isReportGenerating} className="hud-button px-5 py-3.5 text-lg disabled:opacity-50">
-          {isReportGenerating ? "Preparing..." : "Download PDF"}
-        </button>
-        <button type="button" onClick={() => onSendEmail(window.prompt("Email address")?.trim() ?? "")} disabled={!canSendReportEmail || isEmailSending} className="hud-button px-5 py-3.5 text-lg disabled:opacity-50">
-          {isEmailSending ? "Sending..." : "Send Email"}
         </button>
       </>
     ) : null}

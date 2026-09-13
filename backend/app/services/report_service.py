@@ -3,7 +3,6 @@ from analytics.math_utils import average_available
 from analytics.score_calculator import ScoreCalculator
 from core.exceptions import (
     LLMUnavailableError,
-    ReportNotFoundError,
     SnapshotsNotFoundError,
 )
 from core.logger import get_logger
@@ -52,14 +51,11 @@ class ReportService:
         session_id: int,
         full: bool,
         llm_service: LLMService | None = None,
-        require_saved_coaching: bool = False,
     ) -> ShortReportResponse | FullReportResponse:
         session = self.session_service.require_owned_session(user_id, session_id)
 
         if full:
             saved_report = self.report_repository.get_by_session(session_id)
-            if require_saved_coaching and saved_report is None:
-                raise ReportNotFoundError()
 
         snapshots = self._load_snapshots(session_id)
         score_series = self._build_score_series(snapshots)
@@ -102,16 +98,6 @@ class ReportService:
                 limit=limit,
             )
         ]
-
-    def get_full_report_data(self, user_id: int, session_id: int) -> dict:
-        report = self.generate_report(
-            user_id=user_id,
-            session_id=session_id,
-            full=True,
-            llm_service=None,
-            require_saved_coaching=True,
-        )
-        return report.model_dump()
 
     def _load_snapshots(self, session_id: int) -> list[Snapshot]:
         snapshots = self.snapshot_repository.get_by_session(session_id)

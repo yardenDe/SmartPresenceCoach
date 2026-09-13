@@ -7,8 +7,8 @@ def test_score_helpers():
     assert math.clamp(120) == 100.0
     assert math.clamp(-20) == 0.0
     assert math.clamp_score(55.678) == 55.68
-    assert math.average([10, 20, 30]) == 20
-    assert math.average([]) == 0.0
+    assert math.average_available([10, 20, 30]) == 20
+    assert math.average_available([]) is None
     assert math.average_scores(80, None, 40) == 60
 
 

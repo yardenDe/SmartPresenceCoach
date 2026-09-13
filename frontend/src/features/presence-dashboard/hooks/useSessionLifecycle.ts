@@ -77,7 +77,6 @@ export const useSessionLifecycle = () => {
   const [reportError, setReportError] = useState<string | null>(null);
   const [reportMessage, setReportMessage] = useState<string | null>(null);
   const [isReportGenerating, setIsReportGenerating] = useState(false);
-  const [isEmailSending, setIsEmailSending] = useState(false);
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([]);
   const [reportSessionId, setReportSessionId] = useState<number | null>(null);
   const [isStarting, setIsStarting] = useState(false);
@@ -568,54 +567,6 @@ export const useSessionLifecycle = () => {
     }
   };
 
-  const sendReportEmail = async (to: string) => {
-    if (!reportSessionId || finalReport?.kind !== "full" || isEmailSending) {
-      return;
-    }
-
-    setIsEmailSending(true);
-    setReportError(null);
-    setReportMessage(null);
-
-    try {
-      await sessionAnalysisApi.sendReportEmail(reportSessionId, to);
-      setReportMessage("Detailed analysis email sent.");
-      setError(null);
-    } catch (requestError) {
-      setReportError(getApiErrorMessage(requestError));
-    } finally {
-      setIsEmailSending(false);
-    }
-  };
-
-  const downloadReportPdf = async () => {
-    if (!reportSessionId || finalReport?.kind !== "full" || isReportGenerating) {
-      return;
-    }
-
-    setIsReportGenerating(true);
-    setReportError(null);
-    setReportMessage(null);
-
-    try {
-      const response = await sessionAnalysisApi.downloadReportPdf(reportSessionId);
-      const url = URL.createObjectURL(response.data);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `presence-report-${reportSessionId}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(url);
-      setReportMessage("PDF downloaded.");
-      setError(null);
-    } catch (requestError) {
-      setReportError(getApiErrorMessage(requestError));
-    } finally {
-      setIsReportGenerating(false);
-    }
-  };
-
   const startSession = async (sessionMode: AnalyzerMode = mode, sessionModeContext?: string | null) => {
     if (isAnalyzing || isStarting) {
       return;
@@ -816,10 +767,7 @@ export const useSessionLifecycle = () => {
     reportError,
     reportMessage,
     isReportGenerating,
-    isEmailSending,
     canGenerateReport: Boolean(reportSessionId && finalReport),
-    canSendReportEmail: Boolean(reportSessionId && finalReport?.kind === "full"),
-    canDownloadReportPdf: Boolean(reportSessionId && finalReport?.kind === "full"),
     isCameraReady,
     isMicReady,
     isOfflineVideoReady,
@@ -836,7 +784,5 @@ export const useSessionLifecycle = () => {
     stopSession,
     resetSession,
     generateFinalReport,
-    sendReportEmail,
-    downloadReportPdf,
   };
 };

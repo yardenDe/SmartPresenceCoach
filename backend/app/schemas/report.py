@@ -1,5 +1,4 @@
 from datetime import datetime
-from typing import Literal
 
 from pydantic import BaseModel, Field
 
@@ -42,14 +41,6 @@ class FullReportResponse(ShortReportResponse):
 class LLMReportText(BaseModel):
     summary: str
     recommendations: str
-
-
-class ReportEmailRequest(BaseModel):
-    to: str
-
-
-class ReportEmailResponse(BaseModel):
-    status: Literal["sent"]
 
 
 class RecentReportResponse(BaseModel):

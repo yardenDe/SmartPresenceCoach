@@ -66,10 +66,6 @@ export type BackendReportResponse = {
   recommendations?: string;
 };
 
-export type ReportEmailResponse = {
-  status: string;
-};
-
 export type RecentSession = {
   session_id: number;
   mode: string | null;

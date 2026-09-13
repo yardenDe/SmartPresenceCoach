@@ -80,7 +80,9 @@ def test_stream(monkeypatch):
         second.astype(np.float32) / audio_extractor_module.PCM_SCALE,
     )
 
-    stdout.read.assert_called_with(audio_extractor_module.BUFFER_SIZE)
+    stdout.read.assert_called_with(
+        extractor.sample_rate * extractor.channels * audio_extractor_module.SAMPLE_WIDTH
+    )
     process.wait.assert_called_once_with()
 
 

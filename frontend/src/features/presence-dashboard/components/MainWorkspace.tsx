@@ -40,18 +40,13 @@ type MainWorkspaceProps = {
   liveDataReady: boolean;
   statusMessage: string;
   error: string | null;
-  canDownloadReportPdf: boolean;
-  canSendReportEmail: boolean;
   isReportGenerating: boolean;
-  isEmailSending: boolean;
   attachVideoElement: RefCallback<HTMLVideoElement>;
   attachCanvasElement: RefCallback<HTMLCanvasElement>;
   onModeChange: (mode: CoachingMode) => void;
   onCustomScenarioChange: (value: string) => void;
   onBackToSummary: () => void;
   onNewSession: () => void;
-  onDownloadPdf: () => void;
-  onSendEmail: (email: string) => void;
 };
 
 export const MainWorkspace = (props: MainWorkspaceProps) => {

@@ -105,12 +105,9 @@ export const PresenceDashboard = () => {
       recentSessions={lifecycle.recentSessions}
       canStart={dashboard.canStart && (source === "live_camera" || lifecycle.isOfflineVideoReady)}
       canGenerateReport={lifecycle.canGenerateReport}
-      canSendReportEmail={lifecycle.canSendReportEmail}
-      canDownloadReportPdf={lifecycle.canDownloadReportPdf}
       isStarting={lifecycle.isStarting}
       isStopping={lifecycle.isStopping}
       isReportGenerating={lifecycle.isReportGenerating}
-      isEmailSending={lifecycle.isEmailSending}
       onSourceChange={handleSourceChange}
       onFileChange={lifecycle.loadOfflineVideo}
       onStart={handleStart}
@@ -118,12 +115,6 @@ export const PresenceDashboard = () => {
       onNewSession={handleNewSession}
       onDetailed={handleDetailed}
       onBackToSummary={() => dashboard.setDashboardState("summary")}
-      onDownloadPdf={() => void lifecycle.downloadReportPdf()}
-      onSendEmail={(email) => {
-        if (email) {
-          void lifecycle.sendReportEmail(email);
-        }
-      }}
     />
   );
 
@@ -152,22 +143,13 @@ export const PresenceDashboard = () => {
       liveDataReady={Boolean(lifecycle.liveData)}
       statusMessage={statusMessage}
       error={lifecycle.error}
-      canDownloadReportPdf={lifecycle.canDownloadReportPdf}
-      canSendReportEmail={lifecycle.canSendReportEmail}
       isReportGenerating={lifecycle.isReportGenerating}
-      isEmailSending={lifecycle.isEmailSending}
       attachVideoElement={lifecycle.attachVideoElement}
       attachCanvasElement={lifecycle.attachLandmarksCanvasElement}
       onModeChange={dashboard.setCoachingMode}
       onCustomScenarioChange={dashboard.setCustomScenario}
       onBackToSummary={() => dashboard.setDashboardState("summary")}
       onNewSession={handleNewSession}
-      onDownloadPdf={() => void lifecycle.downloadReportPdf()}
-      onSendEmail={(email) => {
-        if (email) {
-          void lifecycle.sendReportEmail(email);
-        }
-      }}
     />
   );
 

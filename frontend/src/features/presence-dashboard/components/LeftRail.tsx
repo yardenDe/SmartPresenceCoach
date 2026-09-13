@@ -13,12 +13,9 @@ type LeftRailProps = {
   recentSessions: RecentSession[];
   canStart: boolean;
   canGenerateReport: boolean;
-  canSendReportEmail: boolean;
-  canDownloadReportPdf: boolean;
   isStarting: boolean;
   isStopping: boolean;
   isReportGenerating: boolean;
-  isEmailSending: boolean;
   onSourceChange: (source: SessionSource) => void;
   onFileChange: (file: File) => void;
   onStart: () => void;
@@ -26,8 +23,6 @@ type LeftRailProps = {
   onNewSession: () => void;
   onDetailed: () => void;
   onBackToSummary: () => void;
-  onDownloadPdf: () => void;
-  onSendEmail: (email: string) => void;
 };
 
 const statusLabel: Record<DashboardState, string> = {
@@ -46,12 +41,9 @@ export const LeftRail = ({
   recentSessions,
   canStart,
   canGenerateReport,
-  canSendReportEmail,
-  canDownloadReportPdf,
   isStarting,
   isStopping,
   isReportGenerating,
-  isEmailSending,
   onSourceChange,
   onFileChange,
   onStart,
@@ -59,8 +51,6 @@ export const LeftRail = ({
   onNewSession,
   onDetailed,
   onBackToSummary,
-  onDownloadPdf,
-  onSendEmail,
 }: LeftRailProps) => (
   <aside className="grid min-h-0 gap-[1vh] overflow-visible xl:grid-rows-[auto_auto_auto_minmax(0,1fr)] xl:overflow-hidden">
     <div className="hud-panel grid content-start gap-[clamp(0.9rem,1.6vh,1.25rem)] p-[clamp(0.95rem,1.25vw,1.25rem)]">
@@ -98,19 +88,14 @@ export const LeftRail = ({
       state={state}
       canStart={canStart}
       canGenerateReport={canGenerateReport}
-      canSendReportEmail={canSendReportEmail}
-      canDownloadReportPdf={canDownloadReportPdf}
       isStarting={isStarting}
       isStopping={isStopping}
       isReportGenerating={isReportGenerating}
-      isEmailSending={isEmailSending}
       onStart={onStart}
       onEnd={onEnd}
       onNewSession={onNewSession}
       onDetailed={onDetailed}
       onBackToSummary={onBackToSummary}
-      onDownloadPdf={onDownloadPdf}
-      onSendEmail={onSendEmail}
     />
 
     <RecentSessions sessions={recentSessions} />

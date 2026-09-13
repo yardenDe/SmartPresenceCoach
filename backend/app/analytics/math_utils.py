@@ -6,16 +6,17 @@ from analytics.config import MAX_SCORE, MIN_SCORE, MetricDefinition
 Point = dict[str, float]
 
 
-def clamp(
+def clamp_score(
     value: float,
     min_value: float = MIN_SCORE,
     max_value: float = MAX_SCORE,
 ) -> float:
-    return max(min_value, min(max_value, value))
+    if value < min_value:
+        return min_value
 
-
-def clamp_score(value: float) -> float:
-    return round(clamp(value), 2)
+    if value > max_value:
+        return max_value
+    return value
 
 
 def normalize_metric(
@@ -26,7 +27,7 @@ def normalize_metric(
         return None
 
     if definition.target_min <= value <= definition.target_max:
-        return 100.0
+        return 0.0
 
     if value < definition.target_min:
         if definition.target_min == definition.min_value:
@@ -38,7 +39,7 @@ def normalize_metric(
         )
     else:
         if definition.target_max == definition.max_value:
-            return 100.0
+            return 0.0
 
         score = 100.0 * (
             (definition.max_value - value)
@@ -48,25 +49,17 @@ def normalize_metric(
     return clamp_score(score)
 
 
-def average(values: list[float]) -> float:
-    return mean(values) if values else 0.0
-
-
 def average_available(values: list[float]) -> float | None:
-    return average(values) if values else None
-
-
-def average_score(values: list[float]) -> float | None:
-    result = average_available(values)
-    return clamp_score(result) if result is not None else None
+    return mean(values) if values else None
 
 
 def average_scores(*values: float | None) -> float | None:
-    return average_score([
+    result = average_available([
         value
         for value in values
         if value is not None
     ])
+    return clamp_score(result) if result is not None else None
 
 
 def point_distance(point_a: Point, point_b: Point) -> float:
