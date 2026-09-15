@@ -1,62 +1,41 @@
-from unittest.mock import Mock
+from types import SimpleNamespace
+from unittest.mock import Mock, call
 
-
-def test_process_frame_uses_detector_and_landmark_extractor():
-    from vision.vision_pipeline import VisionPipeline
-
-    detector = Mock()
-    pose_result = object()
-    detector.detect.return_value = pose_result
-
-    extractor = Mock()
-    pipeline = VisionPipeline(detector=detector, landmark_extractor=extractor)
-    pipeline.landmark_extractor.filter_landmarks.return_value = {
-        "nose": {"x": 0.5, "y": 0.2},
-    }
-
-    result = pipeline.process_frame("frame-1")
-
-    detector.detect.assert_called_once_with(
-        "frame-1",
-    )
-    pipeline.landmark_extractor.filter_landmarks.assert_called_once_with(
-        pose_result
-    )
-
-    assert result["nose"]["x"] == 0.5
+from vision.config import FrameLandmarks, Landmark
 
 
 def test_process_returns_only_frames_with_landmarks():
     from vision.vision_pipeline import VisionPipeline
 
-    pipeline = VisionPipeline(detector=Mock(), landmark_extractor=Mock())
+    detector = Mock()
+    poses = [object(), object(), object()]
+    detector.detect.side_effect = poses
+    pipeline = VisionPipeline(detector=detector)
+    first = FrameLandmarks(nose=Landmark(x=0.1, y=0.2))
+    last = FrameLandmarks(nose=Landmark(x=0.2, y=0.2))
+    pipeline._extract_landmarks = Mock(side_effect=[first, None, last])
 
-    frame_results = {
-        "a": {"nose": {"x": 0.1, "y": 0.2}},
-        "b": {},
-        "c": {"nose": {"x": 0.2, "y": 0.2}},
-    }
-
-    pipeline.process_frame = Mock(
-        side_effect=lambda frame: frame_results[frame]
-    )
-
-    result = pipeline.process(["a", "b", "c"])
-
-    assert result == [
-        {"nose": {"x": 0.1, "y": 0.2}},
-        {"nose": {"x": 0.2, "y": 0.2}},
-    ]
-    assert pipeline.process_frame.call_count == 3
+    assert pipeline.process(["a", "b", "c"]) == [first, last]
+    assert detector.detect.call_args_list == [call("a"), call("b"), call("c")]
+    assert pipeline._extract_landmarks.call_args_list == [call(pose) for pose in poses]
 
 
 def test_process_returns_empty_list_when_no_frames_have_landmarks():
     from vision.vision_pipeline import VisionPipeline
 
-    pipeline = VisionPipeline(detector=Mock(), landmark_extractor=Mock())
-    pipeline.process_frame = Mock(return_value={})
+    detector = Mock()
+    detector.detect.return_value = SimpleNamespace(pose_landmarks=[])
+    pipeline = VisionPipeline(detector=detector)
 
-    result = pipeline.process(["a", "b"])
+    assert pipeline.process(["a", "b"]) == []
+    assert detector.detect.call_count == 2
 
-    assert result == []
-    assert pipeline.process_frame.call_count == 2
+
+def test_process_empty_chunk_does_not_call_detector():
+    from vision.vision_pipeline import VisionPipeline
+
+    detector = Mock()
+    pipeline = VisionPipeline(detector=detector)
+
+    assert pipeline.process([]) == []
+    detector.detect.assert_not_called()

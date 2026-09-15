@@ -1,4 +1,4 @@
-from typing import Any
+from vision.config import FrameLandmarks
 
 from analytics.audio.manager import AudioAnalyticsManager
 from analytics.visual.manager import VisualAnalyticsManager
@@ -16,7 +16,7 @@ class AnalyticsManager:
 
     def analyze(
         self,
-        landmarks: list[dict[str, Any]] | None = None,
+        landmarks: list[FrameLandmarks] | None = None,
         audio_features: AudioFeatures | None = None,
     ) -> Analysis:
         return Analysis(

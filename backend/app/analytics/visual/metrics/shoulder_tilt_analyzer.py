@@ -1,4 +1,4 @@
-from typing import Any
+from vision.config import FrameLandmarks
 
 from analytics.math_utils import average_available, line_angle_degrees
 from analytics.visual.metrics.base_analyzer import BaseAnalyzer
@@ -9,7 +9,7 @@ class ShoulderTiltAnalyzer(BaseAnalyzer):
 
     def _calculate_tilt(
         self,
-        landmarks: dict[str, Any],
+        landmarks: FrameLandmarks,
     ) -> float | None:
         if not self._has_points(
             landmarks,
@@ -19,13 +19,13 @@ class ShoulderTiltAnalyzer(BaseAnalyzer):
             return None
 
         angle = line_angle_degrees(
-            landmarks["left_shoulder"],
-            landmarks["right_shoulder"],
+            landmarks.left_shoulder,
+            landmarks.right_shoulder,
         )
 
         return min(angle, abs(self.HORIZONTAL_ANGLE - angle))
 
-    def analyze(self, frames: list[dict[str, Any]]) -> float | None:
+    def analyze(self, frames: list[FrameLandmarks]) -> float | None:
         tilts = [
             tilt
             for landmarks in frames

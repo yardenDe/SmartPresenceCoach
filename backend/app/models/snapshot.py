@@ -8,7 +8,7 @@ class Snapshot(Base):
     session_id = Column(Integer, ForeignKey("sessions.id"), nullable=False)
     timestamp = Column(Float, nullable=False)
 
-    face_direction = Column("gaze_direction", Float, nullable=True)
+    face_direction = Column(Float, nullable=True)
     movement_amount = Column(Float, nullable=True)
     movement_variation = Column(Float, nullable=True)
     head_movement = Column(Float, nullable=True)

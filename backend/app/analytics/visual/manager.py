@@ -1,4 +1,4 @@
-from typing import Any
+from vision.config import FrameLandmarks
 
 from analytics.visual.metrics.face_direction_analyzer import FaceDirectionAnalyzer
 from analytics.visual.metrics.hand_movement_analyzer import HandMovementAnalyzer
@@ -24,7 +24,7 @@ class VisualAnalyticsManager:
             "hand_movement": HandMovementAnalyzer(),
         }
 
-    def analyze(self, landmarks: list[dict[str, Any]]) -> VisualMetrics:
+    def analyze(self, landmarks: list[FrameLandmarks]) -> VisualMetrics:
         logger.debug("event=analytics.run.start frames=%s", len(landmarks))
 
         if not landmarks:

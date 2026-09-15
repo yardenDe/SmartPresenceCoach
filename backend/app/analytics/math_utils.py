@@ -3,7 +3,7 @@ from statistics import mean
 
 from analytics.config import MAX_SCORE, MIN_SCORE, MetricDefinition
 
-Point = dict[str, float]
+from vision.config import Landmark
 
 
 def clamp_score(
@@ -62,22 +62,22 @@ def average_scores(*values: float | None) -> float | None:
     return clamp_score(result) if result is not None else None
 
 
-def point_distance(point_a: Point, point_b: Point) -> float:
-    return hypot(point_a["x"] - point_b["x"], point_a["y"] - point_b["y"])
+def point_distance(point_a: Landmark, point_b: Landmark) -> float:
+    return hypot(point_a.x - point_b.x, point_a.y - point_b.y)
 
 
-def axis_distance(point_a: Point, point_b: Point, axis: str) -> float:
-    return abs(point_a[axis] - point_b[axis])
+def axis_distance(point_a: Landmark, point_b: Landmark, axis: str) -> float:
+    return abs(getattr(point_a, axis) - getattr(point_b, axis))
 
 
-def midpoint(point_a: Point, point_b: Point) -> Point:
-    return {
-        "x": (point_a["x"] + point_b["x"]) / 2,
-        "y": (point_a["y"] + point_b["y"]) / 2,
-    }
+def midpoint(point_a: Landmark, point_b: Landmark) -> Landmark:
+    return Landmark(
+        x=(point_a.x + point_b.x) / 2,
+        y=(point_a.y + point_b.y) / 2,
+    )
 
 
-def line_angle_degrees(point_a: Point, point_b: Point) -> float:
-    y_delta = point_b["y"] - point_a["y"]
-    x_delta = point_b["x"] - point_a["x"]
+def line_angle_degrees(point_a: Landmark, point_b: Landmark) -> float:
+    y_delta = point_b.y - point_a.y
+    x_delta = point_b.x - point_a.x
     return abs(degrees(atan2(y_delta, x_delta)))

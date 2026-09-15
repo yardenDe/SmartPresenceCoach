@@ -1,4 +1,4 @@
-from typing import Any
+from vision.config import FrameLandmarks
 
 from analytics.math_utils import average_available
 from analytics.visual.metrics.base_analyzer import BaseAnalyzer
@@ -11,8 +11,8 @@ class MovementAmountAnalyzer(BaseAnalyzer):
         "right_shoulder",
         "left_elbow",
         "right_elbow",
-        "left_wrist_basic",
-        "right_wrist_basic",
+        "left_wrist",
+        "right_wrist",
         "left_hip",
         "right_hip",
         "left_knee",
@@ -21,7 +21,7 @@ class MovementAmountAnalyzer(BaseAnalyzer):
         "right_ankle",
     ]
 
-    def analyze(self, frames: list[dict[str, Any]]) -> float | None:
+    def analyze(self, frames: list[FrameLandmarks]) -> float | None:
         motions = self._normalized_motion_series(
             frames,
             self.BODY_POINTS,

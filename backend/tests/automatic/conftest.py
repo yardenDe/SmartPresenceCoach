@@ -27,6 +27,8 @@ tasks_module = types.ModuleType("mediapipe.tasks")
 python_module = types.ModuleType("mediapipe.tasks.python")
 vision_module = types.ModuleType("mediapipe.tasks.python.vision")
 vision_module.RunningMode = DummyRunningMode
+vision_module.PoseLandmark = Enum("PoseLandmark", {"NOSE": 0})
+vision_module.PoseLandmarkerResult = types.SimpleNamespace
 
 sys.modules.setdefault("mediapipe", mediapipe_module)
 sys.modules.setdefault("mediapipe.tasks", tasks_module)
