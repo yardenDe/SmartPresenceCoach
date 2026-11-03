@@ -33,6 +33,4 @@ COPY tests/ tests/
 
 WORKDIR /app/app
 
-EXPOSE 8000
-
 CMD ["python", "main.py"]
