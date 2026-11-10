@@ -3,7 +3,7 @@ from statistics import mean
 
 from analytics.config import MAX_SCORE, MIN_SCORE, MetricDefinition
 
-from vision.config import Landmark
+from extraction.video.config import Landmark
 
 
 def clamp_score(

@@ -4,8 +4,8 @@ from typing import Any
 from mediapipe.tasks.python.vision import PoseLandmark, PoseLandmarkerResult
 
 from core.logger import get_logger
-from vision.config import FrameLandmarks, Landmark
-from vision.mediapipe_detector import MediaPipeDetector
+from extraction.video.config import FrameLandmarks, Landmark
+from extraction.video.mediapipe_engine import MediaPipeDetector
 
 
 logger = get_logger("app.vision.pipeline")

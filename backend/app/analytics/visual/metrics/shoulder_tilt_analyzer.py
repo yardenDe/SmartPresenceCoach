@@ -1,4 +1,4 @@
-from vision.config import FrameLandmarks
+from extraction.video.config import FrameLandmarks
 
 from analytics.math_utils import average_available, line_angle_degrees
 from analytics.visual.metrics.base_analyzer import BaseAnalyzer

@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session as DBSession
 from analytics.timeline_builder import TimelineBuilder, TimelineEntry
 from core.exceptions import DatabaseError
 from core.logger import get_logger
-from models.analysis_data import AudioMetric, Transcript, VideoMetric
+from models.analysis import AudioMetric, Transcript, VideoMetric
 from models.snapshot import Snapshot
 
 logger = get_logger("app.repositories.snapshot")
@@ -23,21 +23,6 @@ RECORD_FIELDS = (
 class SnapshotRepository:
     def __init__(self, db: DBSession):
         self.db = db
-
-    def create_snapshots(self, snapshots: list[Snapshot]) -> list[Snapshot]:
-        records = []
-        for snapshot in snapshots:
-            for model, fields in RECORD_FIELDS:
-                values = {name: getattr(snapshot, name) for name in fields}
-                if any(value is not None for value in values.values()):
-                    records.append(model(
-                        session_id=snapshot.session_id,
-                        start_time=snapshot.timestamp,
-                        end_time=snapshot.end_time if snapshot.end_time is not None else snapshot.timestamp,
-                        **values,
-                    ))
-        self.create_records(records)
-        return snapshots
 
     def create_records(self, records: list[VideoMetric | AudioMetric | Transcript]) -> None:
         if not records:

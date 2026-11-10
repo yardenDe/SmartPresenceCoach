@@ -11,7 +11,7 @@ from media.config import (
     SAMPLE_WIDTH,
 )
 
-logger = get_logger("app.audio.transcriber")
+logger = get_logger("app.extraction.audio.transcriber")
 
 class Transcriber:
     def __init__(

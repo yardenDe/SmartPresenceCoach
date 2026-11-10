@@ -1,4 +1,3 @@
-
 import av
 from fastapi import UploadFile
 
@@ -12,8 +11,6 @@ from services.session_service import SessionService
 
 
 VIDEO_CHUNK_SECONDS = 3
-AUDIO_CHUNK_SECONDS = 3
-TRANSCRIPT_CHUNK_SECONDS = 3
 
 
 class OfflineService:
@@ -47,7 +44,7 @@ class OfflineService:
             video_path = await self.storage.save_temp(video)
             reader = MediaReader(video_path)
 
-            video_records = []
+            records = []
 
             for chunk in reader.iter_video_chunks(VIDEO_CHUNK_SECONDS):
                 record = self.analysis_service.analyze_video(
@@ -57,36 +54,35 @@ class OfflineService:
                     [sample.data for sample in chunk],
                 )
                 if record is not None:
-                    video_records.append(record)
+                    records.append(record)
 
-            audio_records = []
+            audio = reader.read(video=False).audio
 
-            for chunk in reader.iter_audio_chunks(AUDIO_CHUNK_SECONDS):
-                record = self.analysis_service.analyze_audio(
+            if audio is not None:
+                audio_record = self.analysis_service.analyze_audio(
                     session_id,
-                    chunk.start_time,
-                    chunk.end_time,
-                    chunk.data,
+                    audio.start_time,
+                    audio.end_time,
+                    audio.data,
                 )
-                if record is not None:
-                    audio_records.append(record)
+                transcript_record = self.analysis_service.transcribe(
+                    session_id,
+                    audio.start_time,
+                    audio.end_time,
+                    audio.data,
+                )
 
-            if not video_records and not audio_records:
+                if audio_record is not None:
+                    records.append(audio_record)
+
+                
+                if transcript_record is not None:
+                    records.append(transcript_record)
+
+            if not records:
                 raise NoLandmarksError()
 
-            records = video_records + audio_records
-
-            if self.analysis_service.transcription_enabled:
-                for chunk in reader.iter_audio_chunks(TRANSCRIPT_CHUNK_SECONDS):
-                    record = self.analysis_service.transcribe(
-                        session_id,
-                        chunk.start_time,
-                        chunk.end_time,
-                        chunk.data,
-                    )
-                    if record is not None:
-                        records.append(record)
-
+            
             self.session_service.save_analysis_records(records)
             self.session_service.end(user_id, session_id)
 

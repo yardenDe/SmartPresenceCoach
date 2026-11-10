@@ -1,4 +1,4 @@
-from vision.config import FrameLandmarks
+from extraction.video.config import FrameLandmarks
 
 from analytics.visual.metrics.face_direction_analyzer import FaceDirectionAnalyzer
 from analytics.visual.metrics.hand_movement_analyzer import HandMovementAnalyzer

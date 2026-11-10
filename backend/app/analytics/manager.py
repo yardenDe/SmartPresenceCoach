@@ -1,4 +1,4 @@
-from vision.config import FrameLandmarks
+from extraction.video.config import FrameLandmarks
 
 from analytics.audio.manager import AudioAnalyticsManager
 from analytics.visual.manager import VisualAnalyticsManager

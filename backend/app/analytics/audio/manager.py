@@ -32,7 +32,6 @@ class AudioAnalyticsManager:
         )
 
         return AudioMetrics(
-            transcript=features.transcript,
             pause_ratio=self._calculate_pause_ratio(
                 features.non_silent_intervals,
                 features.total_samples,

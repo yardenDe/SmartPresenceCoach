@@ -1,5 +1,5 @@
 from statistics import pstdev
-from vision.config import FrameLandmarks
+from extraction.video.config import FrameLandmarks
 
 from analytics.visual.metrics.base_analyzer import BaseAnalyzer
 

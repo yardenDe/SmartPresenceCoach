@@ -12,7 +12,6 @@ class VisualMetrics(BaseModel):
 
 
 class AudioMetrics(BaseModel):
-    transcript: str | None = None
     pause_ratio: float | None = None
     average_volume: float | None = None
     volume_variation: float | None = None
@@ -35,7 +34,6 @@ class AudioFeatures(BaseModel):
     pitch: np.ndarray
     non_silent_intervals: np.ndarray
     total_samples: int
-    transcript: str | None = None
 
 
 class Analysis(BaseModel):

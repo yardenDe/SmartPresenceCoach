@@ -1,5 +1,6 @@
 from analytics.config import METRIC_DEFINITIONS
 from analytics.math_utils import average_scores, normalize_metric
+from models.analysis import VideoMetric, AudioMetric
 from models.snapshot import Snapshot
 from schemas.analysis import Scores
 
@@ -7,9 +8,10 @@ from schemas.analysis import Scores
 class ScoreCalculator:
     def calculate(
         self,
-        snapshot: Snapshot,
+        snapshot: VideoMetric | None = None,
+        audio: AudioMetric | None = None,
     ) -> Scores | None:
-        normalized = self._normalize_metrics(snapshot)
+        normalized = self._normalize_metrics(snapshot, audio)
         if all(value is None for value in normalized.values()):
             return None
 
@@ -55,12 +57,13 @@ class ScoreCalculator:
 
     @staticmethod
     def _normalize_metrics(
-        snapshot: Snapshot,
+        snapshot: Snapshot | VideoMetric,
+        audio: AudioMetric | None = None,
     ) -> dict[str, float | None]:
-        return {
-            metric_name: normalize_metric(
-                getattr(snapshot, metric_name),
-                definition,
-            )
-            for metric_name, definition in METRIC_DEFINITIONS.items()
-        }
+        normalized = {}
+        for metric_name, definition in METRIC_DEFINITIONS.items():
+            value = getattr(snapshot, metric_name, None)
+            if value is None and audio is not None:
+                value = getattr(audio, metric_name, None)
+            normalized[metric_name] = normalize_metric(value, definition)
+        return normalized

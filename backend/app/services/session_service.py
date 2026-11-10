@@ -1,10 +1,8 @@
-from models.analysis_data import AudioMetric, Transcript, VideoMetric
+from models.analysis import AudioMetric, Transcript, VideoMetric
 from models.session import Session as SessionModel
-from models.snapshot import Snapshot
 
 from core.exceptions import SessionNotFoundError, UnauthorizedError
 from core.logger import get_logger
-from infrastructure.session_buffer import SessionBuffer
 from repositories.session_repository import SessionRepository
 from repositories.snapshot_repository import SnapshotRepository
 
@@ -13,11 +11,9 @@ class SessionService:
     def __init__(
         self,
         session_repository: SessionRepository,
-        session_buffer: SessionBuffer,
         snapshot_repository: SnapshotRepository,
     ):
         self.session_repository = session_repository
-        self.session_buffer = session_buffer
         self.snapshot_repository = snapshot_repository
         self.logger = get_logger("app.sessions")
 
@@ -56,7 +52,6 @@ class SessionService:
 
     def end(self, user_id: int, session_id: int) -> int:
         self.require_owned_session(user_id, session_id)
-        self.flush_snapshots(session_id)
         session = self.session_repository.end_session(session_id=session_id)
         if not session:
             self.logger.warning("event=session.end.missing session_id=%s user_id=%s", session_id, user_id)
@@ -65,26 +60,6 @@ class SessionService:
         self.logger.info("event=session.end.done session_id=%s user_id=%s", session.id, user_id)
         return session.id
 
-    def add_snapshot(self, snapshot: Snapshot) -> None:
-        snapshots = self.session_buffer.add(snapshot)
-
-        if snapshots:
-            self.snapshot_repository.create_snapshots(
-                snapshots=snapshots,
-            )
-
     def save_analysis_records(self, records: list[VideoMetric | AudioMetric | Transcript]) -> None:
         self.snapshot_repository.create_records(records)
 
-    def flush_snapshots(self, session_id: int) -> None:
-        snapshots = self.session_buffer.close_session(session_id)
-
-        if snapshots:
-            self.snapshot_repository.create_snapshots(
-                snapshots=snapshots,
-            )
-            self.logger.info(
-                "event=session.buffer.flushed session_id=%s count=%s",
-                session_id,
-                len(snapshots),
-            )

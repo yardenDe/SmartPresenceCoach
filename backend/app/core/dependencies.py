@@ -11,8 +11,8 @@ from core.logger import get_logger
 from core.exceptions import InvalidCredentialsError, LLMUnavailableError 
 from core.security import SecurityService 
 from db.db_manager import SessionLocal 
-from audio.audio_pipeline import AudioPipeline
-from audio.librosa_engine import LibrosaEngine
+from extraction.manager import ExtractionManager
+from extraction.audio.librosa_engine import LibrosaEngine
 from analytics.audio.manager import AudioAnalyticsManager
 from analytics.manager import AnalyticsManager 
 from analytics.score_calculator import ScoreCalculator
@@ -28,13 +28,12 @@ from services.live_service import LiveService
 from services.llm_service import LLMService 
 from services.offline_service import OfflineService 
 from services.report_service import ReportService 
-from infrastructure.session_buffer import SessionBuffer
 from services.analysis_service import AnalysisService
 from services.session_service import SessionService 
-from vision.mediapipe_detector import MediaPipeDetector 
-from vision.vision_pipeline import VisionPipeline 
+from extraction.video.mediapipe_engine import MediaPipeDetector 
+from extraction.video.landmarks_extractor import VisionPipeline 
 from media.storage import storage 
-from audio.transcriber import Transcriber 
+from extraction.audio.transcriber import Transcriber 
 
 
 
@@ -43,7 +42,6 @@ security = HTTPBearer()
 logger = get_logger("app.core.dependencies") 
 
 _detector_instance = None 
-_session_buffer = SessionBuffer() 
 _llm_manager = None 
 _transcriber = None 
 
@@ -194,18 +192,12 @@ def get_auth_service(
     return AuthService(user_repository=user_repository, security_service=security_service) 
 
 
-def get_session_buffer() -> SessionBuffer: 
-    return _session_buffer 
-
-
 def get_session_service( 
     session_repository: SessionRepository = Depends(get_session_repository), 
-    session_buffer: SessionBuffer = Depends(get_session_buffer), 
     snapshot_repository: SnapshotRepository = Depends(get_snapshot_repository), 
 ) -> SessionService: 
     return SessionService( 
         session_repository=session_repository, 
-        session_buffer=session_buffer, 
         snapshot_repository=snapshot_repository, 
     ) 
 
@@ -245,25 +237,28 @@ def get_transcriber() -> Transcriber | None:
     return _transcriber
 
 
-def get_audio_pipeline(
-    engine: LibrosaEngine = Depends(get_librosa_engine),
+def get_extraction_manager(
+    video_extractor: VisionPipeline = Depends(get_vision_pipeline),
+    audio_engine: LibrosaEngine = Depends(get_librosa_engine),
     transcriber: Transcriber | None = Depends(get_transcriber),
-) -> AudioPipeline:
-    return AudioPipeline(engine=engine, transcriber=transcriber)
+) -> ExtractionManager:
+    return ExtractionManager(
+        video_extractor=video_extractor,
+        audio_engine=audio_engine,
+        transcriber=transcriber,
+    )
 
 
 def get_analysis_service(
     score_calculator: ScoreCalculator = Depends(get_score_calculator),
-    analytics: AnalyticsManager = Depends(get_analytics_manager), 
-    vision_pipeline: VisionPipeline = Depends(get_vision_pipeline),
-    audio_pipeline: AudioPipeline = Depends(get_audio_pipeline),
+    analytics: AnalyticsManager = Depends(get_analytics_manager),
+    extraction: ExtractionManager = Depends(get_extraction_manager),
 ) -> AnalysisService:
     return AnalysisService(
         score_calculator=score_calculator,
-        analytics=analytics, 
-        vision_pipeline=vision_pipeline,
-        audio_pipeline=audio_pipeline,
-    ) 
+        analytics=analytics,
+        extraction=extraction,
+    )
 
 
 def get_live_service( 

@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from vision.config import FrameLandmarks, Landmark
+from extraction.video.config import FrameLandmarks, Landmark
 
 from analytics.math_utils import average_available, axis_distance, midpoint, point_distance
 from media.config import TARGET_FPS
