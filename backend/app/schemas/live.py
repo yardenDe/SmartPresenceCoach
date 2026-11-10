@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
-from schemas.analysis import Scores
+from analytics.config import Scores
 
 
 class LiveResponse(BaseModel):

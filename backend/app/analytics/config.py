@@ -1,5 +1,9 @@
+from dataclasses import dataclass
+
 from pydantic import BaseModel, ConfigDict
 
+
+ANALYSIS_WINDOW_SECONDS = 3.0
 
 MIN_SCORE = 0.0
 MAX_SCORE = 100.0
@@ -57,3 +61,38 @@ METRIC_DEFINITIONS = {
         min_value=0.0, max_value=12.0, target_min=1.5, target_max=5.0,
     ),
 }
+
+
+class VideoMetrics(BaseModel):
+    face_direction: float | None = None
+    movement_amount: float | None = None
+    movement_variation: float | None = None
+    head_movement: float | None = None
+    shoulder_tilt: float | None = None
+    hand_movement: float | None = None
+
+
+class AudioMetrics(BaseModel):
+    pause_ratio: float | None = None
+    average_volume: float | None = None
+    volume_variation: float | None = None
+    pitch_variation: float | None = None
+
+
+class Scores(BaseModel):
+    focus: float | None = None
+    posture: float | None = None
+    engagement: float | None = None
+    presence: float | None = None
+    composure: float | None = None
+    overall: float | None = None
+
+
+@dataclass
+class Snapshot:
+    session_id: int
+    start_time: float
+    end_time: float
+    video: VideoMetrics | None = None
+    audio: AudioMetrics | None = None
+    transcript: str | None = None

@@ -27,11 +27,11 @@ def normalize_metric(
         return None
 
     if definition.target_min <= value <= definition.target_max:
-        return 0.0
+        return 100.0
 
     if value < definition.target_min:
         if definition.target_min == definition.min_value:
-            return 100.0
+            return 0.0
 
         score = 100.0 * (
             (value - definition.min_value)

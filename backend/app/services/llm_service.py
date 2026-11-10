@@ -4,13 +4,13 @@ from pydantic import BaseModel
 
 from core.exceptions import LLMUnavailableError
 from core.logger import get_logger
-from llm.manager import Manager
+from llm.llm_manager import LLMManager
 
 T = TypeVar("T", bound=BaseModel)
 
 
 class LLMService:
-    def __init__(self, manager: Manager):
+    def __init__(self, manager: LLMManager):
         self.manager = manager
         self.logger = get_logger("app.llm.service")
 

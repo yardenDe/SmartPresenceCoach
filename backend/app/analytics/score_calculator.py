@@ -1,17 +1,15 @@
 from analytics.config import METRIC_DEFINITIONS
 from analytics.math_utils import average_scores, normalize_metric
-from db.models.analysis import VideoMetric, AudioMetric
-from db.models.snapshot import Snapshot
-from schemas.analysis import AudioMetrics, Scores, VisualMetrics
+from analytics.config import AudioMetrics, Scores, VideoMetrics
 
 
 class ScoreCalculator:
     def calculate(
         self,
-        snapshot: Snapshot | VideoMetric | VisualMetrics | None = None,
-        audio: AudioMetric | AudioMetrics | None = None,
+        video: VideoMetrics | None = None,
+        audio: AudioMetrics | None = None,
     ) -> Scores | None:
-        normalized = self._normalize_metrics(snapshot, audio)
+        normalized = self._normalize_metrics(video, audio)
         if all(value is None for value in normalized.values()):
             return None
 
@@ -37,14 +35,7 @@ class ScoreCalculator:
             normalized.get("hand_movement"),
             normalized.get("average_volume"),
         )
-
-        overall = average_scores(
-            focus,
-            engagement,
-            posture,
-            composure,
-            presence,
-        )
+        overall = average_scores(focus, engagement, posture, composure, presence)
 
         return Scores(
             focus=focus,
@@ -57,13 +48,13 @@ class ScoreCalculator:
 
     @staticmethod
     def _normalize_metrics(
-        snapshot: Snapshot | VideoMetric | VisualMetrics | None,
-        audio: AudioMetric | AudioMetrics | None = None,
+        video: VideoMetrics | None,
+        audio: AudioMetrics | None,
     ) -> dict[str, float | None]:
         normalized = {}
-        for metric_name, definition in METRIC_DEFINITIONS.items():
-            value = getattr(snapshot, metric_name, None)
-            if value is None and audio is not None:
-                value = getattr(audio, metric_name, None)
-            normalized[metric_name] = normalize_metric(value, definition)
+        for name, definition in METRIC_DEFINITIONS.items():
+            value = getattr(video, name, None)
+            if value is None:
+                value = getattr(audio, name, None)
+            normalized[name] = normalize_metric(value, definition)
         return normalized

@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Float, ForeignKey, Integer, Text, JSON
 
 from db.db_manager import Base
+from media.config import SAMPLE_RATE
 
 
 class VideoMetric(Base):
@@ -52,7 +53,13 @@ class AudioFeatureRecord(Base):
     start_time = Column(Float, nullable=False)
     end_time = Column(Float, nullable=False)
     hop_length = Column(Integer, nullable=False)
+    sample_rate = Column(Integer, nullable=False, default=SAMPLE_RATE)
     rms = Column(JSON, nullable=False)
     pitch = Column(JSON, nullable=False)
     non_silent_intervals = Column(JSON, nullable=False)
     total_samples = Column(Integer, nullable=False)
+
+
+
+# DB records used by Live, Offline and reporting.
+AnalysisRecord = VideoMetric | AudioMetric | AudioFeatureRecord | Transcript

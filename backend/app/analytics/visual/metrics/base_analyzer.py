@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from extraction.video.config import FrameLandmarks, Landmark
 
 from analytics.math_utils import average_available, axis_distance, midpoint, point_distance
@@ -50,7 +51,7 @@ class BaseAnalyzer(ABC):
         cls,
         previous_landmarks: FrameLandmarks,
         current_landmarks: FrameLandmarks,
-        point_names: list[str],
+        point_names: Sequence[str],
     ) -> float | None:
         previous_scale = cls._reference_scale(previous_landmarks)
         current_scale = cls._reference_scale(current_landmarks)
@@ -85,7 +86,7 @@ class BaseAnalyzer(ABC):
     def _normalized_motion_series(
         cls,
         frames: list[FrameLandmarks],
-        point_names: list[str],
+        point_names: Sequence[str],
     ) -> list[float]:
         motions = []
 

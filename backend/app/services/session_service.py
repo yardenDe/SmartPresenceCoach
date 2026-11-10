@@ -1,20 +1,20 @@
-from db.models.analysis import AudioFeatureRecord, AudioMetric, Transcript, VideoMetric
+from db.models.analysis import AnalysisRecord
 from db.models.session import Session as SessionModel
 
 from core.exceptions import SessionNotFoundError, UnauthorizedError
 from core.logger import get_logger
 from repositories.session_repository import SessionRepository
-from repositories.snapshot_repository import SnapshotRepository
+from repositories.analysis_repository import AnalysisRepository
 
 
 class SessionService:
     def __init__(
         self,
         session_repository: SessionRepository,
-        snapshot_repository: SnapshotRepository,
+        analysis_repository: AnalysisRepository,
     ):
         self.session_repository = session_repository
-        self.snapshot_repository = snapshot_repository
+        self.analysis_repository = analysis_repository
         self.logger = get_logger("app.sessions")
 
     def require_owned_session(self, user_id: int, session_id: int) -> SessionModel:
@@ -60,6 +60,6 @@ class SessionService:
         self.logger.info("event=session.end.done session_id=%s user_id=%s", session.id, user_id)
         return session.id
 
-    def save_analysis_records(self, records: list[VideoMetric | AudioMetric | AudioFeatureRecord | Transcript]) -> None:
-        self.snapshot_repository.create_records(records)
+    def save_analysis_records(self, records: list[AnalysisRecord]) -> None:
+        self.analysis_repository.create_records(records)
 

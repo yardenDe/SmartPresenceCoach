@@ -1,5 +1,6 @@
 from analytics.config import METRIC_DEFINITIONS
 from analytics.math_utils import average_available
+from analytics.config import AudioMetrics, Scores, Snapshot, VideoMetrics
 from analytics.score_calculator import ScoreCalculator
 from analytics.timeline_builder import TimelineBuilder
 from core.exceptions import (
@@ -8,14 +9,13 @@ from core.exceptions import (
 )
 from core.logger import get_logger
 from llm.prompts import session_report_prompt, session_report_system_instruction
-from db.models.snapshot import Snapshot
 from repositories.report_repository import ReportRepository
-from repositories.snapshot_repository import SnapshotRepository
-from schemas.analysis import AudioMetrics, Scores, VisualMetrics
+from repositories.analysis_repository import AnalysisRepository
 from schemas.report import (
     FullReportResponse,
     LLMReportText,
     MetricSummary,
+    RecentReportResponse,
     ScoreSummary,
     ShortReportResponse,
     TimeSeries,
@@ -26,23 +26,22 @@ from services.session_service import SessionService
 logger = get_logger("app.reports")
 
 SCORE_NAMES = tuple(Scores.model_fields)
-VISUAL_METRIC_NAMES = tuple(VisualMetrics.model_fields)
-AUDIO_METRIC_NAMES = tuple(
-    name for name in AudioMetrics.model_fields if name != "transcript"
-)
+VISUAL_METRIC_NAMES = tuple(VideoMetrics.model_fields)
+AUDIO_METRIC_NAMES = tuple(AudioMetrics.model_fields)
 METRIC_NAMES = (*VISUAL_METRIC_NAMES, *AUDIO_METRIC_NAMES)
+TREND_THRESHOLD = 2.0
 
 
 class ReportService:
     def __init__(
         self,
         session_service: SessionService,
-        snapshot_repository: SnapshotRepository,
+        analysis_repository: AnalysisRepository,
         report_repository: ReportRepository,
         score_calculator: ScoreCalculator,
     ):
         self.session_service = session_service
-        self.snapshot_repository = snapshot_repository
+        self.analysis_repository = analysis_repository
         self.report_repository = report_repository
         self.score_calculator = score_calculator
 
@@ -84,16 +83,16 @@ class ReportService:
         self,
         user_id: int,
         limit: int = 5,
-    ) -> list[dict]:
+    ) -> list[RecentReportResponse]:
         return [
-            {
-                "session_id": session.id,
-                "mode": session.mode,
-                "started_at": session.start_time,
-                "ended_at": session.end_time,
-                "overall_score": report.overall_score,
-                "generated_at": report.generated_at,
-            }
+            RecentReportResponse(
+                session_id=session.id,
+                mode=session.mode,
+                started_at=session.start_time,
+                ended_at=session.end_time,
+                overall_score=report.overall_score,
+                generated_at=report.generated_at,
+            )
             for report, session in self.report_repository.list_recent_by_user(
                 user_id=user_id,
                 limit=limit,
@@ -101,7 +100,7 @@ class ReportService:
         ]
 
     def _load_snapshots(self, session_id: int) -> list[Snapshot]:
-        records = self.snapshot_repository.get_by_session(session_id)
+        records = self.analysis_repository.get_by_session(session_id)
         snapshots = TimelineBuilder().build_from_records(session_id, records)
         if not snapshots:
             raise SnapshotsNotFoundError()
@@ -119,12 +118,12 @@ class ReportService:
             raise SnapshotsNotFoundError()
 
         return TimeSeries(
-            timestamps_sec=[snapshot.timestamp for snapshot in snapshots],
+            timestamps_sec=[snapshot.start_time for snapshot in snapshots],
             series=series,
         )
 
     def _calculate_scores(self, snapshot: Snapshot) -> Scores | None:
-        return self.score_calculator.calculate(snapshot)
+        return self.score_calculator.calculate(snapshot.video, snapshot.audio)
 
     def _build_short_report(
         self,
@@ -191,9 +190,12 @@ class ReportService:
     @staticmethod
     def _build_metric_series(snapshots: list[Snapshot]) -> TimeSeries:
         return TimeSeries(
-            timestamps_sec=[snapshot.timestamp for snapshot in snapshots],
+            timestamps_sec=[snapshot.start_time for snapshot in snapshots],
             series={
-                name: [getattr(snapshot, name) for snapshot in snapshots]
+                name: [
+                    getattr(snapshot.video if name in VISUAL_METRIC_NAMES else snapshot.audio, name, None)
+                    for snapshot in snapshots
+                ]
                 for name in METRIC_NAMES
             },
         )
@@ -294,8 +296,8 @@ class ReportService:
         if len(values) < 2:
             return "stable"
         delta = values[-1] - values[0]
-        if delta > 2:
+        if delta > TREND_THRESHOLD:
             return "up"
-        if delta < -2:
+        if delta < -TREND_THRESHOLD:
             return "down"
         return "stable"

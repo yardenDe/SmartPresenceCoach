@@ -1,7 +1,8 @@
 import librosa
 import numpy as np
 
-from schemas.analysis import AudioFeatures, AudioMetrics
+from analytics.config import AudioMetrics
+from extraction.audio.config import AudioFeatures
 
 
 class AudioAnalyticsManager:

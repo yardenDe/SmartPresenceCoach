@@ -2,14 +2,14 @@ import numpy as np
 
 from extraction.audio.librosa_engine import LibrosaEngine
 from extraction.audio.transcriber import Transcriber
-from extraction.video.landmarks_extractor import VisionPipeline
-from schemas.analysis import AudioFeatures
+from extraction.video.landmarks_extractor import LandmarksExtractor
+from extraction.audio.config import AudioFeatures
 
 
 class ExtractionManager:
     def __init__(
         self,
-        video_extractor: VisionPipeline,
+        video_extractor: LandmarksExtractor,
         audio_engine: LibrosaEngine,
         transcriber: Transcriber | None = None,
     ):

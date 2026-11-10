@@ -8,7 +8,7 @@ from analytics.visual.metrics.movement_variation_analyzer import MovementVariati
 from analytics.visual.metrics.shoulder_tilt_analyzer import ShoulderTiltAnalyzer
 from core.exceptions import AnalyticsProcessingError
 from core.logger import get_logger
-from schemas.analysis import VisualMetrics
+from analytics.config import VideoMetrics
 
 logger = get_logger("app.analytics.visual.manager")
 
@@ -24,7 +24,7 @@ class VisualAnalyticsManager:
             "hand_movement": HandMovementAnalyzer(),
         }
 
-    def analyze(self, landmarks: list[FrameLandmarks]) -> VisualMetrics:
+    def analyze(self, landmarks: list[FrameLandmarks]) -> VideoMetrics:
         logger.debug("event=analytics.run.start frames=%s", len(landmarks))
 
         if not landmarks:
@@ -49,4 +49,4 @@ class VisualAnalyticsManager:
 
         logger.debug("event=analytics.run.done frames=%s", len(landmarks))
 
-        return VisualMetrics(**results)
+        return VideoMetrics(**results)

@@ -11,15 +11,15 @@ from core.logger import get_logger
 from core.exceptions import InvalidCredentialsError, LLMUnavailableError 
 from core.security import SecurityService 
 from db.db_manager import SessionLocal 
-from extraction.manager import ExtractionManager
+from extraction.extraction_manager import ExtractionManager
 from extraction.audio.librosa_engine import LibrosaEngine
-from analytics.audio.manager import AudioAnalyticsManager
-from analytics.manager import AnalyticsManager 
+from analytics.audio.audio_analytics_manager import AudioAnalyticsManager
+from analytics.analytics_manager import AnalyticsManager 
 from analytics.score_calculator import ScoreCalculator
-from analytics.visual.manager import VisualAnalyticsManager
-from llm.manager import Manager 
+from analytics.visual.visual_analytics_manager import VisualAnalyticsManager
+from llm.llm_manager import LLMManager 
 from repositories.session_repository import SessionRepository 
-from repositories.snapshot_repository import SnapshotRepository 
+from repositories.analysis_repository import AnalysisRepository
 from repositories.report_repository import ReportRepository 
 from repositories.user_repository import UserRepository 
 from services.auth_service import AuthService 
@@ -30,9 +30,9 @@ from services.offline_service import OfflineService
 from services.report_service import ReportService 
 from services.analysis_service import AnalysisService
 from services.session_service import SessionService 
-from extraction.video.mediapipe_engine import MediaPipeDetector 
-from extraction.video.landmarks_extractor import VisionPipeline 
-from media.storage import storage 
+from extraction.video.mediapipe_detector import MediaPipeDetector 
+from extraction.video.landmarks_extractor import LandmarksExtractor 
+from media.storage import Storage 
 from extraction.audio.transcriber import Transcriber 
 
 
@@ -66,8 +66,8 @@ def get_session_repository(db: Session = Depends(get_db)) -> SessionRepository:
     return SessionRepository(db) 
 
 
-def get_snapshot_repository(db: Session = Depends(get_db)) -> SnapshotRepository: 
-    return SnapshotRepository(db) 
+def get_analysis_repository(db: Session = Depends(get_db)) -> AnalysisRepository:
+    return AnalysisRepository(db)
 
 
 def get_report_repository(db: Session = Depends(get_db)) -> ReportRepository: 
@@ -96,14 +96,14 @@ def get_analytics_manager(
     )
 
 
-def get_storage() -> storage: 
-    return storage() 
+def get_storage() -> Storage: 
+    return Storage() 
 
 def get_librosa_engine() -> LibrosaEngine:
     return LibrosaEngine()
 
 
-def get_llm() -> Manager: 
+def get_llm() -> LLMManager: 
     global _llm_manager 
 
     if _llm_manager is None: 
@@ -112,7 +112,7 @@ def get_llm() -> Manager:
         if not settings.LLM_API_KEY: 
             raise LLMUnavailableError() 
 
-        _llm_manager = Manager( 
+        _llm_manager = LLMManager( 
             client=genai.Client(api_key=settings.LLM_API_KEY), 
             model=settings.LLM_MODEL, 
             temperature=settings.LLM_TEMPERATURE, 
@@ -164,8 +164,8 @@ def close_mp_detector() -> None:
 
 def get_vision_pipeline( 
     detector: MediaPipeDetector = Depends(get_mp_detector), 
-) -> VisionPipeline: 
-    return VisionPipeline(
+) -> LandmarksExtractor: 
+    return LandmarksExtractor(
         detector=detector,
     )
 
@@ -194,23 +194,23 @@ def get_auth_service(
 
 def get_session_service( 
     session_repository: SessionRepository = Depends(get_session_repository), 
-    snapshot_repository: SnapshotRepository = Depends(get_snapshot_repository), 
+    analysis_repository: AnalysisRepository = Depends(get_analysis_repository),
 ) -> SessionService: 
     return SessionService( 
         session_repository=session_repository, 
-        snapshot_repository=snapshot_repository, 
+        analysis_repository=analysis_repository,
     ) 
 
 
 def get_report_service( 
     session_service: SessionService = Depends(get_session_service), 
-    snapshot_repository: SnapshotRepository = Depends(get_snapshot_repository), 
+    analysis_repository: AnalysisRepository = Depends(get_analysis_repository),
     report_repository: ReportRepository = Depends(get_report_repository), 
     score_calculator: ScoreCalculator = Depends(get_score_calculator),
 ) -> ReportService: 
     return ReportService( 
         session_service=session_service, 
-        snapshot_repository=snapshot_repository, 
+        analysis_repository=analysis_repository,
         report_repository=report_repository, 
         score_calculator=score_calculator,
     ) 
@@ -238,7 +238,7 @@ def get_transcriber() -> Transcriber | None:
 
 
 def get_extraction_manager(
-    video_extractor: VisionPipeline = Depends(get_vision_pipeline),
+    video_extractor: LandmarksExtractor = Depends(get_vision_pipeline),
     audio_engine: LibrosaEngine = Depends(get_librosa_engine),
     transcriber: Transcriber | None = Depends(get_transcriber),
 ) -> ExtractionManager:
@@ -262,7 +262,7 @@ def get_analysis_service(
 
 
 def get_live_service( 
-    storage: storage = Depends(get_storage), 
+    storage: Storage = Depends(get_storage), 
     analysis_service: AnalysisService = Depends(get_analysis_service),
     session_service: SessionService = Depends(get_session_service), 
 ) -> LiveService: 
@@ -273,7 +273,7 @@ def get_live_service(
     ) 
 
 def get_offline_service( 
-    storage: storage = Depends(get_storage), 
+    storage: Storage = Depends(get_storage), 
     analysis_service: AnalysisService = Depends(get_analysis_service),
     session_service: SessionService = Depends(get_session_service), 
 ) -> OfflineService: 

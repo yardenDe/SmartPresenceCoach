@@ -8,7 +8,7 @@ from core.logger import get_logger
 
 logger = get_logger("app.vision.storage")
 
-class storage:
+class Storage:
 
     async def save_temp(self, video: UploadFile) -> str:
         try:

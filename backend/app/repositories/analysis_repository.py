@@ -3,16 +3,16 @@ from sqlalchemy.orm import Session as DBSession
 
 from core.exceptions import DatabaseError
 from core.logger import get_logger
-from db.models.analysis import AudioFeatureRecord, AudioMetric, Transcript, VideoMetric
+from db.models.analysis import AnalysisRecord, AudioFeatureRecord, AudioMetric, Transcript, VideoMetric
 
 logger = get_logger("app.repositories.snapshot")
 
 
-class SnapshotRepository:
+class AnalysisRepository:
     def __init__(self, db: DBSession):
         self.db = db
 
-    def create_records(self, records: list[VideoMetric | AudioMetric | AudioFeatureRecord | Transcript]) -> None:
+    def create_records(self, records: list[AnalysisRecord]) -> None:
         if not records:
             return
 
@@ -26,7 +26,7 @@ class SnapshotRepository:
 
         logger.info("event=analysis.bulk_create.done count=%s", len(records))
 
-    def get_by_session(self, session_id: int) -> list[VideoMetric | AudioMetric | AudioFeatureRecord | Transcript]:
+    def get_by_session(self, session_id: int) -> list[AnalysisRecord]:
         try:
             records = []
 

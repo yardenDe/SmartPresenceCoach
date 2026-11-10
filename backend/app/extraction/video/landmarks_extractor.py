@@ -5,13 +5,13 @@ from mediapipe.tasks.python.vision import PoseLandmark, PoseLandmarkerResult
 
 from core.logger import get_logger
 from extraction.video.config import FrameLandmarks, Landmark
-from extraction.video.mediapipe_engine import MediaPipeDetector
+from extraction.video.mediapipe_detector import MediaPipeDetector
 
 
 logger = get_logger("app.vision.pipeline")
 
 
-class VisionPipeline:
+class LandmarksExtractor:
     def __init__(
         self,
         detector: MediaPipeDetector,

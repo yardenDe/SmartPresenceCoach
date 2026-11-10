@@ -11,7 +11,7 @@ from core.exceptions import (
 from core.logger import get_logger
 from db.models.analysis import AudioFeatureRecord, Transcript, VideoMetric
 from media.media_reader import MediaReader
-from media.storage import storage
+from media.storage import Storage
 from schemas.live import LiveResponse
 from services.analysis_service import AnalysisService
 from services.session_service import SessionService
@@ -20,7 +20,7 @@ from services.session_service import SessionService
 class LiveService:
     def __init__(
         self,
-        storage: storage,
+        storage: Storage,
         analysis_service: AnalysisService,
         session_service: SessionService,
     ):
@@ -71,17 +71,13 @@ class LiveService:
             if media.audio is not None:
                 start_time = media.audio.start_time + offset
                 end_time = media.audio.end_time + offset
-                audio_metrics = self.analysis_service.analyze_audio(media.audio.data)
                 features = self.analysis_service.extract_audio(media.audio.data)
+                audio_metrics = self.analysis_service.analyze_audio(features)
                 records.append(AudioFeatureRecord(
                     session_id=session_id,
                     start_time=start_time,
                     end_time=end_time,
-                    hop_length=512,
-                    rms=features.rms.tolist(),
-                    pitch=features.pitch.tolist(),
-                    non_silent_intervals=features.non_silent_intervals.tolist(),
-                    total_samples=features.total_samples,
+                    **features.to_dict(),
                 ))
 
                 text = self.analysis_service.transcribe(media.audio.data)
