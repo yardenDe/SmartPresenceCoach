@@ -1,13 +1,14 @@
 from analytics.config import METRIC_DEFINITIONS
 from analytics.math_utils import average_available
 from analytics.score_calculator import ScoreCalculator
+from analytics.timeline_builder import TimelineBuilder
 from core.exceptions import (
     LLMUnavailableError,
     SnapshotsNotFoundError,
 )
 from core.logger import get_logger
 from llm.prompts import session_report_prompt, session_report_system_instruction
-from models.snapshot import Snapshot
+from db.models.snapshot import Snapshot
 from repositories.report_repository import ReportRepository
 from repositories.snapshot_repository import SnapshotRepository
 from schemas.analysis import AudioMetrics, Scores, VisualMetrics
@@ -100,7 +101,8 @@ class ReportService:
         ]
 
     def _load_snapshots(self, session_id: int) -> list[Snapshot]:
-        snapshots = self.snapshot_repository.get_by_session(session_id)
+        records = self.snapshot_repository.get_by_session(session_id)
+        snapshots = TimelineBuilder().build_from_records(session_id, records)
         if not snapshots:
             raise SnapshotsNotFoundError()
         return snapshots

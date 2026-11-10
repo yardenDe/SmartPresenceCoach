@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import select
-from models.user import User
+from db.models.user import User
 from core.exceptions import DatabaseError
 from core.logger import get_logger
 

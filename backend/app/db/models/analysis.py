@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Float, ForeignKey, Integer, Text
+from sqlalchemy import Column, Float, ForeignKey, Integer, Text, JSON
 
 from db.db_manager import Base
 
@@ -42,3 +42,17 @@ class Transcript(Base):
     end_time = Column(Float, nullable=False)
 
     transcript = Column(Text, nullable=False)
+
+
+class AudioFeatureRecord(Base):
+    __tablename__ = "audio_features"
+
+    id = Column(Integer, primary_key=True)
+    session_id = Column(Integer, ForeignKey("sessions.id"), nullable=False, index=True)
+    start_time = Column(Float, nullable=False)
+    end_time = Column(Float, nullable=False)
+    hop_length = Column(Integer, nullable=False)
+    rms = Column(JSON, nullable=False)
+    pitch = Column(JSON, nullable=False)
+    non_silent_intervals = Column(JSON, nullable=False)
+    total_samples = Column(Integer, nullable=False)

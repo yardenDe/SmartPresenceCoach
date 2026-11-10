@@ -9,6 +9,7 @@ from core.exceptions import (
     VisionProcessingError,
 )
 from core.logger import get_logger
+from db.models.analysis import AudioFeatureRecord, Transcript, VideoMetric
 from media.media_reader import MediaReader
 from media.storage import storage
 from schemas.live import LiveResponse
@@ -55,45 +56,41 @@ class LiveService:
 
             offset = timestamp - media.start_time
 
-            video_record = self.analysis_service.analyze_video(
-                session_id,
-                media.video[0].start_time + offset,
-                media.video[-1].end_time + offset,
-                [sample.data for sample in media.video],
-            )
-
-            if video_record is None:
+            visual = self.analysis_service.analyze_video([sample.data for sample in media.video])
+            if visual is None:
                 raise NoLandmarksError()
 
-            records = [video_record]
-            audio_record = None
+            records = [VideoMetric(
+                session_id=session_id,
+                start_time=media.video[0].start_time + offset,
+                end_time=media.video[-1].end_time + offset,
+                **visual.model_dump(),
+            )]
+            audio_metrics = None
 
             if media.audio is not None:
-                audio_record = self.analysis_service.analyze_audio(
-                    session_id,
-                    media.audio.start_time + offset,
-                    media.audio.end_time + offset,
-                    media.audio.data,
-                )
+                start_time = media.audio.start_time + offset
+                end_time = media.audio.end_time + offset
+                audio_metrics = self.analysis_service.analyze_audio(media.audio.data)
+                features = self.analysis_service.extract_audio(media.audio.data)
+                records.append(AudioFeatureRecord(
+                    session_id=session_id,
+                    start_time=start_time,
+                    end_time=end_time,
+                    hop_length=512,
+                    rms=features.rms.tolist(),
+                    pitch=features.pitch.tolist(),
+                    non_silent_intervals=features.non_silent_intervals.tolist(),
+                    total_samples=features.total_samples,
+                ))
 
-                if audio_record is not None:
-                    records.append(audio_record)
+                text = self.analysis_service.transcribe(media.audio.data)
+                if text is not None:
+                    records.append(Transcript(
+                        session_id=session_id, start_time=start_time, end_time=end_time, transcript=text
+                    ))
 
-                if self.analysis_service.transcription_enabled:
-                    transcript_record = self.analysis_service.transcribe(
-                        session_id,
-                        media.audio.start_time + offset,
-                        media.audio.end_time + offset,
-                        media.audio.data,
-                    )
-
-                    if transcript_record is not None:
-                        records.append(transcript_record)
-
-            scores = self.analysis_service.generate_scores(
-                video_record,
-                audio_record,
-            )
+            scores = self.analysis_service.generate_scores(visual, audio_metrics)
 
             if scores is None:
                 raise NoLandmarksError()

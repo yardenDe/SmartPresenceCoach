@@ -1,9 +1,9 @@
 from db.db_manager import engine, Base
 
-from models.user import User
-from models.session import Session
-from models.report import Report
-from models import analysis
+from db.models.user import User
+from db.models.session import Session
+from db.models.report import Report
+from db.models import analysis
 from core.logger import get_logger
 
 logger = get_logger("app.db.init")

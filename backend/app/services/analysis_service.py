@@ -4,8 +4,7 @@ import numpy as np
 from analytics.manager import AnalyticsManager
 from analytics.score_calculator import ScoreCalculator
 from extraction.manager import ExtractionManager
-from models.analysis import AudioMetric, Transcript, VideoMetric
-from schemas.analysis import Scores
+from schemas.analysis import AudioFeatures, AudioMetrics, Scores, VisualMetrics
 
 
 class AnalysisService:
@@ -19,68 +18,23 @@ class AnalysisService:
         self.extraction = extraction
         self.score_calculator = score_calculator
 
-    def analyze_video(
-        self,
-        session_id: int,
-        start_time: float,
-        end_time: float,
-        frames: list[np.ndarray],
-    ) -> VideoMetric | None:
+    def analyze_video(self, frames: list[np.ndarray]) -> VisualMetrics | None:
         landmarks = self.extraction.extract_video(frames) or None
-        metrics = self.analytics.analyze(landmarks=landmarks).visual
+        return self.analytics.analyze(landmarks=landmarks).visual
 
-        if metrics is None:
-            return None
-
-        return VideoMetric(
-            session_id=session_id,
-            start_time=start_time,
-            end_time=end_time,
-            **metrics.model_dump(),
-        )
-
-    def analyze_audio(
-        self,
-        session_id: int,
-        start_time: float,
-        end_time: float,
-        audio: np.ndarray,
-    ) -> AudioMetric | None:
+    def analyze_audio(self, audio: np.ndarray) -> AudioMetrics | None:
         features = self.extraction.extract_audio(audio)
-        metrics = self.analytics.analyze(audio_features=features).audio
+        return self.analytics.analyze(audio_features=features).audio
 
-        if metrics is None:
-            return None
+    def extract_audio(self, audio: np.ndarray) -> AudioFeatures:
+        return self.extraction.extract_audio(audio)
 
-        return AudioMetric(
-            session_id=session_id,
-            start_time=start_time,
-            end_time=end_time,
-            **metrics.model_dump(),
-        )
-
-    def transcribe(
-        self,
-        session_id: int,
-        start_time: float,
-        end_time: float,
-        audio: np.ndarray,
-    ) -> Transcript | None:
-        text = self.extraction.transcribe(audio)
-
-        if text is None:
-            return None
-
-        return Transcript(
-            session_id=session_id,
-            start_time=start_time,
-            end_time=end_time,
-            transcript=text,
-        )
+    def transcribe(self, audio: np.ndarray) -> str | None:
+        return self.extraction.transcribe(audio)
 
     def generate_scores(
         self,
-        video: VideoMetric | None = None,
-        audio: AudioMetric | None = None,
+        video: VisualMetrics | None = None,
+        audio: AudioMetrics | None = None,
     ) -> Scores | None:
         return self.score_calculator.calculate(video, audio)

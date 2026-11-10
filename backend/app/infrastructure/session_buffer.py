@@ -1,7 +1,7 @@
 """In-memory buffering for analysis snapshots awaiting persistence."""
 
 from core.logger import get_logger
-from models.snapshot import Snapshot
+from db.models.snapshot import Snapshot
 
 logger = get_logger("app.infrastructure.session_buffer")
 

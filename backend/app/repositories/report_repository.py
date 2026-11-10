@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session as DBSession
 
 from core.exceptions import DatabaseError
 from core.logger import get_logger
-from models.report import Report
-from models.session import Session
+from db.models.report import Report
+from db.models.session import Session
 
 logger = get_logger("app.repositories.report")
 

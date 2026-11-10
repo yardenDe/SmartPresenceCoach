@@ -1,5 +1,5 @@
-from models.analysis import AudioMetric, Transcript, VideoMetric
-from models.session import Session as SessionModel
+from db.models.analysis import AudioFeatureRecord, AudioMetric, Transcript, VideoMetric
+from db.models.session import Session as SessionModel
 
 from core.exceptions import SessionNotFoundError, UnauthorizedError
 from core.logger import get_logger
@@ -60,6 +60,6 @@ class SessionService:
         self.logger.info("event=session.end.done session_id=%s user_id=%s", session.id, user_id)
         return session.id
 
-    def save_analysis_records(self, records: list[VideoMetric | AudioMetric | Transcript]) -> None:
+    def save_analysis_records(self, records: list[VideoMetric | AudioMetric | AudioFeatureRecord | Transcript]) -> None:
         self.snapshot_repository.create_records(records)
 

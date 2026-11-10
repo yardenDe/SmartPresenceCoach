@@ -5,7 +5,7 @@ from sqlalchemy import select
 
 from core.exceptions import DatabaseError
 from core.logger import get_logger
-from models.session import Session
+from db.models.session import Session
 
 logger = get_logger("app.repositories.session")
 
