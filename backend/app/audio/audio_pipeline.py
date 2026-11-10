@@ -28,11 +28,9 @@ class AudioPipeline:
         audio: np.ndarray,
     ) -> AudioFeatures:
 
-        features = self.engine.extract_features(audio)
-
+        features = self.extract_features(audio)
         if self.transcriber is not None:
-            transcription = self.transcriber.transcribe(audio)
-            features.transcript = transcription.text
+            features.transcript = self.transcribe(audio)
 
         logger.debug(
             "event=audio.chunk.done samples=%s transcription_enabled=%s has_transcript=%s",
@@ -42,3 +40,11 @@ class AudioPipeline:
         )
 
         return features
+
+    def extract_features(self, audio: np.ndarray) -> AudioFeatures:
+        return self.engine.extract_features(audio)
+
+    def transcribe(self, audio: np.ndarray) -> str | None:
+        if self.transcriber is None:
+            return None
+        return self.transcriber.transcribe(audio).text

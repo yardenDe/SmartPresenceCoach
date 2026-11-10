@@ -1,15 +1,12 @@
-from typing import Any
+
 import numpy as np
 
 from analytics.manager import AnalyticsManager
 from analytics.score_calculator import ScoreCalculator
 from audio.audio_pipeline import AudioPipeline
-from core.logger import get_logger
-from models.snapshot import Snapshot
+from models.analysis_data import AudioMetric, Transcript, VideoMetric
 from schemas.analysis import Scores
 from vision.vision_pipeline import VisionPipeline
-
-logger = get_logger("app.services.analysis")
 
 
 class AnalysisService:
@@ -25,46 +22,81 @@ class AnalysisService:
         self.audio_pipeline = audio_pipeline
         self.score_calculator = score_calculator
 
-    def process(
+    def analyze_video(
         self,
         session_id: int,
-        timestamp: float,
-        frames: list[Any] | None = None,
-        audio: np.ndarray | None = None,
-    ) -> Snapshot | None:
-        landmarks = None
-        audio_features = None
+        start_time: float,
+        end_time: float,
+        frames: list[np.ndarray],
+    ) -> VideoMetric | None:
+        landmarks = self.vision_pipeline.process(frames) or None
+        metrics = self.analytics.analyze(landmarks=landmarks).visual
 
-        if frames is not None:
-            landmarks = self.vision_pipeline.process(frames) or None
-
-        if audio is None:
-            logger.debug("event=analysis.audio.missing")
-        elif self.audio_pipeline is None:
-            logger.warning("event=analysis.audio.pipeline_unavailable")
-        else:
-            audio_features = self.audio_pipeline.process(audio)
-
-        result = self.analytics.analyze(
-            landmarks=landmarks,
-            audio_features=audio_features,
-        )
-
-        logger.debug(
-            "event=analysis.process.done visual=%s audio=%s",
-            result.visual is not None,
-            result.audio is not None,
-        )
-
-        if result.visual is None and result.audio is None:
+        if metrics is None:
             return None
 
-        return Snapshot(
+        return VideoMetric(
             session_id=session_id,
-            timestamp=timestamp,
-            **(result.visual.model_dump() if result.visual else {}),
-            **(result.audio.model_dump() if result.audio else {}),
+            start_time=start_time,
+            end_time=end_time,
+            **metrics.model_dump(),
         )
 
-    def generate_scores(self, snapshot: Snapshot) -> Scores | None:
-        return self.score_calculator.calculate(snapshot)
+    def analyze_audio(
+        self,
+        session_id: int,
+        start_time: float,
+        end_time: float,
+        audio: np.ndarray,
+    ) -> AudioMetric | None:
+        if self.audio_pipeline is None:
+            return None
+
+        features = self.audio_pipeline.extract_features(audio)
+        metrics = self.analytics.analyze(audio_features=features).audio
+
+        if metrics is None:
+            return None
+
+        return AudioMetric(
+            session_id=session_id,
+            start_time=start_time,
+            end_time=end_time,
+            **metrics.model_dump(exclude={"transcript"}),
+        )
+
+    @property
+    def transcription_enabled(self) -> bool:
+        return (
+            self.audio_pipeline is not None
+            and self.audio_pipeline.transcriber is not None
+        )
+
+    def transcribe(
+        self,
+        session_id: int,
+        start_time: float,
+        end_time: float,
+        audio: np.ndarray,
+    ) -> Transcript | None:
+        if self.audio_pipeline is None:
+            return None
+
+        text = self.audio_pipeline.transcribe(audio)
+
+        if text is None:
+            return None
+
+        return Transcript(
+            session_id=session_id,
+            start_time=start_time,
+            end_time=end_time,
+            transcript=text,
+        )
+
+    def generate_scores(
+        self,
+        video: VideoMetric,
+        audio: AudioMetric | None = None,
+    ) -> Scores | None:
+        return self.score_calculator.calculate(video, audio)

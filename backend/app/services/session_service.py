@@ -1,3 +1,4 @@
+from models.analysis_data import AudioMetric, Transcript, VideoMetric
 from models.session import Session as SessionModel
 from models.snapshot import Snapshot
 
@@ -71,6 +72,9 @@ class SessionService:
             self.snapshot_repository.create_snapshots(
                 snapshots=snapshots,
             )
+
+    def save_analysis_records(self, records: list[VideoMetric | AudioMetric | Transcript]) -> None:
+        self.snapshot_repository.create_records(records)
 
     def flush_snapshots(self, session_id: int) -> None:
         snapshots = self.session_buffer.close_session(session_id)

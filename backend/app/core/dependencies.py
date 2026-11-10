@@ -33,10 +33,8 @@ from services.analysis_service import AnalysisService
 from services.session_service import SessionService 
 from vision.mediapipe_detector import MediaPipeDetector 
 from vision.vision_pipeline import VisionPipeline 
-from media.audio_extractor import AudioExtractor
 from media.storage import storage 
 from audio.transcriber import Transcriber 
-from media.frame_extractor import FrameExtractor 
 
 
 
@@ -102,14 +100,6 @@ def get_analytics_manager(
 
 def get_storage() -> storage: 
     return storage() 
-
-def get_frame_extractor() -> FrameExtractor: 
-    return FrameExtractor() 
-
-
-def get_audio_extractor() -> AudioExtractor:
-    return AudioExtractor()
-
 
 def get_librosa_engine() -> LibrosaEngine:
     return LibrosaEngine()
@@ -278,30 +268,22 @@ def get_analysis_service(
 
 def get_live_service( 
     storage: storage = Depends(get_storage), 
-    frame_extractor: FrameExtractor = Depends(get_frame_extractor),
-    audio_extractor: AudioExtractor = Depends(get_audio_extractor),
     analysis_service: AnalysisService = Depends(get_analysis_service),
     session_service: SessionService = Depends(get_session_service), 
 ) -> LiveService: 
     return LiveService( 
         storage=storage, 
-        frame_extractor=frame_extractor,
-        audio_extractor=audio_extractor,
         analysis_service=analysis_service,
         session_service=session_service,
     ) 
 
 def get_offline_service( 
     storage: storage = Depends(get_storage), 
-    frame_extractor: FrameExtractor = Depends(get_frame_extractor),
-    audio_extractor: AudioExtractor = Depends(get_audio_extractor),
     analysis_service: AnalysisService = Depends(get_analysis_service),
     session_service: SessionService = Depends(get_session_service), 
 ) -> OfflineService: 
     return OfflineService( 
         storage=storage, 
-        frame_extractor=frame_extractor,
-        audio_extractor=audio_extractor,
         analysis_service=analysis_service,
         session_service=session_service,
     )

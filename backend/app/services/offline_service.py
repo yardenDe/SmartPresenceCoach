@@ -1,30 +1,29 @@
-from itertools import zip_longest
 
+import av
 from fastapi import UploadFile
 
-from core.exceptions import AppError, NoLandmarksError, VisionProcessingError
+from core.exceptions import AppError, InvalidVideoError, NoLandmarksError, VisionProcessingError
 from core.logger import get_logger
-from media.audio_extractor import AudioExtractor
-from media.frame_extractor import FrameExtractor
+from media.media_reader import MediaReader
 from media.storage import storage
 from schemas.offline import OfflineResponse
 from services.analysis_service import AnalysisService
 from services.session_service import SessionService
 
-CHUNK_SECONDS = 3
+
+VIDEO_CHUNK_SECONDS = 3
+AUDIO_CHUNK_SECONDS = 3
+TRANSCRIPT_CHUNK_SECONDS = 3
+
 
 class OfflineService:
     def __init__(
         self,
         storage: storage,
-        frame_extractor: FrameExtractor,
-        audio_extractor: AudioExtractor,
         analysis_service: AnalysisService,
         session_service: SessionService,
     ):
         self.storage = storage
-        self.frame_extractor = frame_extractor
-        self.audio_extractor = audio_extractor
         self.analysis_service = analysis_service
         self.session_service = session_service
         self.logger = get_logger("app.services.offline")
@@ -46,32 +45,49 @@ class OfflineService:
         try:
             self.session_service.require_owned_session(user_id, session_id)
             video_path = await self.storage.save_temp(video)
+            reader = MediaReader(video_path)
 
-            video_chunks = self.frame_extractor.get_chunks(video_path, CHUNK_SECONDS)
-            audio_chunks = self.audio_extractor.stream(video_path, CHUNK_SECONDS)
+            video_records = []
 
-            analyzed_count = 0
-
-            for chunk_index, (frames, audio) in enumerate(
-                zip_longest(video_chunks, audio_chunks),
-                start=1,
-            ):
-                snapshot = self.analysis_service.process(
-                    session_id=session_id,
-                    timestamp=float((chunk_index - 1) * CHUNK_SECONDS),
-                    frames=frames,
-                    audio=audio,
+            for chunk in reader.iter_video_chunks(VIDEO_CHUNK_SECONDS):
+                record = self.analysis_service.analyze_video(
+                    session_id,
+                    chunk[0].start_time,
+                    chunk[-1].end_time,
+                    [sample.data for sample in chunk],
                 )
+                if record is not None:
+                    video_records.append(record)
 
-                if snapshot is None:
-                    continue
+            audio_records = []
 
-                self.session_service.add_snapshot(snapshot)
-                analyzed_count += 1
+            for chunk in reader.iter_audio_chunks(AUDIO_CHUNK_SECONDS):
+                record = self.analysis_service.analyze_audio(
+                    session_id,
+                    chunk.start_time,
+                    chunk.end_time,
+                    chunk.data,
+                )
+                if record is not None:
+                    audio_records.append(record)
 
-            if analyzed_count == 0:
+            if not video_records and not audio_records:
                 raise NoLandmarksError()
 
+            records = video_records + audio_records
+
+            if self.analysis_service.transcription_enabled:
+                for chunk in reader.iter_audio_chunks(TRANSCRIPT_CHUNK_SECONDS):
+                    record = self.analysis_service.transcribe(
+                        session_id,
+                        chunk.start_time,
+                        chunk.end_time,
+                        chunk.data,
+                    )
+                    if record is not None:
+                        records.append(record)
+
+            self.session_service.save_analysis_records(records)
             self.session_service.end(user_id, session_id)
 
             response = OfflineResponse(
@@ -80,15 +96,18 @@ class OfflineService:
             )
 
             self.logger.info(
-                "event=offline.process.done session_id=%s chunks=%s",
+                "event=offline.process.done session_id=%s records=%s",
                 session_id,
-                analyzed_count,
+                len(records),
             )
 
             return response
 
         except AppError:
             raise
+
+        except av.FFmpegError as error:
+            raise InvalidVideoError() from error
 
         except Exception:
             self.logger.exception(
