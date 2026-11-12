@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { DashboardState } from "../dashboard.types";
 
 type SessionControlsProps = {
@@ -10,7 +11,7 @@ type SessionControlsProps = {
   onStart: () => void;
   onEnd: () => void;
   onNewSession: () => void;
-  onDetailed: () => void;
+  onDetailed: (includeTranscript: boolean) => void;
   onBackToSummary: () => void;
 };
 
@@ -26,7 +27,9 @@ export const SessionControls = ({
   onNewSession,
   onDetailed,
   onBackToSummary,
-}: SessionControlsProps) => (
+}: SessionControlsProps) => {
+  const [includeTranscript, setIncludeTranscript] = useState(false);
+  return (
   <div className="hud-panel grid min-h-fit content-start gap-3 p-[clamp(0.8rem,1.2vw,1rem)]">
     <p className="hud-label text-base">Controls</p>
     {state === "setup" ? (
@@ -59,7 +62,11 @@ export const SessionControls = ({
         <button type="button" onClick={onNewSession} className="hud-button hud-button-primary px-5 py-3.5 text-lg">
           New Session
         </button>
-        <button type="button" onClick={onDetailed} disabled={!canGenerateReport || isReportGenerating} className="hud-button px-5 py-3.5 text-lg disabled:opacity-50">
+        <label className="flex items-center gap-2 text-sm text-[#d8f3ff]">
+          <input type="checkbox" checked={includeTranscript} onChange={(event) => setIncludeTranscript(event.target.checked)} />
+          Include transcription
+        </label>
+        <button type="button" onClick={() => onDetailed(includeTranscript)} disabled={!canGenerateReport || isReportGenerating} className="hud-button px-5 py-3.5 text-lg disabled:opacity-50">
           {isReportGenerating ? "Generating..." : "View Detailed Analysis"}
         </button>
       </>
@@ -75,4 +82,5 @@ export const SessionControls = ({
       </>
     ) : null}
   </div>
-);
+  );
+};

@@ -21,7 +21,7 @@ type LeftRailProps = {
   onStart: () => void;
   onEnd: () => void;
   onNewSession: () => void;
-  onDetailed: () => void;
+  onDetailed: (includeTranscript: boolean) => void;
   onBackToSummary: () => void;
 };
 

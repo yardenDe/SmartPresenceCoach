@@ -56,6 +56,15 @@ export const sessionAnalysisApi = {
       timeout: REPORT_TIMEOUT_MS,
     }),
 
+  uploadTranscript: (sessionId: number, recording: Blob) => {
+    const formData = new FormData();
+    const extension = recording.type.includes("mp4") ? "mp4" : "webm";
+    formData.append("video", new File([recording], `session.${extension}`, { type: recording.type }));
+    return api.post<{ transcript: string | null }>(`/reports/${sessionId}/transcript`, formData, {
+      timeout: OFFLINE_ANALYSIS_TIMEOUT_MS,
+    });
+  },
+
   generateFullReport: (sessionId: number) =>
     api.post<BackendReportResponse>(`/reports/${sessionId}/full`, undefined, {
       timeout: REPORT_TIMEOUT_MS,

@@ -1,0 +1,537 @@
+2026-11-12T07:59:51+0000 INFO app.main event=app.start host=0.0.0.0 port=8000
+2026-11-12T07:59:51+0000 INFO app.db.init event=db.init.start
+2026-11-12T07:59:51+0000 INFO app.db.init event=db.init.done
+2026-11-12T07:59:51+0000 INFO app.core.dependencies event=mediapipe.load.start
+2026-11-12T07:59:51+0000 INFO app.vision.mediapipe event=mediapipe.detector.init
+2026-11-12T07:59:51+0000 INFO app.core.dependencies event=mediapipe.load.done
+2026-11-12T07:59:51+0000 INFO app.extraction.audio.librosa event=librosa.warmup.start
+2026-11-12T07:59:51+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.start samples=16000
+2026-11-12T07:59:53+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.done elapsed_seconds=2.0212 frames=32
+2026-11-12T07:59:53+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C2
+2026-11-12T07:59:53+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C2 elapsed_seconds=0.0002
+2026-11-12T07:59:53+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C7
+2026-11-12T07:59:53+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C7 elapsed_seconds=0.0001
+2026-11-12T07:59:53+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.start samples=16000 sample_rate=16000
+2026-11-12T07:59:53+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.done elapsed_seconds=0.0033 frames=32
+2026-11-12T07:59:53+0000 DEBUG app.extraction.audio.librosa event=librosa.split.start samples=16000
+2026-11-12T07:59:54+0000 DEBUG app.extraction.audio.librosa event=librosa.split.done elapsed_seconds=0.2013 intervals=1
+2026-11-12T07:59:54+0000 INFO app.extraction.audio.librosa event=librosa.warmup.done elapsed_seconds=2.2323
+2026-11-12T07:59:59+0000 INFO app.services.auth event=auth.register.start username=דרנ'נ'ראנ
+2026-11-12T07:59:59+0000 DEBUG app.repositories.user event=user.lookup.done found=False
+2026-11-12T07:59:59+0000 INFO app.repositories.user event=user.create.done user_id=11
+2026-11-12T07:59:59+0000 INFO app.services.auth event=auth.register.done user_id=11 username=דרנ'נ'ראנ
+2026-11-12T07:59:59+0000 DEBUG app.repositories.report event=report.recent.done user_id=11 count=0
+2026-11-12T08:00:03+0000 INFO app.repositories.session event=session.create.saved session_id=13 user_id=11
+2026-11-12T08:00:03+0000 INFO app.sessions event=session.create.done session_id=13 user_id=11
+2026-11-12T08:00:03+0000 DEBUG app.repositories.session event=session.lookup.done session_id=13 found=True
+2026-11-12T08:00:03+0000 INFO app.repositories.session event=session.start.saved session_id=13
+2026-11-12T08:00:03+0000 INFO app.sessions event=session.start.done session_id=13 user_id=11
+2026-11-12T08:00:05+0000 DEBUG app.vision.pipeline event=vision.pipeline.init
+2026-11-12T08:00:05+0000 INFO app.services.live event=live.process.start session_id=13 timestamp=0.00 file=live-segment.webm
+2026-11-12T08:00:05+0000 DEBUG app.repositories.session event=session.lookup.done session_id=13 found=True
+2026-11-12T08:00:05+0000 INFO app.vision.storage event=video.save.done size=222475 suffix=.webm
+2026-11-12T08:00:05+0000 DEBUG app.media.reader event=media.video.start duration=3 target_fps=3
+2026-11-12T08:00:05+0000 DEBUG app.media.reader event=media.read.start video=True audio=False
+2026-11-12T08:00:05+0000 DEBUG app.media.reader event=media.streams.selected count=1
+2026-11-12T08:00:05+0000 DEBUG app.media.reader event=media.read.done video=True audio=False
+2026-11-12T08:00:05+0000 DEBUG app.media.reader event=media.video.chunk start_time=0.000 end_time=3.000 last_time=1.903 selected=5
+2026-11-12T08:00:05+0000 DEBUG app.media.reader event=media.audio.start sample_rate=16000
+2026-11-12T08:00:05+0000 DEBUG app.media.reader event=media.read.start video=False audio=True
+2026-11-12T08:00:05+0000 DEBUG app.media.reader event=media.streams.selected count=1
+2026-11-12T08:00:05+0000 DEBUG app.media.reader event=media.read.done video=False audio=True
+2026-11-12T08:00:05+0000 DEBUG app.media.reader event=media.audio.done segments=1 samples=32640
+2026-11-12T08:00:05+0000 DEBUG app.services.live event=live.media.ready session_id=13 frames=5 start_time=0.000 end_time=1.903 audio_segments=1 audio_selected=True offset=0.001
+2026-11-12T08:00:05+0000 DEBUG app.services.analysis event=analysis.video.start frames=5
+2026-11-12T08:00:05+0000 INFO app.vision.mediapipe event=mediapipe.pose.load.start
+2026-11-12T08:00:05+0000 INFO app.vision.mediapipe event=mediapipe.pose.load.done
+2026-11-12T08:00:05+0000 DEBUG app.vision.pipeline event=vision.chunk.done frames=5 landmarks=5 empty_frames=0
+2026-11-12T08:00:05+0000 DEBUG app.services.analysis event=analysis.video.extracted frames=5 landmarks=5
+2026-11-12T08:00:05+0000 DEBUG app.analytics.visual.manager event=analytics.run.start frames=5
+2026-11-12T08:00:05+0000 DEBUG app.analytics.visual.manager event=analytics.run.done frames=5
+2026-11-12T08:00:05+0000 DEBUG app.services.analysis event=analysis.audio.extract.start samples=32640
+2026-11-12T08:00:05+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.start samples=32640
+2026-11-12T08:00:05+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.done elapsed_seconds=0.0009 frames=64
+2026-11-12T08:00:05+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C2
+2026-11-12T08:00:05+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C2 elapsed_seconds=0.0002
+2026-11-12T08:00:05+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C7
+2026-11-12T08:00:05+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C7 elapsed_seconds=0.0002
+2026-11-12T08:00:05+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.start samples=32640 sample_rate=16000
+2026-11-12T08:00:05+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.done elapsed_seconds=0.0059 frames=64
+2026-11-12T08:00:05+0000 DEBUG app.extraction.audio.librosa event=librosa.split.start samples=32640
+2026-11-12T08:00:05+0000 DEBUG app.extraction.audio.librosa event=librosa.split.done elapsed_seconds=0.0005 intervals=1
+2026-11-12T08:00:05+0000 DEBUG app.services.analysis event=analysis.audio.extract.done samples=32640 rms_frames=64 pitch_frames=64
+2026-11-12T08:00:05+0000 DEBUG app.services.analysis event=analysis.audio.start samples=32640
+2026-11-12T08:00:05+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=64
+2026-11-12T08:00:05+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:00:05+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=64
+2026-11-12T08:00:05+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:00:05+0000 DEBUG app.services.analysis event=analysis.audio.done
+2026-11-12T08:00:05+0000 DEBUG app.services.analysis event=analysis.scores.done video=True audio=True overall=84.42520427817037
+2026-11-12T08:00:05+0000 DEBUG app.services.live event=live.persist.start session_id=13 records=2
+2026-11-12T08:00:05+0000 DEBUG app.repositories.snapshot event=analysis.bulk_create.start count=2
+2026-11-12T08:00:06+0000 INFO app.repositories.snapshot event=analysis.bulk_create.done count=2
+2026-11-12T08:00:06+0000 INFO app.services.live event=live.process.done session_id=13 overall=84.43
+2026-11-12T08:00:06+0000 DEBUG app.vision.storage event=video.delete.done
+2026-11-12T08:00:08+0000 DEBUG app.vision.pipeline event=vision.pipeline.init
+2026-11-12T08:00:08+0000 INFO app.services.live event=live.process.start session_id=13 timestamp=2.05 file=live-segment.webm
+2026-11-12T08:00:08+0000 DEBUG app.repositories.session event=session.lookup.done session_id=13 found=True
+2026-11-12T08:00:08+0000 INFO app.vision.storage event=video.save.done size=964525 suffix=.webm
+2026-11-12T08:00:08+0000 DEBUG app.media.reader event=media.video.start duration=3 target_fps=3
+2026-11-12T08:00:08+0000 DEBUG app.media.reader event=media.read.start video=True audio=False
+2026-11-12T08:00:08+0000 DEBUG app.media.reader event=media.streams.selected count=1
+2026-11-12T08:00:08+0000 DEBUG app.media.reader event=media.read.done video=True audio=False
+2026-11-12T08:00:08+0000 DEBUG app.media.reader event=media.video.chunk start_time=0.000 end_time=3.000 last_time=2.864 selected=8
+2026-11-12T08:00:08+0000 DEBUG app.media.reader event=media.audio.start sample_rate=16000
+2026-11-12T08:00:08+0000 DEBUG app.media.reader event=media.read.start video=False audio=True
+2026-11-12T08:00:08+0000 DEBUG app.media.reader event=media.streams.selected count=1
+2026-11-12T08:00:08+0000 DEBUG app.media.reader event=media.read.done video=False audio=True
+2026-11-12T08:00:08+0000 DEBUG app.media.reader event=media.audio.done segments=1 samples=48960
+2026-11-12T08:00:08+0000 DEBUG app.services.live event=live.media.ready session_id=13 frames=8 start_time=0.000 end_time=2.864 audio_segments=1 audio_selected=True offset=2.047
+2026-11-12T08:00:08+0000 DEBUG app.services.analysis event=analysis.video.start frames=8
+2026-11-12T08:00:08+0000 DEBUG app.vision.pipeline event=vision.chunk.done frames=8 landmarks=8 empty_frames=0
+2026-11-12T08:00:08+0000 DEBUG app.services.analysis event=analysis.video.extracted frames=8 landmarks=8
+2026-11-12T08:00:08+0000 DEBUG app.analytics.visual.manager event=analytics.run.start frames=8
+2026-11-12T08:00:08+0000 DEBUG app.analytics.visual.manager event=analytics.run.done frames=8
+2026-11-12T08:00:08+0000 DEBUG app.services.analysis event=analysis.audio.extract.start samples=48960
+2026-11-12T08:00:08+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.start samples=48960
+2026-11-12T08:00:08+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.done elapsed_seconds=0.0012 frames=96
+2026-11-12T08:00:08+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C2
+2026-11-12T08:00:08+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C2 elapsed_seconds=0.0002
+2026-11-12T08:00:08+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C7
+2026-11-12T08:00:08+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C7 elapsed_seconds=0.0003
+2026-11-12T08:00:08+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.start samples=48960 sample_rate=16000
+2026-11-12T08:00:08+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.done elapsed_seconds=0.0092 frames=96
+2026-11-12T08:00:08+0000 DEBUG app.extraction.audio.librosa event=librosa.split.start samples=48960
+2026-11-12T08:00:08+0000 DEBUG app.extraction.audio.librosa event=librosa.split.done elapsed_seconds=0.0010 intervals=1
+2026-11-12T08:00:08+0000 DEBUG app.services.analysis event=analysis.audio.extract.done samples=48960 rms_frames=96 pitch_frames=96
+2026-11-12T08:00:08+0000 DEBUG app.services.analysis event=analysis.audio.start samples=48960
+2026-11-12T08:00:08+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=96
+2026-11-12T08:00:08+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:00:08+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=96
+2026-11-12T08:00:08+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0000
+2026-11-12T08:00:08+0000 DEBUG app.services.analysis event=analysis.audio.done
+2026-11-12T08:00:08+0000 DEBUG app.services.analysis event=analysis.scores.done video=True audio=True overall=80.18674842398222
+2026-11-12T08:00:08+0000 DEBUG app.services.live event=live.persist.start session_id=13 records=2
+2026-11-12T08:00:08+0000 DEBUG app.repositories.snapshot event=analysis.bulk_create.start count=2
+2026-11-12T08:00:09+0000 INFO app.repositories.snapshot event=analysis.bulk_create.done count=2
+2026-11-12T08:00:09+0000 INFO app.services.live event=live.process.done session_id=13 overall=80.19
+2026-11-12T08:00:09+0000 DEBUG app.vision.storage event=video.delete.done
+2026-11-12T08:00:11+0000 DEBUG app.vision.pipeline event=vision.pipeline.init
+2026-11-12T08:00:11+0000 INFO app.services.live event=live.process.start session_id=13 timestamp=5.15 file=live-segment.webm
+2026-11-12T08:00:11+0000 DEBUG app.repositories.session event=session.lookup.done session_id=13 found=True
+2026-11-12T08:00:11+0000 INFO app.vision.storage event=video.save.done size=958042 suffix=.webm
+2026-11-12T08:00:11+0000 DEBUG app.media.reader event=media.video.start duration=3 target_fps=3
+2026-11-12T08:00:11+0000 DEBUG app.media.reader event=media.read.start video=True audio=False
+2026-11-12T08:00:11+0000 DEBUG app.media.reader event=media.streams.selected count=1
+2026-11-12T08:00:11+0000 DEBUG app.media.reader event=media.read.done video=True audio=False
+2026-11-12T08:00:11+0000 DEBUG app.media.reader event=media.video.chunk start_time=0.000 end_time=3.000 last_time=2.831 selected=8
+2026-11-12T08:00:11+0000 DEBUG app.media.reader event=media.audio.start sample_rate=16000
+2026-11-12T08:00:11+0000 DEBUG app.media.reader event=media.read.start video=False audio=True
+2026-11-12T08:00:11+0000 DEBUG app.media.reader event=media.streams.selected count=1
+2026-11-12T08:00:11+0000 DEBUG app.media.reader event=media.read.done video=False audio=True
+2026-11-12T08:00:11+0000 DEBUG app.media.reader event=media.audio.done segments=1 samples=48000
+2026-11-12T08:00:11+0000 DEBUG app.services.live event=live.media.ready session_id=13 frames=8 start_time=0.000 end_time=2.831 audio_segments=1 audio_selected=True offset=5.147
+2026-11-12T08:00:11+0000 DEBUG app.services.analysis event=analysis.video.start frames=8
+2026-11-12T08:00:11+0000 DEBUG app.vision.pipeline event=vision.chunk.done frames=8 landmarks=8 empty_frames=0
+2026-11-12T08:00:11+0000 DEBUG app.services.analysis event=analysis.video.extracted frames=8 landmarks=8
+2026-11-12T08:00:11+0000 DEBUG app.analytics.visual.manager event=analytics.run.start frames=8
+2026-11-12T08:00:11+0000 DEBUG app.analytics.visual.manager event=analytics.run.done frames=8
+2026-11-12T08:00:11+0000 DEBUG app.services.analysis event=analysis.audio.extract.start samples=48000
+2026-11-12T08:00:11+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.start samples=48000
+2026-11-12T08:00:11+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.done elapsed_seconds=0.0006 frames=94
+2026-11-12T08:00:11+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C2
+2026-11-12T08:00:11+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C2 elapsed_seconds=0.0002
+2026-11-12T08:00:11+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C7
+2026-11-12T08:00:11+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C7 elapsed_seconds=0.0001
+2026-11-12T08:00:11+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.start samples=48000 sample_rate=16000
+2026-11-12T08:00:11+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.done elapsed_seconds=0.0065 frames=94
+2026-11-12T08:00:11+0000 DEBUG app.extraction.audio.librosa event=librosa.split.start samples=48000
+2026-11-12T08:00:11+0000 DEBUG app.extraction.audio.librosa event=librosa.split.done elapsed_seconds=0.0008 intervals=2
+2026-11-12T08:00:11+0000 DEBUG app.services.analysis event=analysis.audio.extract.done samples=48000 rms_frames=94 pitch_frames=94
+2026-11-12T08:00:11+0000 DEBUG app.services.analysis event=analysis.audio.start samples=48000
+2026-11-12T08:00:11+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:00:11+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:00:11+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:00:11+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0000
+2026-11-12T08:00:11+0000 DEBUG app.services.analysis event=analysis.audio.done
+2026-11-12T08:00:11+0000 DEBUG app.services.analysis event=analysis.scores.done video=True audio=True overall=88.06488807893136
+2026-11-12T08:00:11+0000 DEBUG app.services.live event=live.persist.start session_id=13 records=2
+2026-11-12T08:00:11+0000 DEBUG app.repositories.snapshot event=analysis.bulk_create.start count=2
+2026-11-12T08:00:11+0000 INFO app.repositories.snapshot event=analysis.bulk_create.done count=2
+2026-11-12T08:00:11+0000 INFO app.services.live event=live.process.done session_id=13 overall=88.06
+2026-11-12T08:00:11+0000 DEBUG app.vision.storage event=video.delete.done
+2026-11-12T08:00:14+0000 DEBUG app.vision.pipeline event=vision.pipeline.init
+2026-11-12T08:00:14+0000 INFO app.services.live event=live.process.start session_id=13 timestamp=8.15 file=live-segment.webm
+2026-11-12T08:00:14+0000 DEBUG app.repositories.session event=session.lookup.done session_id=13 found=True
+2026-11-12T08:00:14+0000 INFO app.vision.storage event=video.save.done size=953823 suffix=.webm
+2026-11-12T08:00:14+0000 DEBUG app.media.reader event=media.video.start duration=3 target_fps=3
+2026-11-12T08:00:14+0000 DEBUG app.media.reader event=media.read.start video=True audio=False
+2026-11-12T08:00:14+0000 DEBUG app.media.reader event=media.streams.selected count=1
+2026-11-12T08:00:14+0000 DEBUG app.media.reader event=media.read.done video=True audio=False
+2026-11-12T08:00:14+0000 DEBUG app.media.reader event=media.video.chunk start_time=0.000 end_time=3.000 last_time=2.895 selected=8
+2026-11-12T08:00:14+0000 DEBUG app.media.reader event=media.audio.start sample_rate=16000
+2026-11-12T08:00:14+0000 DEBUG app.media.reader event=media.read.start video=False audio=True
+2026-11-12T08:00:14+0000 DEBUG app.media.reader event=media.streams.selected count=1
+2026-11-12T08:00:14+0000 DEBUG app.media.reader event=media.read.done video=False audio=True
+2026-11-12T08:00:14+0000 DEBUG app.media.reader event=media.audio.done segments=1 samples=48960
+2026-11-12T08:00:14+0000 DEBUG app.services.live event=live.media.ready session_id=13 frames=8 start_time=0.000 end_time=2.895 audio_segments=1 audio_selected=True offset=8.151
+2026-11-12T08:00:14+0000 DEBUG app.services.analysis event=analysis.video.start frames=8
+2026-11-12T08:00:14+0000 DEBUG app.vision.pipeline event=vision.chunk.done frames=8 landmarks=8 empty_frames=0
+2026-11-12T08:00:14+0000 DEBUG app.services.analysis event=analysis.video.extracted frames=8 landmarks=8
+2026-11-12T08:00:14+0000 DEBUG app.analytics.visual.manager event=analytics.run.start frames=8
+2026-11-12T08:00:14+0000 DEBUG app.analytics.visual.manager event=analytics.run.done frames=8
+2026-11-12T08:00:14+0000 DEBUG app.services.analysis event=analysis.audio.extract.start samples=48960
+2026-11-12T08:00:14+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.start samples=48960
+2026-11-12T08:00:14+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.done elapsed_seconds=0.0007 frames=96
+2026-11-12T08:00:14+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C2
+2026-11-12T08:00:14+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C2 elapsed_seconds=0.0002
+2026-11-12T08:00:14+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C7
+2026-11-12T08:00:14+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C7 elapsed_seconds=0.0002
+2026-11-12T08:00:14+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.start samples=48960 sample_rate=16000
+2026-11-12T08:00:14+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.done elapsed_seconds=0.0136 frames=96
+2026-11-12T08:00:14+0000 DEBUG app.extraction.audio.librosa event=librosa.split.start samples=48960
+2026-11-12T08:00:14+0000 DEBUG app.extraction.audio.librosa event=librosa.split.done elapsed_seconds=0.0007 intervals=1
+2026-11-12T08:00:14+0000 DEBUG app.services.analysis event=analysis.audio.extract.done samples=48960 rms_frames=96 pitch_frames=96
+2026-11-12T08:00:14+0000 DEBUG app.services.analysis event=analysis.audio.start samples=48960
+2026-11-12T08:00:14+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=96
+2026-11-12T08:00:14+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:00:14+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=96
+2026-11-12T08:00:14+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0000
+2026-11-12T08:00:14+0000 DEBUG app.services.analysis event=analysis.audio.done
+2026-11-12T08:00:14+0000 DEBUG app.services.analysis event=analysis.scores.done video=True audio=True overall=84.8140800469055
+2026-11-12T08:00:14+0000 DEBUG app.services.live event=live.persist.start session_id=13 records=2
+2026-11-12T08:00:14+0000 DEBUG app.repositories.snapshot event=analysis.bulk_create.start count=2
+2026-11-12T08:00:15+0000 INFO app.repositories.snapshot event=analysis.bulk_create.done count=2
+2026-11-12T08:00:15+0000 INFO app.services.live event=live.process.done session_id=13 overall=84.81
+2026-11-12T08:00:15+0000 DEBUG app.vision.storage event=video.delete.done
+2026-11-12T08:00:17+0000 DEBUG app.vision.pipeline event=vision.pipeline.init
+2026-11-12T08:00:17+0000 INFO app.services.live event=live.process.start session_id=13 timestamp=11.22 file=live-segment.webm
+2026-11-12T08:00:17+0000 DEBUG app.repositories.session event=session.lookup.done session_id=13 found=True
+2026-11-12T08:00:17+0000 INFO app.vision.storage event=video.save.done size=987861 suffix=.webm
+2026-11-12T08:00:17+0000 DEBUG app.media.reader event=media.video.start duration=3 target_fps=3
+2026-11-12T08:00:17+0000 DEBUG app.media.reader event=media.read.start video=True audio=False
+2026-11-12T08:00:17+0000 DEBUG app.media.reader event=media.streams.selected count=1
+2026-11-12T08:00:17+0000 DEBUG app.media.reader event=media.read.done video=True audio=False
+2026-11-12T08:00:17+0000 DEBUG app.media.reader event=media.video.chunk start_time=0.000 end_time=3.000 last_time=2.927 selected=8
+2026-11-12T08:00:17+0000 DEBUG app.media.reader event=media.audio.start sample_rate=16000
+2026-11-12T08:00:17+0000 DEBUG app.media.reader event=media.read.start video=False audio=True
+2026-11-12T08:00:17+0000 DEBUG app.media.reader event=media.streams.selected count=1
+2026-11-12T08:00:17+0000 DEBUG app.media.reader event=media.read.done video=False audio=True
+2026-11-12T08:00:17+0000 DEBUG app.media.reader event=media.audio.done segments=1 samples=48000
+2026-11-12T08:00:17+0000 DEBUG app.services.live event=live.media.ready session_id=13 frames=8 start_time=0.000 end_time=2.927 audio_segments=1 audio_selected=True offset=11.221
+2026-11-12T08:00:17+0000 DEBUG app.services.analysis event=analysis.video.start frames=8
+2026-11-12T08:00:17+0000 DEBUG app.vision.pipeline event=vision.chunk.done frames=8 landmarks=8 empty_frames=0
+2026-11-12T08:00:17+0000 DEBUG app.services.analysis event=analysis.video.extracted frames=8 landmarks=8
+2026-11-12T08:00:17+0000 DEBUG app.analytics.visual.manager event=analytics.run.start frames=8
+2026-11-12T08:00:17+0000 DEBUG app.analytics.visual.manager event=analytics.run.done frames=8
+2026-11-12T08:00:17+0000 DEBUG app.services.analysis event=analysis.audio.extract.start samples=48000
+2026-11-12T08:00:17+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.start samples=48000
+2026-11-12T08:00:17+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.done elapsed_seconds=0.0007 frames=94
+2026-11-12T08:00:17+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C2
+2026-11-12T08:00:17+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C2 elapsed_seconds=0.0002
+2026-11-12T08:00:17+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C7
+2026-11-12T08:00:17+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C7 elapsed_seconds=0.0001
+2026-11-12T08:00:17+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.start samples=48000 sample_rate=16000
+2026-11-12T08:00:17+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.done elapsed_seconds=0.0099 frames=94
+2026-11-12T08:00:17+0000 DEBUG app.extraction.audio.librosa event=librosa.split.start samples=48000
+2026-11-12T08:00:18+0000 DEBUG app.extraction.audio.librosa event=librosa.split.done elapsed_seconds=0.0021 intervals=2
+2026-11-12T08:00:18+0000 DEBUG app.services.analysis event=analysis.audio.extract.done samples=48000 rms_frames=94 pitch_frames=94
+2026-11-12T08:00:18+0000 DEBUG app.services.analysis event=analysis.audio.start samples=48000
+2026-11-12T08:00:18+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:00:18+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0004
+2026-11-12T08:00:18+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:00:18+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:00:18+0000 DEBUG app.services.analysis event=analysis.audio.done
+2026-11-12T08:00:18+0000 DEBUG app.services.analysis event=analysis.scores.done video=True audio=True overall=92.20879914397244
+2026-11-12T08:00:18+0000 DEBUG app.services.live event=live.persist.start session_id=13 records=2
+2026-11-12T08:00:18+0000 DEBUG app.repositories.snapshot event=analysis.bulk_create.start count=2
+2026-11-12T08:00:18+0000 INFO app.repositories.snapshot event=analysis.bulk_create.done count=2
+2026-11-12T08:00:18+0000 INFO app.services.live event=live.process.done session_id=13 overall=92.21
+2026-11-12T08:00:18+0000 DEBUG app.vision.storage event=video.delete.done
+2026-11-12T08:00:20+0000 DEBUG app.vision.pipeline event=vision.pipeline.init
+2026-11-12T08:00:20+0000 INFO app.services.live event=live.process.start session_id=13 timestamp=14.22 file=live-segment.webm
+2026-11-12T08:00:20+0000 DEBUG app.repositories.session event=session.lookup.done session_id=13 found=True
+2026-11-12T08:00:20+0000 INFO app.vision.storage event=video.save.done size=956079 suffix=.webm
+2026-11-12T08:00:20+0000 DEBUG app.media.reader event=media.video.start duration=3 target_fps=3
+2026-11-12T08:00:20+0000 DEBUG app.media.reader event=media.read.start video=True audio=False
+2026-11-12T08:00:20+0000 DEBUG app.media.reader event=media.streams.selected count=1
+2026-11-12T08:00:20+0000 DEBUG app.media.reader event=media.read.done video=True audio=False
+2026-11-12T08:00:20+0000 DEBUG app.media.reader event=media.video.chunk start_time=0.000 end_time=3.000 last_time=2.816 selected=8
+2026-11-12T08:00:20+0000 DEBUG app.media.reader event=media.audio.start sample_rate=16000
+2026-11-12T08:00:20+0000 DEBUG app.media.reader event=media.read.start video=False audio=True
+2026-11-12T08:00:20+0000 DEBUG app.media.reader event=media.streams.selected count=1
+2026-11-12T08:00:20+0000 DEBUG app.media.reader event=media.read.done video=False audio=True
+2026-11-12T08:00:20+0000 DEBUG app.media.reader event=media.audio.done segments=1 samples=48000
+2026-11-12T08:00:20+0000 DEBUG app.services.live event=live.media.ready session_id=13 frames=8 start_time=0.000 end_time=2.816 audio_segments=1 audio_selected=True offset=14.223
+2026-11-12T08:00:20+0000 DEBUG app.services.analysis event=analysis.video.start frames=8
+2026-11-12T08:00:20+0000 DEBUG app.vision.pipeline event=vision.chunk.done frames=8 landmarks=8 empty_frames=0
+2026-11-12T08:00:20+0000 DEBUG app.services.analysis event=analysis.video.extracted frames=8 landmarks=8
+2026-11-12T08:00:20+0000 DEBUG app.analytics.visual.manager event=analytics.run.start frames=8
+2026-11-12T08:00:20+0000 DEBUG app.analytics.visual.manager event=analytics.run.done frames=8
+2026-11-12T08:00:20+0000 DEBUG app.services.analysis event=analysis.audio.extract.start samples=48000
+2026-11-12T08:00:20+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.start samples=48000
+2026-11-12T08:00:20+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.done elapsed_seconds=0.0006 frames=94
+2026-11-12T08:00:20+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C2
+2026-11-12T08:00:20+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C2 elapsed_seconds=0.0002
+2026-11-12T08:00:20+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C7
+2026-11-12T08:00:20+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C7 elapsed_seconds=0.0001
+2026-11-12T08:00:20+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.start samples=48000 sample_rate=16000
+2026-11-12T08:00:20+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.done elapsed_seconds=0.0099 frames=94
+2026-11-12T08:00:20+0000 DEBUG app.extraction.audio.librosa event=librosa.split.start samples=48000
+2026-11-12T08:00:20+0000 DEBUG app.extraction.audio.librosa event=librosa.split.done elapsed_seconds=0.0006 intervals=1
+2026-11-12T08:00:20+0000 DEBUG app.services.analysis event=analysis.audio.extract.done samples=48000 rms_frames=94 pitch_frames=94
+2026-11-12T08:00:20+0000 DEBUG app.services.analysis event=analysis.audio.start samples=48000
+2026-11-12T08:00:20+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:00:20+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:00:20+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:00:20+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0000
+2026-11-12T08:00:20+0000 DEBUG app.services.analysis event=analysis.audio.done
+2026-11-12T08:00:20+0000 DEBUG app.services.analysis event=analysis.scores.done video=True audio=True overall=78.40863979696987
+2026-11-12T08:00:20+0000 DEBUG app.services.live event=live.persist.start session_id=13 records=2
+2026-11-12T08:00:20+0000 DEBUG app.repositories.snapshot event=analysis.bulk_create.start count=2
+2026-11-12T08:00:21+0000 INFO app.repositories.snapshot event=analysis.bulk_create.done count=2
+2026-11-12T08:00:21+0000 INFO app.services.live event=live.process.done session_id=13 overall=78.41
+2026-11-12T08:00:21+0000 DEBUG app.vision.storage event=video.delete.done
+2026-11-12T08:00:23+0000 DEBUG app.vision.pipeline event=vision.pipeline.init
+2026-11-12T08:00:23+0000 INFO app.services.live event=live.process.start session_id=13 timestamp=17.23 file=live-segment.webm
+2026-11-12T08:00:23+0000 DEBUG app.repositories.session event=session.lookup.done session_id=13 found=True
+2026-11-12T08:00:23+0000 INFO app.vision.storage event=video.save.done size=986585 suffix=.webm
+2026-11-12T08:00:23+0000 DEBUG app.media.reader event=media.video.start duration=3 target_fps=3
+2026-11-12T08:00:23+0000 DEBUG app.media.reader event=media.read.start video=True audio=False
+2026-11-12T08:00:23+0000 DEBUG app.media.reader event=media.streams.selected count=1
+2026-11-12T08:00:23+0000 DEBUG app.media.reader event=media.read.done video=True audio=False
+2026-11-12T08:00:23+0000 DEBUG app.media.reader event=media.video.chunk start_time=0.000 end_time=3.000 last_time=2.895 selected=8
+2026-11-12T08:00:23+0000 DEBUG app.media.reader event=media.audio.start sample_rate=16000
+2026-11-12T08:00:23+0000 DEBUG app.media.reader event=media.read.start video=False audio=True
+2026-11-12T08:00:23+0000 DEBUG app.media.reader event=media.streams.selected count=1
+2026-11-12T08:00:23+0000 DEBUG app.media.reader event=media.read.done video=False audio=True
+2026-11-12T08:00:23+0000 DEBUG app.media.reader event=media.audio.done segments=1 samples=48000
+2026-11-12T08:00:23+0000 DEBUG app.services.live event=live.media.ready session_id=13 frames=8 start_time=0.000 end_time=2.895 audio_segments=1 audio_selected=True offset=17.231
+2026-11-12T08:00:23+0000 DEBUG app.services.analysis event=analysis.video.start frames=8
+2026-11-12T08:00:24+0000 DEBUG app.vision.pipeline event=vision.chunk.done frames=8 landmarks=8 empty_frames=0
+2026-11-12T08:00:24+0000 DEBUG app.services.analysis event=analysis.video.extracted frames=8 landmarks=8
+2026-11-12T08:00:24+0000 DEBUG app.analytics.visual.manager event=analytics.run.start frames=8
+2026-11-12T08:00:24+0000 DEBUG app.analytics.visual.manager event=analytics.run.done frames=8
+2026-11-12T08:00:24+0000 DEBUG app.services.analysis event=analysis.audio.extract.start samples=48000
+2026-11-12T08:00:24+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.start samples=48000
+2026-11-12T08:00:24+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.done elapsed_seconds=0.0014 frames=94
+2026-11-12T08:00:24+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C2
+2026-11-12T08:00:24+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C2 elapsed_seconds=0.0002
+2026-11-12T08:00:24+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C7
+2026-11-12T08:00:24+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C7 elapsed_seconds=0.0002
+2026-11-12T08:00:24+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.start samples=48000 sample_rate=16000
+2026-11-12T08:00:24+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.done elapsed_seconds=0.0132 frames=94
+2026-11-12T08:00:24+0000 DEBUG app.extraction.audio.librosa event=librosa.split.start samples=48000
+2026-11-12T08:00:24+0000 DEBUG app.extraction.audio.librosa event=librosa.split.done elapsed_seconds=0.0011 intervals=1
+2026-11-12T08:00:24+0000 DEBUG app.services.analysis event=analysis.audio.extract.done samples=48000 rms_frames=94 pitch_frames=94
+2026-11-12T08:00:24+0000 DEBUG app.services.analysis event=analysis.audio.start samples=48000
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0002
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.services.analysis event=analysis.audio.done
+2026-11-12T08:00:24+0000 DEBUG app.services.analysis event=analysis.scores.done video=True audio=True overall=83.75845096175665
+2026-11-12T08:00:24+0000 DEBUG app.services.live event=live.persist.start session_id=13 records=2
+2026-11-12T08:00:24+0000 DEBUG app.repositories.snapshot event=analysis.bulk_create.start count=2
+2026-11-12T08:00:24+0000 INFO app.repositories.snapshot event=analysis.bulk_create.done count=2
+2026-11-12T08:00:24+0000 INFO app.services.live event=live.process.done session_id=13 overall=83.76
+2026-11-12T08:00:24+0000 DEBUG app.vision.storage event=video.delete.done
+2026-11-12T08:00:24+0000 DEBUG app.repositories.session event=session.lookup.done session_id=13 found=True
+2026-11-12T08:00:24+0000 INFO app.repositories.session event=session.end.saved session_id=13
+2026-11-12T08:00:24+0000 INFO app.sessions event=session.end.done session_id=13 user_id=11
+2026-11-12T08:00:24+0000 INFO app.reports event=report.generate.start session_id=13 full=False
+2026-11-12T08:00:24+0000 DEBUG app.repositories.session event=session.lookup.done session_id=13 found=True
+2026-11-12T08:00:24+0000 DEBUG app.repositories.snapshot event=analysis.get_by_session.start session_id=13
+2026-11-12T08:00:24+0000 DEBUG app.repositories.snapshot event=analysis.get_by_session.loaded session_id=13 model=VideoMetric count=7
+2026-11-12T08:00:24+0000 DEBUG app.repositories.snapshot event=analysis.get_by_session.loaded session_id=13 model=AudioMetric count=0
+2026-11-12T08:00:24+0000 DEBUG app.repositories.snapshot event=analysis.get_by_session.loaded session_id=13 model=Transcript count=0
+2026-11-12T08:00:24+0000 DEBUG app.repositories.snapshot event=analysis.get_by_session.loaded session_id=13 model=AudioFeatureRecord count=7
+2026-11-12T08:00:24+0000 DEBUG app.repositories.snapshot event=analysis.get_by_session.done session_id=13 count=14
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.audio.start session_id=13 start_time=0.001 end_time=2.041 samples=32640
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=64
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=64
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.audio.done session_id=13 windows=1
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.audio.start session_id=13 start_time=2.047 end_time=5.107 samples=48960
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=2
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=2
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.audio.done session_id=13 windows=2
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.audio.start session_id=13 start_time=5.147 end_time=8.147 samples=48000
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.audio.done session_id=13 windows=1
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.audio.start session_id=13 start_time=8.151 end_time=11.211 samples=48960
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0000
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=2
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=2
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.audio.done session_id=13 windows=2
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.audio.start session_id=13 start_time=11.221 end_time=14.221 samples=48000
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.audio.done session_id=13 windows=1
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.audio.start session_id=13 start_time=14.223 end_time=17.223 samples=48000
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.audio.done session_id=13 windows=1
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.audio.start session_id=13 start_time=17.231 end_time=20.231 samples=48000
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:00:24+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0000
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.audio.done session_id=13 windows=1
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.entries.ready session_id=13 entries=16
+2026-11-12T08:00:24+0000 DEBUG app.analytics.timeline event=timeline.build.done session_id=13 entries=16 snapshots=16
+2026-11-12T08:00:24+0000 INFO app.reports event=report.generate.done session_id=13 full=False snapshots=16 overall=54.58658070744006
+2026-11-12T08:00:24+0000 DEBUG app.repositories.report event=report.recent.done user_id=11 count=0
+2026-11-12T08:02:46+0000 INFO app.reports event=report.generate.start session_id=13 full=True
+2026-11-12T08:02:46+0000 DEBUG app.repositories.session event=session.lookup.done session_id=13 found=True
+2026-11-12T08:02:46+0000 DEBUG app.repositories.report event=report.lookup.done session_id=13 found=False
+2026-11-12T08:02:46+0000 DEBUG app.repositories.snapshot event=analysis.get_by_session.start session_id=13
+2026-11-12T08:02:46+0000 DEBUG app.repositories.snapshot event=analysis.get_by_session.loaded session_id=13 model=VideoMetric count=7
+2026-11-12T08:02:46+0000 DEBUG app.repositories.snapshot event=analysis.get_by_session.loaded session_id=13 model=AudioMetric count=0
+2026-11-12T08:02:46+0000 DEBUG app.repositories.snapshot event=analysis.get_by_session.loaded session_id=13 model=Transcript count=0
+2026-11-12T08:02:46+0000 DEBUG app.repositories.snapshot event=analysis.get_by_session.loaded session_id=13 model=AudioFeatureRecord count=7
+2026-11-12T08:02:46+0000 DEBUG app.repositories.snapshot event=analysis.get_by_session.done session_id=13 count=14
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.audio.start session_id=13 start_time=0.001 end_time=2.041 samples=32640
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=64
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0002
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=64
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0005
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.audio.done session_id=13 windows=1
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.audio.start session_id=13 start_time=2.047 end_time=5.107 samples=48960
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0002
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=2
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=2
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.audio.done session_id=13 windows=2
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.audio.start session_id=13 start_time=5.147 end_time=8.147 samples=48000
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.audio.done session_id=13 windows=1
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.audio.start session_id=13 start_time=8.151 end_time=11.211 samples=48960
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0002
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=2
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=2
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.audio.done session_id=13 windows=2
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.audio.start session_id=13 start_time=11.221 end_time=14.221 samples=48000
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0002
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.audio.done session_id=13 windows=1
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.audio.start session_id=13 start_time=14.223 end_time=17.223 samples=48000
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0001
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.audio.done session_id=13 windows=1
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.audio.start session_id=13 start_time=17.231 end_time=20.231 samples=48000
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.start frames=94
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.amplitude_to_db.done elapsed_seconds=0.0002
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.start frames=94
+2026-11-12T08:02:46+0000 DEBUG app.analytics.audio event=librosa.hz_to_midi.done elapsed_seconds=0.0001
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.audio.done session_id=13 windows=1
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.entries.ready session_id=13 entries=16
+2026-11-12T08:02:46+0000 DEBUG app.analytics.timeline event=timeline.build.done session_id=13 entries=16 snapshots=16
+2026-11-12T08:02:46+0000 DEBUG app.llm.manager event=llm.generate.start model=gemini-3.1-flash-lite
+2026-11-12T08:02:46+0000 INFO google_genai.models AFC is enabled with max remote calls: 10.
+2026-11-12T08:02:46+0000 DEBUG httpcore.connection connect_tcp.started host='generativelanguage.googleapis.com' port=443 local_address=None timeout=None socket_options=None
+2026-11-12T08:02:46+0000 DEBUG httpcore.connection connect_tcp.complete return_value=<httpcore._backends.sync.SyncStream object at 0x77f3d8753f10>
+2026-11-12T08:02:46+0000 DEBUG httpcore.connection start_tls.started ssl_context=<ssl.SSLContext object at 0x77f3d8760d40> server_hostname='generativelanguage.googleapis.com' timeout=None
+2026-11-12T08:02:46+0000 DEBUG httpcore.connection start_tls.complete return_value=<httpcore._backends.sync.SyncStream object at 0x77f3d9045690>
+2026-11-12T08:02:46+0000 DEBUG httpcore.http11 send_request_headers.started request=<Request [b'POST']>
+2026-11-12T08:02:46+0000 DEBUG httpcore.http11 send_request_headers.complete
+2026-11-12T08:02:46+0000 DEBUG httpcore.http11 send_request_body.started request=<Request [b'POST']>
+2026-11-12T08:02:46+0000 DEBUG httpcore.http11 send_request_body.complete
+2026-11-12T08:02:46+0000 DEBUG httpcore.http11 receive_response_headers.started request=<Request [b'POST']>
+2026-11-12T08:02:48+0000 DEBUG httpcore.http11 receive_response_headers.complete return_value=(b'HTTP/1.1', 200, b'OK', [(b'X-Gemini-Service-Tier', b'standard'), (b'Content-Type', b'application/json; charset=UTF-8'), (b'Vary', b'Origin'), (b'Vary', b'X-Origin'), (b'Vary', b'Referer'), (b'Content-Encoding', b'gzip'), (b'Date', b'Thu, 12 Nov 2026 08:02:49 GMT'), (b'Server', b'scaffolding on HTTPServer2'), (b'X-XSS-Protection', b'0'), (b'X-Frame-Options', b'SAMEORIGIN'), (b'X-Content-Type-Options', b'nosniff'), (b'Server-Timing', b'gfet4t7; dur=1998'), (b'Alt-Svc', b'h3=":443"; ma=2592000,h3-29=":443"; ma=2592000'), (b'Transfer-Encoding', b'chunked')])
+2026-11-12T08:02:48+0000 INFO httpx HTTP Request: POST https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite:generateContent "HTTP/1.1 200 OK"
+2026-11-12T08:02:48+0000 DEBUG httpcore.http11 receive_response_body.started request=<Request [b'POST']>
+2026-11-12T08:02:48+0000 DEBUG httpcore.http11 receive_response_body.complete
+2026-11-12T08:02:48+0000 DEBUG httpcore.http11 response_closed.started
+2026-11-12T08:02:48+0000 DEBUG httpcore.http11 response_closed.complete
+2026-11-12T08:02:48+0000 DEBUG app.llm.manager event=llm.generate.done chars=2252
+2026-11-12T08:02:48+0000 INFO app.repositories.report event=report.create.done report_id=5 session_id=13
+2026-11-12T08:02:48+0000 INFO app.reports event=report.generate.done session_id=13 full=True snapshots=16 overall=54.58658070744006 saved_coaching=False
+2026-11-12T08:02:48+0000 DEBUG app.repositories.report event=report.recent.done user_id=11 count=1
+2026-11-12T08:07:46+0000 DEBUG watchfiles.main 2 changes detected: {(<Change.modified: 2>, '/app/app/media/media_reader.py'), (<Change.modified: 2>, '/app/app/media/config.py')}
+2026-11-12T08:07:46+0000 INFO app.core.dependencies event=mediapipe.close.start
+2026-11-12T08:07:46+0000 INFO app.vision.mediapipe event=mediapipe.detector.close
+2026-11-12T08:07:46+0000 INFO app.core.dependencies event=mediapipe.close.done
+2026-11-12T08:07:47+0000 DEBUG watchfiles.main 3 changes detected: {(<Change.modified: 2>, '/app/app/extraction/audio/librosa_engine.py'), (<Change.modified: 2>, '/app/app/extraction/audio/config.py'), (<Change.modified: 2>, '/app/app/analytics/config.py')}
+2026-11-12T08:07:47+0000 DEBUG watchfiles.main 1 change detected: {(<Change.modified: 2>, '/app/app/services/report_service.py')}
+2026-11-12T08:07:52+0000 INFO app.main event=app.start host=0.0.0.0 port=8000
+2026-11-12T08:07:52+0000 INFO app.db.init event=db.init.start
+2026-11-12T08:07:52+0000 INFO app.db.init event=db.init.done
+2026-11-12T08:07:52+0000 INFO app.core.dependencies event=mediapipe.load.start
+2026-11-12T08:07:52+0000 INFO app.vision.mediapipe event=mediapipe.detector.init
+2026-11-12T08:07:52+0000 INFO app.core.dependencies event=mediapipe.load.done
+2026-11-12T08:07:52+0000 INFO app.extraction.audio.librosa event=librosa.warmup.start
+2026-11-12T08:07:52+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.start samples=16000
+2026-11-12T08:07:54+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.done elapsed_seconds=2.0495 frames=32
+2026-11-12T08:07:54+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C2
+2026-11-12T08:07:54+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C2 elapsed_seconds=0.0001
+2026-11-12T08:07:54+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C7
+2026-11-12T08:07:54+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C7 elapsed_seconds=0.0001
+2026-11-12T08:07:54+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.start samples=16000 sample_rate=16000
+2026-11-12T08:07:54+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.done elapsed_seconds=0.0030 frames=32
+2026-11-12T08:07:54+0000 DEBUG app.extraction.audio.librosa event=librosa.split.start samples=16000
+2026-11-12T08:07:54+0000 DEBUG app.extraction.audio.librosa event=librosa.split.done elapsed_seconds=0.1840 intervals=1
+2026-11-12T08:07:54+0000 INFO app.extraction.audio.librosa event=librosa.warmup.done elapsed_seconds=2.2416
+2026-11-12T08:08:02+0000 DEBUG watchfiles.main 1 change detected: {(<Change.modified: 2>, '/app/app/services/report_service.py')}
+2026-11-12T08:08:02+0000 INFO app.core.dependencies event=mediapipe.close.start
+2026-11-12T08:08:02+0000 INFO app.vision.mediapipe event=mediapipe.detector.close
+2026-11-12T08:08:02+0000 INFO app.core.dependencies event=mediapipe.close.done
+2026-11-12T08:08:04+0000 DEBUG watchfiles.main 3 changes detected: {(<Change.modified: 2>, '/app/app/media/__pycache__'), (<Change.modified: 2>, '/app/app/media/__pycache__/media_reader.cpython-313.pyc'), (<Change.modified: 2>, '/app/app/media/__pycache__/config.cpython-313.pyc')}
+2026-11-12T08:08:08+0000 INFO app.main event=app.start host=0.0.0.0 port=8000
+2026-11-12T08:08:08+0000 INFO app.db.init event=db.init.start
+2026-11-12T08:08:08+0000 INFO app.db.init event=db.init.done
+2026-11-12T08:08:08+0000 INFO app.core.dependencies event=mediapipe.load.start
+2026-11-12T08:08:08+0000 INFO app.vision.mediapipe event=mediapipe.detector.init
+2026-11-12T08:08:08+0000 INFO app.core.dependencies event=mediapipe.load.done
+2026-11-12T08:08:08+0000 INFO app.extraction.audio.librosa event=librosa.warmup.start
+2026-11-12T08:08:08+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.start samples=16000
+2026-11-12T08:08:09+0000 DEBUG watchfiles.main 5 changes detected: {(<Change.modified: 2>, '/app/app/analytics/__pycache__/config.cpython-313.pyc'), (<Change.modified: 2>, '/app/app/extraction/audio/__pycache__/config.cpython-313.pyc'), (<Change.modified: 2>, '/app/app/extraction/audio/__pycache__'), (<Change.modified: 2>, '/app/app/extraction/audio/__pycache__/librosa_engine.cpython-313.pyc'), (<Change.modified: 2>, '/app/app/analytics/__pycache__')}
+2026-11-12T08:08:11+0000 DEBUG app.extraction.audio.librosa event=librosa.rms.done elapsed_seconds=3.2911 frames=32
+2026-11-12T08:08:11+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C2
+2026-11-12T08:08:11+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C2 elapsed_seconds=0.0002
+2026-11-12T08:08:11+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.start note=C7
+2026-11-12T08:08:11+0000 DEBUG app.extraction.audio.librosa event=librosa.note_to_hz.done note=C7 elapsed_seconds=0.0001
+2026-11-12T08:08:11+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.start samples=16000 sample_rate=16000
+2026-11-12T08:08:11+0000 DEBUG app.extraction.audio.librosa event=librosa.yin.done elapsed_seconds=0.0043 frames=32
+2026-11-12T08:08:12+0000 DEBUG app.extraction.audio.librosa event=librosa.split.start samples=16000
+2026-11-12T08:08:12+0000 DEBUG app.extraction.audio.librosa event=librosa.split.done elapsed_seconds=0.2160 intervals=1
+2026-11-12T08:08:12+0000 INFO app.extraction.audio.librosa event=librosa.warmup.done elapsed_seconds=3.5179
+2026-11-12T08:08:32+0000 DEBUG watchfiles.main 4 changes detected: {(<Change.modified: 2>, '/app/app/core/__pycache__'), (<Change.modified: 2>, '/app/app/services/__pycache__/report_service.cpython-313.pyc'), (<Change.modified: 2>, '/app/app/services/__pycache__'), (<Change.modified: 2>, '/app/app/core/__pycache__/dependencies.cpython-313.pyc')}
+2026-11-12T08:21:27+0000 INFO app.core.dependencies event=mediapipe.close.start
+2026-11-12T08:21:27+0000 INFO app.vision.mediapipe event=mediapipe.detector.close
+2026-11-12T08:21:27+0000 INFO app.core.dependencies event=mediapipe.close.done

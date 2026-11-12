@@ -1,6 +1,14 @@
+from db.models.analysis import Transcript
 from analytics.config import METRIC_DEFINITIONS
+from analytics.config import (
+    AUDIO_METRIC_NAMES,
+    METRIC_NAMES,
+    SCORE_NAMES,
+    TREND_THRESHOLD,
+    VISUAL_METRIC_NAMES,
+)
 from analytics.math_utils import average_available
-from analytics.config import AudioMetrics, Scores, Snapshot, VideoMetrics
+from analytics.config import Scores, Snapshot
 from analytics.score_calculator import ScoreCalculator
 from analytics.timeline_builder import TimelineBuilder
 from core.exceptions import (
@@ -25,11 +33,6 @@ from services.session_service import SessionService
 
 logger = get_logger("app.reports")
 
-SCORE_NAMES = tuple(Scores.model_fields)
-VISUAL_METRIC_NAMES = tuple(VideoMetrics.model_fields)
-AUDIO_METRIC_NAMES = tuple(AudioMetrics.model_fields)
-METRIC_NAMES = (*VISUAL_METRIC_NAMES, *AUDIO_METRIC_NAMES)
-TREND_THRESHOLD = 2.0
 
 
 class ReportService:
@@ -52,6 +55,7 @@ class ReportService:
         full: bool,
         llm_service: LLMService | None = None,
     ) -> ShortReportResponse | FullReportResponse:
+        logger.info("event=report.generate.start session_id=%s full=%s", session_id, full)
         session = self.session_service.require_owned_session(user_id, session_id)
 
         if full:
@@ -62,9 +66,13 @@ class ReportService:
         short_report = self._build_short_report(session_id, score_series)
 
         if not full:
+            logger.info(
+                "event=report.generate.done session_id=%s full=%s snapshots=%s overall=%s",
+                session_id, full, len(snapshots), short_report.overall_score,
+            )
             return short_report
 
-        return self._build_full_report(
+        report = self._build_full_report(
             short_report=short_report,
             snapshots=snapshots,
             mode=session.mode,
@@ -78,6 +86,15 @@ class ReportService:
                 else None
             ),
         )
+        logger.info(
+            "event=report.generate.done session_id=%s full=%s snapshots=%s overall=%s saved_coaching=%s",
+            session_id, full, len(snapshots), short_report.overall_score, saved_report is not None,
+        )
+        return report
+
+    def replace_transcripts(self, session_id: int, records: list[Transcript]) -> None:
+        self.analysis_repository.replace_transcripts(session_id, records)
+        self.report_repository.delete_by_session(session_id)
 
     def list_recent_reports(
         self,
@@ -103,6 +120,7 @@ class ReportService:
         records = self.analysis_repository.get_by_session(session_id)
         snapshots = TimelineBuilder().build_from_records(session_id, records)
         if not snapshots:
+            logger.warning("event=report.timeline.empty session_id=%s records=%s", session_id, len(records))
             raise SnapshotsNotFoundError()
         return snapshots
 

@@ -1,11 +1,24 @@
 import logging
 from logging.config import dictConfig
 
-from core.config import get_settings
+from core.settings import get_settings
 
 
 def setup_logging() -> None:
     settings = get_settings()
+    handlers = {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "default",
+        },
+    }
+    if settings.LOG_FILE_PATH:
+        handlers["file"] = {
+            "class": "logging.FileHandler",
+            "formatter": "default",
+            "filename": settings.LOG_FILE_PATH,
+            "encoding": "utf-8",
+        }
 
     dictConfig(
         {
@@ -17,15 +30,10 @@ def setup_logging() -> None:
                     "datefmt": "%Y-%m-%dT%H:%M:%S%z",
                 }
             },
-            "handlers": {
-                "console": {
-                    "class": "logging.StreamHandler",
-                    "formatter": "default",
-                }
-            },
+            "handlers": handlers,
             "root": {
                 "level": settings.LOG_LEVEL,
-                "handlers": ["console"],
+                "handlers": settings.HANDLERS,
             },
         }
     )

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 import bcrypt
 
 from core.exceptions import TokenExpiredError, InvalidTokenError
-from core.config import get_settings
+from core.settings import get_settings
 
 settings = get_settings()
 

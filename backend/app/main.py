@@ -5,10 +5,10 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.router import api_router
-from core.dependencies import close_mp_detector
+from core.dependencies import close_mp_detector, get_librosa_engine, get_mp_detector
 from core.exceptions import AppError, app_exceptions_handler, unhandled_exceptions_handler
 from db.init_db import init_models
-from core.config import get_settings
+from core.settings import get_settings
 from core.logger import get_logger, setup_logging
 
 
@@ -22,8 +22,12 @@ async def lifespan(app: FastAPI):
     logger.info("event=app.start host=%s port=%s", settings.APP_HOST, settings.APP_PORT)
     
     init_models()
-    yield
-    close_mp_detector()
+    try:
+        get_mp_detector()
+        get_librosa_engine()
+        yield
+    finally:
+        close_mp_detector()
 
 
 app = FastAPI(lifespan=lifespan)

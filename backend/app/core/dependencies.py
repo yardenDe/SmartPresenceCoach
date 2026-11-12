@@ -6,7 +6,7 @@ from google import genai
 from sqlalchemy.orm import Session 
 from groq import Groq 
 
-from core.config import get_settings 
+from core.settings import get_settings 
 from core.logger import get_logger 
 from core.exceptions import InvalidCredentialsError, LLMUnavailableError 
 from core.security import SecurityService 
@@ -44,6 +44,7 @@ logger = get_logger("app.core.dependencies")
 _detector_instance = None 
 _llm_manager = None 
 _transcriber = None 
+_librosa_engine = None
 
 def get_db() -> Generator[Session, None, None]: 
     db = SessionLocal() 
@@ -100,7 +101,12 @@ def get_storage() -> Storage:
     return Storage() 
 
 def get_librosa_engine() -> LibrosaEngine:
-    return LibrosaEngine()
+    global _librosa_engine
+    if _librosa_engine is None:
+        engine = LibrosaEngine()
+        engine.warmup()
+        _librosa_engine = engine
+    return _librosa_engine
 
 
 def get_llm() -> LLMManager: 

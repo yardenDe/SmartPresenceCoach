@@ -47,18 +47,28 @@ class OfflineService:
             records = []
 
             for chunk in reader.iter_video_chunks(ANALYSIS_WINDOW_SECONDS):
-                visual = self.analysis_service.analyze_video([sample.data for sample in chunk])
+                self.logger.debug(
+                    "event=offline.video.chunk session_id=%s start_time=%.3f end_time=%.3f frames=%s",
+                    session_id, chunk.start_time, chunk.end_time, len(chunk.frames),
+                )
+                visual = self.analysis_service.analyze_video(chunk.frames)
+                self.logger.debug(
+                    "event=offline.video.analyzed session_id=%s start_time=%.3f has_metrics=%s",
+                    session_id, chunk.start_time, visual is not None,
+                )
                 if visual is not None:
                     records.append(VideoMetric(
                         session_id=session_id,
-                        start_time=chunk[0].start_time,
-                        end_time=chunk[-1].end_time,
+                        start_time=chunk.start_time,
+                        end_time=chunk.end_time,
                         **visual.model_dump(),
                     ))
 
-            audio = reader.read(video=False).audio
-
-            if audio is not None:
+            for audio in reader.read_audio():
+                self.logger.debug(
+                    "event=offline.audio.segment session_id=%s start_time=%.3f end_time=%.3f samples=%s",
+                    session_id, audio.start_time, audio.end_time, audio.data.size,
+                )
                 features = self.analysis_service.extract_audio(audio.data)
                 records.append(AudioFeatureRecord(
                     session_id=session_id,
@@ -76,8 +86,10 @@ class OfflineService:
                     ))
 
             if not records:
+                self.logger.warning("event=offline.analysis.empty session_id=%s", session_id)
                 raise NoLandmarksError()
             
+            self.logger.debug("event=offline.persist.start session_id=%s records=%s", session_id, len(records))
             self.session_service.save_analysis_records(records)
             self.session_service.end(user_id, session_id)
 
@@ -98,6 +110,7 @@ class OfflineService:
             raise
 
         except av.FFmpegError as error:
+            self.logger.exception("event=offline.media.failed session_id=%s", session_id)
             raise InvalidVideoError() from error
 
         except Exception:

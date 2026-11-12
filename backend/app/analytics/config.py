@@ -7,6 +7,7 @@ ANALYSIS_WINDOW_SECONDS = 3.0
 
 MIN_SCORE = 0.0
 MAX_SCORE = 100.0
+TREND_THRESHOLD = 2.0
 
 
 class MetricDefinition(BaseModel):
@@ -86,6 +87,12 @@ class Scores(BaseModel):
     presence: float | None = None
     composure: float | None = None
     overall: float | None = None
+
+
+SCORE_NAMES = tuple(Scores.model_fields)
+VISUAL_METRIC_NAMES = tuple(VideoMetrics.model_fields)
+AUDIO_METRIC_NAMES = tuple(AudioMetrics.model_fields)
+METRIC_NAMES = (*VISUAL_METRIC_NAMES, *AUDIO_METRIC_NAMES)
 
 
 @dataclass

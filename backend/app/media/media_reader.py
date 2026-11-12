@@ -1,234 +1,133 @@
+
 from dataclasses import dataclass
 from collections.abc import Generator
-from typing import cast
+from itertools import chain
 
 import av
 import numpy as np
 
-from media.config import SAMPLE_RATE, PCM_SCALE
+from core.logger import get_logger
+from media.config import (
+    AUDIO_FORMAT,
+    AUDIO_LAYOUT,
+    AUDIO_TIMESTAMP_TOLERANCE,
+    PCM_SCALE,
+    SAMPLE_RATE,
+    TARGET_FPS,
+    VIDEO_CHUNK_DURATION_SECONDS,
+    VIDEO_FORMAT,
+)
 
-
-VIDEO_FORMAT = "bgr24"
-AUDIO_FORMAT = "s16"
-AUDIO_LAYOUT = "mono"
+logger = get_logger("app.media.reader")
 
 
 @dataclass(frozen=True)
-class VideoSample:
+class Video:
     start_time: float
     end_time: float
-    data: np.ndarray
+    frames: list[np.ndarray]
 
 
 @dataclass(frozen=True)
-class AudioSample:
+class Audio:
     start_time: float
     end_time: float
     data: np.ndarray
-
-
-@dataclass
-class MediaData:
-    start_time: float
-    end_time: float
-    video: list[VideoSample]
-    audio: AudioSample | None
-
-
-def decode_video_frame(
-    frame: av.VideoFrame,
-    duration: float = 0.0,
-) -> VideoSample:
-    start_time = frame.time
-
-    frame_duration = getattr(frame, "duration", None)
-    if frame_duration and frame.time_base:
-        duration = float(frame_duration * frame.time_base)
-
-    return VideoSample(
-        start_time=start_time,
-        end_time=start_time + duration,
-        data=frame.to_ndarray(format=VIDEO_FORMAT),
-    )
-
-
-def decode_audio_frame(frame: av.AudioFrame) -> AudioSample:
-    start_time = frame.time
-
-    return AudioSample(
-        start_time=start_time,
-        end_time=start_time + frame.samples / frame.sample_rate,
-        data=frame.to_ndarray().reshape(-1).astype(np.float32) / PCM_SCALE,
-    )
 
 
 class MediaReader:
-    def __init__(self, path: str, target_fps: int | None = None):
-        if target_fps is not None and target_fps <= 0:
-            raise ValueError("Target FPS must be positive")
-
+    def __init__(self, path: str):
         self.path = path
-        self.target_fps = target_fps
 
     def read_iter(
         self,
         video: bool = True,
         audio: bool = True,
-    ) -> Generator[VideoSample | AudioSample, None, None]:
+    ) -> Generator[av.VideoFrame | av.AudioFrame, None, None]:
 
+        logger.debug("event=media.read.start video=%s audio=%s", video, audio)
         with av.open(self.path) as container:
             streams = []
-            resampler = None
-            frame_duration = 0.0
 
             if video and container.streams.video:
-                stream = container.streams.video[0]
-                streams.append(stream)
-
-                if stream.average_rate:
-                    frame_duration = float(1 / stream.average_rate)
+                streams.append(container.streams.video[0])
 
             if audio and container.streams.audio:
                 streams.append(container.streams.audio[0])
 
-                resampler = av.AudioResampler(
-                    format=AUDIO_FORMAT,
-                    layout=AUDIO_LAYOUT,
-                    rate=SAMPLE_RATE,
-                )
-
             if not streams:
+                logger.debug("event=media.read.empty video=%s audio=%s", video, audio)
                 return
 
-            video_origin = None
-            next_sample_time = 0.0
-
+            logger.debug("event=media.streams.selected count=%s", len(streams))
             for frame in container.decode(*streams):
-                if isinstance(frame, av.VideoFrame):
-                    if self.target_fps is not None and frame.time is not None:
-                        if video_origin is None:
-                            video_origin = frame.time
+                yield frame
 
-                        if frame.time - video_origin < next_sample_time:
-                            continue
-
-                        next_sample_time += 1 / self.target_fps
-
-                    yield decode_video_frame(frame, frame_duration)
-
-                elif isinstance(frame, av.AudioFrame) and resampler is not None:
-                    for part in resampler.resample(frame):
-                        yield decode_audio_frame(part)
-
-            if resampler is not None:
-                for part in resampler.resample(None):
-                    yield decode_audio_frame(part)
-
-    def read(
-        self,
-        video: bool = True,
-        audio: bool = True,
-    ) -> MediaData:
-
-        video_samples = []
-        audio_chunks = []
-
-        for sample in self.read_iter(video, audio):
-            if isinstance(sample, VideoSample):
-                video_samples.append(sample)
-            else:
-                audio_chunks.append(sample)
-
-        full_audio = (
-            AudioSample(
-                start_time=audio_chunks[0].start_time,
-                end_time=audio_chunks[-1].end_time,
-                data=np.concatenate(
-                    [sample.data for sample in audio_chunks]
-                ),
-            )
-            if audio_chunks
-            else None
-        )
-
-        starts = [sample.start_time for sample in video_samples]
-        ends = [sample.end_time for sample in video_samples]
-
-        if full_audio is not None:
-            starts.append(full_audio.start_time)
-            ends.append(full_audio.end_time)
-
-        return MediaData(
-            start_time=min(starts) if starts else 0.0,
-            end_time=max(ends) if ends else 0.0,
-            video=video_samples,
-            audio=full_audio,
-        )
-
-    def iter_video(self) -> Generator[VideoSample, None, None]:
-        for sample in self.read_iter(audio=False):
-            if isinstance(sample, VideoSample):
-                yield sample
-
-    def iter_audio(self) -> Generator[AudioSample, None, None]:
-        for sample in self.read_iter(video=False):
-            if isinstance(sample, AudioSample):
-                yield sample
+        logger.debug("event=media.read.done video=%s audio=%s", video, audio)
 
     def iter_video_chunks(
         self,
-        duration: float,
-    ) -> Generator[list[VideoSample], None, None]:
+        duration: float = VIDEO_CHUNK_DURATION_SECONDS,
+        target_fps: int = TARGET_FPS
+    ) -> Generator[Video, None, None]:
 
-        if duration <= 0:
-            raise ValueError("Duration must be positive")
+        logger.debug("event=media.video.start duration=%s target_fps=%s", duration, target_fps)
+        frames = []
+        start_time = 0
+        end_time = start_time + duration
+        sample_time = 1 / target_fps
+        step = sample_time
+        last_time = 0
 
-        chunk = []
+        for frame in self.read_iter(audio=False):
+            timestamp = frame.time
+            last_time = timestamp
 
-        for sample in self.iter_video():
-            if chunk and sample.start_time - chunk[0].start_time >= duration:
-                yield chunk
-                chunk = []
+            if timestamp >= end_time:
+                yield Video(start_time, end_time, frames)
+                frames = []
+                start_time = end_time
+                end_time = start_time + duration
 
-            chunk.append(sample)
+            if timestamp >= step:
+                frames.append(frame.to_ndarray(format=VIDEO_FORMAT))
+                step += sample_time
 
-        if chunk:
-            yield chunk
+        if frames:
+            logger.debug(
+                "event=media.video.chunk start_time=%.3f end_time=%.3f last_time=%s selected=%s",
+                start_time, end_time, last_time, len(frames),
+            )
+            yield Video(start_time, last_time, frames)
 
-    def iter_audio_chunks(
-        self,
-        duration: float,
-    ) -> Generator[AudioSample, None, None]:
+    
+    def read_audio(self) -> list[Audio]:
+        logger.debug("event=media.audio.start sample_rate=%s", SAMPLE_RATE)
 
-        chunk_size = round(SAMPLE_RATE * duration)
+        resampler = av.AudioResampler(
+            format=AUDIO_FORMAT,
+            layout=AUDIO_LAYOUT,
+            rate=SAMPLE_RATE
+        )
 
-        if chunk_size <= 0:
-            raise ValueError("Duration must span at least one audio sample")
+        chunks = []
 
-        buffer = np.empty(0, dtype=np.float32)
-        start_time = None
-
-        for sample in self.iter_audio():
-            if start_time is None:
-                start_time = sample.start_time
-
-            buffer = np.concatenate((buffer, sample.data))
-
-            while len(buffer) >= chunk_size:
-                end_time = start_time + chunk_size / SAMPLE_RATE
-
-                yield AudioSample(
-                    start_time=start_time,
-                    end_time=end_time,
-                    data=buffer[:chunk_size],
+        for frame in chain(self.read_iter(video=False), [None]):
+            for part in resampler.resample(frame):
+                chunks.append(
+                    part.to_ndarray().reshape(-1).astype(np.float32) / PCM_SCALE
                 )
 
-                buffer = buffer[chunk_size:]
-                start_time = end_time
+        if not chunks:
+            return []
 
-        if len(buffer):
-            yield AudioSample(
-                start_time=start_time,
-                end_time=start_time + len(buffer) / SAMPLE_RATE,
-                data=buffer,
-            )
+        data = np.concatenate(chunks)
+        end_time = len(data) / SAMPLE_RATE
+
+        logger.debug(
+            "event=media.audio.done segments=1 samples=%s",
+            len(data),
+        )
+
+        return [Audio(0, end_time, data)]
+

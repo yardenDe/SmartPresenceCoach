@@ -1,4 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import {
+  FIRST_LIVE_CHUNK_MS,
+  HOLISTIC_FRAME_INTERVAL_MS,
+  LIVE_CHUNK_MS,
+  MEDIAPIPE_HOLISTIC_URL,
+} from "../config/session.config";
 
 import { getApiErrorMessage } from "../../../services/api";
 import { sessionAnalysisApi } from "../../../services/sessionAnalysisApi";
@@ -33,10 +39,6 @@ declare global {
   }
 }
 
-const LIVE_CHUNK_MS = 3000;
-const FIRST_LIVE_CHUNK_MS = 1000;
-const HOLISTIC_FRAME_INTERVAL_MS = 120;
-const MEDIAPIPE_HOLISTIC_URL = "https://cdn.jsdelivr.net/npm/@mediapipe/holistic/holistic.js";
 
 type PendingOfflineReport = {
   report: ReportView;
@@ -59,6 +61,9 @@ export const useSessionLifecycle = () => {
   const liveSegmentAbortRef = useRef<AbortController | null>(null);
   const liveUploadQueueRef = useRef<Promise<void>>(Promise.resolve());
   const isRecordingRef = useRef(false);
+  const fullRecordingRef = useRef<Blob | null>(null);
+  const fullRecorderRef = useRef<MediaRecorder | null>(null);
+  const fullRecorderChunksRef = useRef<Blob[]>([]);
   const liveRequestIdRef = useRef(0);
   const liveResultsRef = useRef<LiveSnapshot[]>([]);
   const offlineVideoEndedRef = useRef(false);
@@ -185,6 +190,7 @@ export const useSessionLifecycle = () => {
 
   const resetSessionView = () => {
     setSessionSeconds(0);
+    fullRecordingRef.current = null;
     setFinalReport(null);
     setReportSessionId(null);
     setReportError(null);
@@ -471,6 +477,35 @@ export const useSessionLifecycle = () => {
     );
   };
 
+  // Independent continuous recording: the short live segments are separate files
+  // and cannot safely be concatenated into one playable recording.
+  const startFullRecording = () => {
+    if (!streamRef.current) return;
+    const mimeType = ["video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm", "video/mp4"]
+      .find((type) => MediaRecorder.isTypeSupported(type));
+    if (!mimeType) return;
+    fullRecorderChunksRef.current = [];
+    const recorder = new MediaRecorder(streamRef.current, { mimeType });
+    recorder.ondataavailable = (event) => {
+      if (event.data.size > 0) fullRecorderChunksRef.current.push(event.data);
+    };
+    fullRecorderRef.current = recorder;
+    recorder.start();
+  };
+
+  const finishFullRecording = async () => {
+    const recorder = fullRecorderRef.current;
+    if (!recorder) return;
+    fullRecorderRef.current = null;
+    if (recorder.state === "inactive") return;
+    await new Promise<void>((resolve) => {
+      recorder.addEventListener("stop", () => resolve(), { once: true });
+      recorder.stop();
+    });
+    fullRecordingRef.current = new Blob(fullRecorderChunksRef.current, { type: recorder.mimeType });
+    fullRecorderChunksRef.current = [];
+  };
+
   const startLiveChunkRecorder = () => {
     if (!streamRef.current || !sessionIdRef.current || !videoRef.current) {
       return;
@@ -546,7 +581,7 @@ export const useSessionLifecycle = () => {
     return toReportView(response.data);
   };
 
-  const generateFinalReport = async () => {
+  const generateFinalReport = async (includeTranscript = false) => {
     if (!reportSessionId || !finalReport || isReportGenerating) {
       return;
     }
@@ -556,6 +591,11 @@ export const useSessionLifecycle = () => {
     setReportMessage(null);
 
     try {
+      if (includeTranscript) {
+        const recording = mode === "offline" ? offlineVideoFileRef.current : fullRecordingRef.current;
+        if (!recording?.size) throw new Error("The full recording is not available for transcription.");
+        await sessionAnalysisApi.uploadTranscript(reportSessionId, recording);
+      }
       setFinalReport(await loadFullReport(reportSessionId));
       setReportMessage("Detailed analysis generated.");
       setError(null);
@@ -661,6 +701,7 @@ export const useSessionLifecycle = () => {
       setError(null);
       setReportMessage(null);
       setIsAnalyzing(true);
+      startFullRecording();
       startLiveChunkRecorder();
     } catch (requestError) {
       stopCurrentAnalysis();
@@ -709,6 +750,8 @@ export const useSessionLifecycle = () => {
     }
 
     setIsStopping(true);
+    // Stop the continuous recorder before stopping its media tracks.
+    if (mode === "live") await finishFullRecording();
     stopCurrentAnalysis();
 
     try {
@@ -742,6 +785,10 @@ export const useSessionLifecycle = () => {
   };
 
   const resetSession = () => {
+    if (fullRecorderRef.current?.state === "recording") fullRecorderRef.current.stop();
+    fullRecorderRef.current = null;
+    fullRecordingRef.current = null;
+    fullRecorderChunksRef.current = [];
     stopCurrentAnalysis();
     sessionIdRef.current = null;
     startTimeRef.current = null;

@@ -26,6 +26,8 @@ class Settings(BaseSettings):
         "http://127.0.0.1:5173",
     ]
     LOG_LEVEL: str = "DEBUG"
+    HANDLERS: list[str] = ["console"]
+    LOG_FILE_PATH: str = ""
 
     LLM_API_KEY: str | None = None
     LLM_MODEL: str = "gemini-3.1-flash-lite"

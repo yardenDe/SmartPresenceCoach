@@ -1,8 +1,13 @@
+from time import perf_counter
+
 import librosa
 import numpy as np
 
 from analytics.config import AudioMetrics
 from extraction.audio.config import AudioFeatures
+from core.logger import get_logger
+
+logger = get_logger("app.analytics.audio")
 
 
 class AudioAnalyticsManager:
@@ -16,21 +21,23 @@ class AudioAnalyticsManager:
             ~np.isnan(features.pitch) & (features.pitch > 0)
         ]
 
-        volume_db = (
-            librosa.amplitude_to_db(
+        volume_db = valid_rms
+        if valid_rms.size:
+            logger.debug("event=librosa.amplitude_to_db.start frames=%s", valid_rms.size)
+            started = perf_counter()
+            volume_db = librosa.amplitude_to_db(
                 valid_rms,
                 ref=1.0,
                 top_db=None,
             )
-            if valid_rms.size
-            else valid_rms
-        )
+            logger.debug("event=librosa.amplitude_to_db.done elapsed_seconds=%.4f", perf_counter() - started)
 
-        pitch_semitones = (
-            librosa.hz_to_midi(valid_pitch)
-            if valid_pitch.size
-            else valid_pitch
-        )
+        pitch_semitones = valid_pitch
+        if valid_pitch.size:
+            logger.debug("event=librosa.hz_to_midi.start frames=%s", valid_pitch.size)
+            started = perf_counter()
+            pitch_semitones = librosa.hz_to_midi(valid_pitch)
+            logger.debug("event=librosa.hz_to_midi.done elapsed_seconds=%.4f", perf_counter() - started)
 
         return AudioMetrics(
             pause_ratio=self._calculate_pause_ratio(

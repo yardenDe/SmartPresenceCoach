@@ -91,8 +91,8 @@ export const PresenceDashboard = () => {
     dashboard.resetSetup();
   };
 
-  const handleDetailed = async () => {
-    await lifecycle.generateFinalReport();
+  const handleDetailed = async (includeTranscript: boolean) => {
+    await lifecycle.generateFinalReport(includeTranscript);
     dashboard.setDashboardState("detailed");
   };
 

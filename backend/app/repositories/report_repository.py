@@ -1,4 +1,4 @@
-from sqlalchemy import desc, select
+from sqlalchemy import desc, select, delete
 from sqlalchemy.orm import Session as DBSession
 
 from core.exceptions import DatabaseError
@@ -42,6 +42,15 @@ class ReportRepository:
             session_id,
         )
         return report
+
+    def delete_by_session(self, session_id: int) -> None:
+        try:
+            self.db.execute(delete(Report).where(Report.session_id == session_id))
+            self.db.commit()
+        except Exception:
+            self.db.rollback()
+            logger.exception("event=report.invalidate.failed session_id=%s", session_id)
+            raise DatabaseError()
 
     def get_by_session(self, session_id: int) -> Report | None:
         try:

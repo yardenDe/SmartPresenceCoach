@@ -8,6 +8,9 @@ from analytics.config import ANALYSIS_WINDOW_SECONDS
 from analytics.config import AudioMetrics, Snapshot, VideoMetrics
 from db.models.analysis import AnalysisRecord, AudioFeatureRecord, AudioMetric, Transcript, VideoMetric
 from extraction.audio.config import AudioFeatures
+from core.logger import get_logger
+
+logger = get_logger("app.analytics.timeline")
 
 
 @dataclass(frozen=True)
@@ -44,6 +47,7 @@ class TimelineBuilder:
                     record.start_time, record.end_time,
                     transcript=record.transcript,
                 ))
+        logger.debug("event=timeline.entries.ready session_id=%s entries=%s", session_id, len(entries))
         return self.build(session_id, entries)
 
     @staticmethod
@@ -51,6 +55,10 @@ class TimelineBuilder:
         entries = []
         sample_rate = record.sample_rate
         duration = record.total_samples / sample_rate
+        logger.debug(
+            "event=timeline.audio.start session_id=%s start_time=%.3f end_time=%.3f samples=%s",
+            record.session_id, record.start_time, record.end_time, record.total_samples,
+        )
         analytics = AudioAnalyticsManager()
         intervals = np.asarray(record.non_silent_intervals, dtype=int).reshape(-1, 2)
 
@@ -83,6 +91,7 @@ class TimelineBuilder:
             ))
             start = end
 
+        logger.debug("event=timeline.audio.done session_id=%s windows=%s", record.session_id, len(entries))
         return entries
 
     @staticmethod
@@ -105,4 +114,8 @@ class TimelineBuilder:
             if video is not None or audio is not None or transcript is not None:
                 snapshots.append(Snapshot(session_id, start, end, video, audio, transcript))
 
+        logger.debug(
+            "event=timeline.build.done session_id=%s entries=%s snapshots=%s",
+            session_id, len(entries), len(snapshots),
+        )
         return snapshots

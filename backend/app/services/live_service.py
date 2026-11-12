@@ -49,29 +49,40 @@ class LiveService:
             self.session_service.require_owned_session(user_id, session_id)
 
             video_path = await self.storage.save_temp(video)
-            media = MediaReader(video_path).read()
+            reader = MediaReader(video_path)
+            video_chunk = next(reader.iter_video_chunks(), None)
 
-            if not media.video:
+            if video_chunk is None:
+                self.logger.warning("event=live.video.empty session_id=%s", session_id)
                 raise NoLandmarksError()
 
-            offset = timestamp - media.start_time
+            audio_segments = reader.read_audio()
+            audio = audio_segments[0] if audio_segments else None
+            media_start = min(video_chunk.start_time, audio.start_time) if audio is not None else video_chunk.start_time
+            offset = timestamp - media_start
+            self.logger.debug(
+                "event=live.media.ready session_id=%s frames=%s start_time=%.3f end_time=%.3f audio_segments=%s audio_selected=%s offset=%.3f",
+                session_id, len(video_chunk.frames), video_chunk.start_time,
+                video_chunk.end_time, len(audio_segments), audio is not None, offset,
+            )
 
-            visual = self.analysis_service.analyze_video([sample.data for sample in media.video])
+            visual = self.analysis_service.analyze_video(video_chunk.frames)
             if visual is None:
+                self.logger.warning("event=live.video.no_landmarks session_id=%s", session_id)
                 raise NoLandmarksError()
 
             records = [VideoMetric(
                 session_id=session_id,
-                start_time=media.video[0].start_time + offset,
-                end_time=media.video[-1].end_time + offset,
+                start_time=video_chunk.start_time + offset,
+                end_time=video_chunk.end_time + offset,
                 **visual.model_dump(),
             )]
             audio_metrics = None
 
-            if media.audio is not None:
-                start_time = media.audio.start_time + offset
-                end_time = media.audio.end_time + offset
-                features = self.analysis_service.extract_audio(media.audio.data)
+            if audio is not None:
+                start_time = audio.start_time + offset
+                end_time = audio.end_time + offset
+                features = self.analysis_service.extract_audio(audio.data)
                 audio_metrics = self.analysis_service.analyze_audio(features)
                 records.append(AudioFeatureRecord(
                     session_id=session_id,
@@ -80,17 +91,14 @@ class LiveService:
                     **features.to_dict(),
                 ))
 
-                text = self.analysis_service.transcribe(media.audio.data)
-                if text is not None:
-                    records.append(Transcript(
-                        session_id=session_id, start_time=start_time, end_time=end_time, transcript=text
-                    ))
 
             scores = self.analysis_service.generate_scores(visual, audio_metrics)
 
             if scores is None:
+                self.logger.warning("event=live.scores.empty session_id=%s", session_id)
                 raise NoLandmarksError()
 
+            self.logger.debug("event=live.persist.start session_id=%s records=%s", session_id, len(records))
             self.session_service.save_analysis_records(records)
 
             self.logger.info(
@@ -109,6 +117,7 @@ class LiveService:
             raise
 
         except av.FFmpegError as error:
+            self.logger.exception("event=live.media.failed session_id=%s", session_id)
             raise InvalidVideoError() from error
 
         except Exception:

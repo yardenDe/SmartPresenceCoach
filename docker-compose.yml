@@ -8,6 +8,10 @@ services:
       - "8000:8000"
     environment:
       RELOAD: "true"
+      DATABASE_URL: "sqlite:////app/data/sql_app.db"
+      HANDLERS: '["console", "file"]'
+      LOG_FILE_PATH: "/app/app.log"
+
     volumes:
       - ./backend:/app
 

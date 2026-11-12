@@ -1,7 +1,7 @@
 import smtplib
 from email.message import EmailMessage
 
-from core.config import get_settings
+from core.settings import get_settings
 from core.exceptions import EmailUnavailableError
 from core.logger import get_logger
 
